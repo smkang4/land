@@ -1,0 +1,521 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+
+    <!-- Select2   -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+
+    <!-- Toast Grid   -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+
+    <!--  Custom CSS  -->
+    <link rel="stylesheet" href="css/checkbox.css" th:href="@{/css/checkbox.css}"/>
+    <link rel="stylesheet" href="css/grid.css" th:href="@{/css/grid.css}"/>
+    <link rel="stylesheet" href="css/style.css" th:href="@{/css/style.css}">
+
+
+
+    <title>동아지질 부동산물건관리 시스템(관리자)</title>
+    <style>
+        @charset "UTF-8";
+        body {
+            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+        .main-content {
+            padding: 20px;
+        }
+        .stat-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .stat-icon {
+            font-size: 2rem;
+            margin-bottom: 10px;
+        }
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        .stat-label {
+            color: #6c757d;
+            font-size: 0.9rem;
+        }
+        .contract-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            transition: all 0.3s;
+            height: 100%;
+            cursor: pointer;
+        }
+        .contract-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .card-title {
+            font-size: 1.1rem;
+            line-height: 1.4;
+            height: 2.8em;
+            overflow: hidden;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            margin-bottom: 10px;
+        }
+        .status-badge {
+            padding: 5px 10px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+        .filter-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .admin-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .pagination {
+            margin-top: 20px;
+        }
+        .pagination .page-link {
+            color: #2c3e50;
+            border: none;
+            margin: 0 2px;
+            border-radius: 5px;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .btn-admin {
+            background: #2c3e50;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 5px;
+            transition: all 0.3s;
+        }
+        .btn-admin:hover {
+            background: #34495e;
+            color: white;
+        }
+        .admin-badge {
+            background-color: #2c3e50;
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 0.8rem;
+            margin-left: 8px;
+        }
+         .select2-container {
+            padding: 0px !important;
+
+        }
+
+        .select2-selection {
+           height: 40px !important;
+        }
+
+        #select2-select_place-container {
+            margin-top: 5px;
+        }
+
+        .select2-container--default .select2-selection--single {
+            border: 1px solid lightgray;
+            align-content: space-evenly;
+        }
+    </style>
+</head>
+<body>
+    <div class="container-fluid">
+        <!-- 헤더 -->
+        <div class="mt-3 admin-header d-flex justify-content-between align-items-center">
+            <div class="d-flex align-items-center">
+                <img src="/images/dongah.gif" alt="로고" width="40" height="32" class="me-3">
+                <h4 class="mb-0">동아지질 부동산물건관리 시스템 <span class="admin-badge">관리자</span></h4>
+            </div>
+            <div class="d-flex align-items-center">
+                <span class="me-3" th:text="${#authentication.principal.userName + '님'}"></span>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-admin">로그아웃</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- 통계 카드 -->
+        <div class="row mb-4">
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon text-primary">
+                        <i class="bi bi-file-text"></i>
+                    </div>
+                    <div class="stat-value" id="totalContracts">0</div>
+                    <div class="stat-label">전체 계약서</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon text-warning">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div class="stat-value" id="pendingContracts">0</div>
+                    <div class="stat-label">대기중</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div class="stat-value" id="approvedContracts">0</div>
+                    <div class="stat-label">승인됨</div>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stat-card">
+                    <div class="stat-icon text-danger">
+                        <i class="bi bi-x-circle"></i>
+                    </div>
+                    <div class="stat-value" id="rejectedContracts">0</div>
+                    <div class="stat-label">반려됨</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 검색 및 필터 -->
+        <div class="filter-section">
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="input-group">
+                        <select class="form-select select2" id="con" required>
+                            <option>현장</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="height:91%">
+            <div class="col col-12" id="grid"></div>
+        </div>
+   </div>
+
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+
+    <!-- JS   -->
+    <script src="js/color-modes.js" th:src="@{/js/color-modes.js}"></script>
+    <!-- Bootstrap  -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.17.47/js/bootstrap-datetimepicker.min.js"></script>
+    <!-- Toast Grid  -->
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
+    <!-- Custom   -->
+    <script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
+
+    <script>
+
+        //Select2
+        $('#con').select2({
+          placeholder: "현장을 선택하세요",
+          allowClear: true,
+          width: '100%'
+        });
+
+        function openRequestDetail(seq) {
+            window.open(`/api/request-detail?seq=${seq}`, 'requestDetail',
+                'width=800,height=600,scrollbars=yes,resizable=yes');
+        }
+
+        const grid = new Grid({
+                  el: document.getElementById('grid'), // Container element
+                  //data: dataSource,
+                  bodyHeight: 'fitToParent',
+                  rowHeight: 20,
+                  rowHeaders: [
+                    { type: 'rowNum', width: 30, align: 'right', valign: 'middle' },
+                    {
+                        type: 'checkbox',
+                        header:
+                        `<label for="all-checkbox" class="checkbox">
+                        <input type="checkbox" id="all-checkbox" class="hidden-input" name="_checked" />
+                        <span class="custom-input"></span>
+                        </label>` ,
+                        renderer: {
+                            type: CheckboxRenderer
+                        }
+                    }
+                  ],
+                  header:{
+                      height: 50,
+                      complexColumns: [
+                      {
+                        header: '고용허가기간',
+                        name: 'mergeColumn1',
+                        childNames: ['goyong_date1', 'goyong_date2']
+                      }
+                    ]
+                  },
+                  hideLoadingBar: true,
+                  pageOptions: {
+                    useClient: true,
+                    type: 'scroll',
+                    perPage: -1
+                  },
+                  columns: [
+                    { header: '계약번호',name: 'seq',width: 70, align: 'center',sortable: true ,hidden: true},
+                    { header: '결재번호',name: 'appr_seq',width: 70, align: 'center',sortable: true ,hidden: true},
+                    { header: '결재상태',name: 'approval',width: 90, align: 'center',sortable: true
+                        ,formatter: function (e) {
+                            return decode(e.value,'0','','1','승인요청','2','진행중','3','승인완료','4','반려','')
+                        }
+                    },
+                    { header: '상세',name: 'detail',width: 70, align: 'center',sortable: false
+                        ,formatter:function(e){
+                            return '<button class="btn btn-sm btn-dark"><i class="bi bi-file-text"></i></button>'
+                        }
+                    },
+                    { header: '결재',name: 'confirm',width: 70, align: 'center',sortable: false
+                        ,formatter:function(e){
+                            if(e.row.APPROVAL == 0){
+                                return '';
+                            }else{
+                                return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
+                            }
+                        }
+                    },
+                    { header: '현장코드',name: 'proj_code',sortable: true, filter: 'text' , hidden: true},
+                    { header: '현장명',name: 'proj_name',width: 250, sortable: true, filter:{type:'text'}},
+
+
+                    { header: '주거형태',name: 'res_type',width: 80, align: 'center',sortable: true,hidden:false},
+                    { header: '거래방식',name: 'trans_type',width: 80, align: 'center',sortable: true,hidden:false},
+                    { header: '면적',name: 'area',width: 80, align: 'center',sortable: true,hidden:false},
+                    { header: '사용인원',name: 'accu',width: 80, align: 'center',sortable: true,hidden:false},
+                    { header: '부동산',name: 'source',width: 80, align: 'center',sortable: true,hidden:false
+
+                    },
+                    { header: '주소',name: 'address',width: 250, sortable: true, filter:{type:'text'}
+                        ,formatter:function(e){
+                            return '<a href="#">'+e.value+'</a>'
+                        }
+                    },
+                    { header: '주소(상세)',name: 'address_d',width: 250, sortable: true, filter:{type:'text'}},
+
+                    { header: '계약(예정)일',name: 'cont_date',sortable: true ,width: 100, align: 'center', hidden: false,
+                         formatter: function (e) {
+                            return toStringByFormatting(e.value)
+                        }
+                    },
+                    { header: '입주(예정)일',name: 'move_date',sortable: true ,width: 100, align: 'center', hidden: false,
+                        formatter: function (e) {
+                            return toStringByFormatting(e.value)
+                        }
+                    },
+                    { header: '계약금',name: 'cont_amt',width: 80, align: 'right',sortable: true,
+                        formatter: function (e) {
+                            return ufn_comma(e.value)
+                        }
+                    },
+
+                    { header: '보증금',name: 'deposit_amt',width: 100, align: 'right',sortable: true,
+                        formatter: function (e) {
+                            return ufn_comma(e.value)
+                        }
+                    },
+
+                    { header: '월세',name: 'rent_amt',width: 100, align: 'right',sortable: true,
+                        formatter: function (e) {
+                            return ufn_comma(e.value)
+                        }
+                    },
+
+
+        <!--            { header: '반려사유',name: 'reject',width: 80, align: 'center',sortable: true,hidden:true},-->
+
+        <!--            { header: '기안자',name: 'f_emp_nm',width: 100, align: 'center', sortable: true},-->
+        <!--            { header: '기안일',name: 'f_appr_dt',width: 100, align: 'center', sortable: true-->
+        <!--                ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}-->
+        <!--            },-->
+        <!--            { header: '최종결재자',name: 'l_emp_nm',width: 100, align: 'center', sortable: true },-->
+        <!--            { header: '최종결재일',name: 'l_appr_dt',width: 100, align: 'center', sortable: true ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}},-->
+        <!--            { header: '결재완료일',name: 'e_appr_dt',width: 100, align: 'center', sortable: true ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}},-->
+        <!--            { header: '경과일수',name: 'd_appr_dt',width: 100, align: 'center', sortable: true},-->
+
+                  ],
+                  columnOptions: {
+                    resizable: true
+                  }
+                });
+
+        grid.on('click',(ev)=>{
+            if (ev.targetType === 'cell' && ev.columnName === 'address') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+
+                openMap(row.address);
+            }
+            if (ev.targetType === 'cell' && ev.columnName === 'detail') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+
+                detailView(row.seq);
+            }
+
+            if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+                if(row.conf_stat == '0'){
+                    return false;
+                }else if(row.conf_stat == '4'){
+                   var vHtml = "";
+                   vHtml += "<h3 class='text-center text-danger'>반려사유</h3>";
+                   vHtml += "<p class='pt-2'>"+row.appr_remark+"</p>";
+                   MsgBox.Alert(vHtml);
+                   return false;
+                }else{
+                    confirmButtonClick(row.seq, row.appr_seq);
+                }
+            }
+
+            if (ev.targetType === 'cell' && ev.columnName === 'docu_file') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+                if(row.fn_tg == 'F'){
+                    return false;
+                }else{
+                    btnDocContractDown(row.seq);
+                }
+            }
+
+
+        });
+
+
+    function getApprStat() {
+     $.ajax({
+            url: '/api/getApprAllM',
+            type: 'GET',
+            success: function(response) {
+                const stats = {
+                    total: response.length,
+                    pending: response.filter(c => c.appr_stat === '0').length,
+                    approved: response.filter(c => c.appr_stat === '1').length,
+                    rejected: response.filter(c => c.appr_stat === '2').length
+                };
+
+                $('#totalContracts').text(stats.total);
+                $('#pendingContracts').text(stats.pending);
+                $('#approvedContracts').text(stats.approved);
+                $('#rejectedContracts').text(stats.rejected);
+            },
+            error: function(xhr, status, error) {
+                console.error("버튼 클릭 오류: " + error);
+            }
+     });
+    }
+
+    function getProj() {
+        $.ajax({
+            url: '/api/projects',
+            type: 'GET',
+            success: function(response) {
+                var selectedCode = $('#con_model').val();
+                $('#con').empty();
+                $('#con').append('<option value="0" selected>현장을 선택하세요</option>');
+
+                for (var i = 0; i < response.length; i++) {
+                    var option = $('<option></option>')
+                        .val(response[i].projCode)
+                        .attr('data-id', response[i].projCode)
+                        .text("["+response[i].projCode+"]"+response[i].projName);
+
+                    $('#con').append(option);
+                }
+
+
+                 $('#con').trigger('change');
+
+            },
+            error: function(xhr, status, error) {
+                console.error("버튼 클릭 오류: " + error);
+            }
+        });
+    }
+
+
+
+    function openMap(searchTxt){
+        var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+        window.open("https://map.naver.com/p/search/"+searchTxt, 'docu',options);
+    }
+
+    function detailView(seq){
+        var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+        window.open("/api/detail-admin?seq="+seq, 'docu',options);
+    }
+
+
+    document.addEventListener('DOMContentLoaded', init);
+
+
+    function init() {
+        getApprStat();
+        getProj();
+        G_load(grid,"/api/cont_list_all");
+    }
+
+    $('#con').on('select2:select', function(e) {
+        var selectedDataId = $(e.params.data.element).data('id');
+        console.log('확인 : '+selectedDataId);
+        G_load(grid, "/api/cont_list/" + selectedDataId);
+    });
+
+
+
+    init();
+
+
+
+    </script>
+</body>
+</html>

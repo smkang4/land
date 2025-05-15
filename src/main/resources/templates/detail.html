@@ -1,0 +1,451 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <title>계약서 상세</title>
+    <style>
+        @charset "UTF-8";
+        body {
+            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .detail-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .detail-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .detail-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .detail-info {
+            color: #666;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .detail-info i {
+            color: #3498db;
+        }
+        .status-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .detail-section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .detail-section-title {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .detail-section-title i {
+            color: #3498db;
+        }
+        .detail-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .detail-label {
+            width: 120px;
+            color: #666;
+            font-weight: 500;
+        }
+        .detail-value {
+            flex: 1;
+            color: #2c3e50;
+        }
+        .detail-value.amount {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .check-item i {
+            font-size: 1.2rem;
+        }
+        .check-yes {
+            color: #2ecc71;
+        }
+        .check-no {
+            color: #e74c3c;
+        }
+        .check-reason {
+            color: #666;
+            font-size: 0.9rem;
+            margin-left: 5px;
+        }
+        .bg-warning { background-color: #f1c40f; }
+        .bg-success { background-color: #2ecc71; }
+        .bg-danger { background-color: #e74c3c; }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        .action-button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .approve-button {
+            background-color: #2ecc71;
+            color: white;
+        }
+        .approve-button:hover {
+            background-color: #27ae60;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.2);
+        }
+        .reject-button {
+            background-color: #e74c3c;
+            color: white;
+        }
+        .reject-button:hover {
+            background-color: #c0392b;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
+        }
+        .action-button i {
+            font-size: 1.2rem;
+        }
+        .rejection-modal .modal-content {
+            border-radius: 15px;
+            border: none;
+        }
+        .rejection-modal .modal-header {
+            border-bottom: 2px solid #eee;
+            padding: 20px;
+        }
+        .rejection-modal .modal-body {
+            padding: 20px;
+        }
+        .rejection-modal .modal-footer {
+            border-top: 2px solid #eee;
+            padding: 20px;
+        }
+        .rejection-reason {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #eee;
+            border-radius: 10px;
+            margin-top: 10px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .rejection-reason:focus {
+            border-color: #3498db;
+            outline: none;
+        }
+        .rejection-reason-display {
+            margin-top: 15px;
+            padding: 15px;
+            background-color: #fff3f3;
+            border-radius: 10px;
+            color: #e74c3c;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 0.95rem;
+        }
+        .rejection-reason-display i {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+
+
+    <div class="detail-container" th:each="detail : ${contract}">
+        <!--글쓴이만 수정 가능(관리자는 수정버튼 안뜸, 결재올린 후에는 수정 못함)-->
+        <div class="d-flex justify-content-end mb-2"
+             th:if="${#authentication.principal.userNo.toString() == detail.emp_no
+                     and #authentication.principal.deptCode != '0105'
+                     and detail.appr_no != null
+             }">
+            <button class="btn btn-primary rounded-pill px-4 py-2"
+                    th:attr="data-seq=${detail.seq}" onclick="edit(this.getAttribute('data-seq'))">
+                <i class="bi bi-pencil-square me-2"></i>
+                수정하기
+            </button>
+        </div>
+        <div class="detail-card">
+            <div class="detail-header">
+                <h2 class="detail-title" th:text="${detail.proj_name}">프로젝트명</h2>
+                <div class="detail-info">
+                    <span><i class="bi bi-person"></i> <span th:text="${detail.user_nm}">작성자</span></span>
+                    <span><i class="bi bi-calendar"></i> <span th:text="${detail.crtdate}">작성일</span></span>
+                </div>
+
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-info-circle"></i> 기본 정보</h3>
+                <div class="detail-item">
+                    <div class="detail-label">주소</div>
+                    <div class="detail-value" th:text="${detail.address}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">상세주소</div>
+                    <div class="detail-value" th:text="${detail.address_d}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">계약일</div>
+                    <div class="detail-value" th:text="${detail.cont_date}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">이사일</div>
+                    <div class="detail-value" th:text="${detail.move_date}">-</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-cash-stack"></i> 계약 정보</h3>
+                <div class="detail-item">
+                    <div class="detail-label">계약금</div>
+                    <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.cont_amt, 3, 'COMMA') + '원'}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">보증금</div>
+                    <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.deposit_amt, 3, 'COMMA') + '원'}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">월세</div>
+                    <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.rent_amt, 3, 'COMMA') + '원'}">-</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-building"></i> 추가 정보</h3>
+                <div class="detail-item">
+                    <div class="detail-label">주거유형</div>
+                    <div class="detail-value" th:text="${detail.res_type}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">거래유형</div>
+                    <div class="detail-value" th:text="${detail.trans_type}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">면적</div>
+                    <div class="detail-value" th:text="${detail.area + '㎡'}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">사용인원</div>
+                    <div class="detail-value" th:text="${detail.accu}">-</div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">부동산정보</div>
+                    <div class="detail-value" th:text="${detail.source}">-</div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
+                <div class="detail-item">
+                    <div class="detail-label">실행예산</div>
+                    <div class="detail-value">
+                        <div class="check-item">
+                            <i th:classappend="${detail.chk_1 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                            <span th:text="${detail.chk_1 == 'Y' ? '예' : '아니오'}">-</span>
+                            <span th:if="${detail.chk_1 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_1} + ')'">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">법인명의</div>
+                    <div class="detail-value">
+                        <div class="check-item">
+                            <i th:classappend="${detail.chk_2 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                            <span th:text="${detail.chk_2 == 'Y' ? '예' : '아니오'}">-</span>
+                            <span th:if="${detail.chk_2 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_2} + ')'">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">전세권설정</div>
+                    <div class="detail-value">
+                        <div class="check-item">
+                            <i th:classappend="${detail.chk_3 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                            <span th:text="${detail.chk_3 == 'Y' ? '예' : '아니오'}">-</span>
+                            <span th:if="${detail.chk_3 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_3} + ')'">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">부동산</div>
+                    <div class="detail-value">
+                        <div class="check-item">
+                            <i th:classappend="${detail.chk_4 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                            <span th:text="${detail.chk_4 == 'Y' ? '예' : '아니오'}">-</span>
+                            <span th:if="${detail.chk_4 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_4} + ')'">-</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">보증금</div>
+                    <div class="detail-value">
+                        <div class="check-item">
+                            <i th:classappend="${detail.chk_5 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                            <span th:text="${detail.chk_5 == 'Y' ? '예' : '아니오'}">-</span>
+                            <span th:if="${detail.chk_5 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_5} + ')'">-</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 관리자용 승인/반려 버튼 -->
+<!--      <div th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" class="action-buttons">
+            <div class="action-buttons">
+                <button class="action-button approve-button" onclick="approvecontract()">
+                    <i class="bi bi-check-circle"></i>
+                    승인
+                </button>
+                <button class="action-button reject-button" onclick="showRejectionModal()">
+                    <i class="bi bi-x-circle"></i>
+                    반려
+                </button>
+            </div> -->
+        </div>
+    </div>
+
+    <!-- 반려 사유 입력 모달 -->
+    <div class="modal fade rejection-modal" id="rejectionModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">반려 사유 입력</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>반려 사유를 입력해주세요.</p>
+                    <textarea id="rejectionReason" class="rejection-reason" rows="4" placeholder="반려 사유를 입력하세요..."></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-danger" onclick="rejectcontract()">반려하기</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        function approvecontract() {
+            if (confirm('이 계약서를 승인하시겠습니까?')) {
+                const seq = new URLSearchParams(window.location.search).get('seq');
+                $.ajax({
+                    url: '/api/approve-contract',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ seq: seq }),
+                    success: function(response) {
+                        if (response.success) {
+                            alert('계약서가 승인되었습니다.');
+                            window.location.reload();
+                        } else {
+                            alert('승인 처리 중 오류가 발생했습니다.');
+                        }
+                    },
+                    error: function() {
+                        alert('서버 통신 중 오류가 발생했습니다.');
+                    }
+                });
+            }
+        }
+
+        function showRejectionModal() {
+            const modal = new bootstrap.Modal(document.getElementById('rejectionModal'));
+            modal.show();
+        }
+
+        function rejectdetail() {
+            const reason = document.getElementById('rejectionReason').value.trim();
+            if (!reason) {
+                alert('반려 사유를 입력해주세요.');
+                return;
+            }
+
+            const seq = new URLSearchParams(window.location.search).get('seq');
+            $.ajax({
+                url: '/api/reject-detail',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ 
+                    seq: seq,
+                    reason: reason
+                }),
+                success: function(response) {
+                    if (response.success) {
+                        alert('계약서가 반려되었습니다.');
+                        window.location.reload();
+                    } else {
+                        alert('반려 처리 중 오류가 발생했습니다.');
+                    }
+                },
+                error: function() {
+                    alert('서버 통신 중 오류가 발생했습니다.');
+                }
+            });
+        }
+
+        function edit(seq){
+            window.location.href = "/edit?seq=" + seq;
+        }
+    </script>
+</body>
+</html> 

@@ -1,0 +1,619 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <title>수정</title>
+    <style>
+        @charset "UTF-8";
+        body {
+            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            margin: 0;
+        }
+        .detail-container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .detail-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+        .detail-header {
+            border-bottom: 2px solid #eee;
+            padding-bottom: 20px;
+            margin-bottom: 30px;
+            position: relative;
+        }
+        .detail-title {
+            font-size: 1.8rem;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        .detail-info {
+            color: #666;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        .detail-info i {
+            color: #3498db;
+        }
+        .status-badge {
+            position: absolute;
+            top: 0;
+            right: 0;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .detail-section {
+            margin-bottom: 30px;
+            background: #f8f9fa;
+            border-radius: 15px;
+            padding: 20px;
+        }
+        .detail-section-title {
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #2c3e50;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .detail-section-title i {
+            color: #3498db;
+        }
+        .detail-item {
+            display: flex;
+            margin-bottom: 15px;
+            padding: 10px;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .detail-label {
+            width: 120px;
+            color: #666;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+        }
+        .detail-value {
+            flex: 1;
+            color: #2c3e50;
+        }
+        .detail-value.amount {
+            font-weight: bold;
+            color: #e74c3c;
+        }
+        
+        /* Form styles */
+        .form-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+        .form-input:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+        .form-select {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 1rem;
+            background-color: white;
+        }
+        
+        /* Checkbox styles */
+        .check-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .check-radio-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 10px;
+        }
+        .check-radio {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .check-radio input[type="radio"] {
+            margin: 0;
+        }
+        .check-reason-container {
+            width: 100%;
+            margin-top: 10px;
+            display: none;
+        }
+        .check-reason-textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            font-size: 0.95rem;
+            resize: vertical;
+            min-height: 60px;
+            transition: border-color 0.3s ease;
+        }
+        .check-reason-textarea:focus {
+            border-color: #3498db;
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+         .check-description {
+            font-size: 0.9rem;
+            color: #7f8c8d;
+            margin-bottom: 10px;
+            padding: 5px 0;
+            font-style: italic;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .check-description i {
+            color: #3498db;
+            font-size: 1rem;
+        }
+        
+        .bg-warning { background-color: #f1c40f; }
+        .bg-success { background-color: #2ecc71; }
+        .bg-danger { background-color: #e74c3c; }
+        .action-buttons {
+            display: flex;
+            gap: 15px;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+        .action-button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 500;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+        .save-button {
+            background-color: #3498db;
+            color: white;
+        }
+        .save-button:hover {
+            background-color: #2980b9;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
+        }
+        .cancel-button {
+            background-color: #95a5a6;
+            color: white;
+        }
+        .cancel-button:hover {
+            background-color: #7f8c8d;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(149, 165, 166, 0.2);
+        }
+        .action-button i {
+            font-size: 1.2rem;
+        }
+    </style>
+</head>
+<body>
+<div class="detail-container">
+    <form th:action="@{/api/update}" method="post" class="edit-form">
+        <!-- 식별자들을 hidden input으로 추가 -->
+        <input type="hidden" name="seq" th:value="${detail.seq}">
+        <input type="hidden" name="emp_no" th:value="${detail.emp_no}">
+        <input type="hidden" name="user_nm" th:value="${detail.user_nm}">
+        <input type="hidden" name="crtdate" th:value="${detail.crtdate}">
+
+        <div class="detail-card">
+            <div class="detail-header">
+                <input type="text" name="proj_name" th:value="${detail.proj_name}"
+                       class="form-input detail-title" style="background: none; border: none; padding: 0; font-size: 1.8rem; font-weight: bold; color: #2c3e50;">
+                <div class="detail-info">
+                    <span><i class="bi bi-person"></i> <span th:text="${detail.user_nm}">작성자</span></span>
+                    <span><i class="bi bi-calendar"></i> <span th:text="${detail.crtdate}">작성일</span></span>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-info-circle"></i> 기본 정보</h3>
+                <div class="detail-item">
+                    <div class="detail-label">주소</div>
+                    <div class="detail-value">
+                        <input type="text" name="address" th:value="${detail.address}" class="form-input">
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">상세주소</div>
+                    <div class="detail-value">
+                        <input type="text" name="address_d" th:value="${detail.address_d}" class="form-input">
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">계약일</div>
+                    <div class="detail-value">
+                        <input type="date" name="cont_date" th:value="${detail.cont_date}" class="form-input">
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">이사일</div>
+                    <div class="detail-value">
+                        <input type="date" name="move_date" th:value="${detail.move_date}" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-cash-stack"></i> 계약 정보</h3>
+                <div class="detail-item">
+                    <div class="detail-label">계약금</div>
+                    <div class="detail-value">
+                        <input type="number" name="cont_amt" th:value="${detail.cont_amt}" class="form-input" style="text-align: right;">
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">보증금</div>
+                    <div class="detail-value">
+                        <input type="number" name="deposit_amt" th:value="${detail.deposit_amt}" class="form-input" style="text-align: right;">
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">월세</div>
+                    <div class="detail-value">
+                        <input type="number" name="rent_amt" th:value="${detail.rent_amt}" class="form-input" style="text-align: right;">
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-building"></i> 추가 정보</h3>
+                <div class="detail-item">
+                    <div class="detail-label">주거유형</div>
+                    <div class="detail-value">
+                        <select name="res_type" class="form-select">
+                            <option value="">선택하세요</option>
+                            <option value="아파트" th:selected="${detail.res_type == '아파트'}">아파트</option>
+                            <option value="빌라" th:selected="${detail.res_type == '빌라'}">빌라</option>
+                            <option value="원룸" th:selected="${detail.res_type == '원룸'}">원룸</option>
+                            <option value="오피스텔" th:selected="${detail.res_type == '오피스텔'}">오피스텔</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">거래유형</div>
+                    <div class="detail-value">
+                        <select name="trans_type" class="form-select">
+                            <option value="">선택하세요</option>
+                            <option value="전세" th:selected="${detail.trans_type == '전세'}">전세</option>
+                            <option value="월세" th:selected="${detail.trans_type == '월세'}">월세</option>
+                            <option value="매매" th:selected="${detail.trans_type == '매매'}">매매</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">면적</div>
+                    <div class="detail-value">
+                        <input type="number" name="area" th:value="${detail.area}" class="form-input" step="0.01">
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">사용인원</div>
+                    <div class="detail-value">
+                        <input type="text" name="accu" th:value="${detail.accu}" class="form-input">
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">부동산정보</div>
+                    <div class="detail-value">
+                        <input type="text" name="source" th:value="${detail.source}" class="form-input">
+                    </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
+                <div class="detail-item">
+                    <div class="detail-label">실행예산</div>
+                    <div class="detail-value">
+                        <div class="check-description">
+                            <i class="bi bi-info-circle"></i>
+                            <span>실행예산에 반영되어 있는가</span>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-radio-group">
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_1" value="Y" th:checked="${detail.chk_1 == 'Y'}" id="chk1_y">
+                                    <label for="chk1_y">예</label>
+                                </div>
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_1" value="N" th:checked="${detail.chk_1 == 'N'}" id="chk1_n">
+                                    <label for="chk1_n">아니오</label>
+                                </div>
+                            </div>
+                            <div class="check-reason-container" id="reason1">
+                                    <textarea name="chk_reason_1" class="check-reason-textarea"
+                                              placeholder="사유를 입력해주세요" th:text="${detail.chk_reason_1}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">법인명의</div>
+                    <div class="detail-value">
+                        <div class="check-description">
+                            <i class="bi bi-info-circle"></i>
+                            <span>㈜동아지질 법인명의로 계약하는가</span>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-radio-group">
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_2" value="Y" th:checked="${detail.chk_2 == 'Y'}" id="chk2_y">
+                                    <label for="chk2_y">예</label>
+                                </div>
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_2" value="N" th:checked="${detail.chk_2 == 'N'}" id="chk2_n">
+                                    <label for="chk2_n">아니오</label>
+                                </div>
+                            </div>
+                            <div class="check-reason-container" id="reason2">
+                                    <textarea name="chk_reason_2" class="check-reason-textarea"
+                                              placeholder="사유를 입력해주세요" th:text="${detail.chk_reason_2}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">전세권설정</div>
+                    <div class="detail-value">
+                        <div class="check-description">
+                            <i class="bi bi-info-circle"></i>
+                            <span>전세권설정이 가능한가</span>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-radio-group">
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_3" value="Y" th:checked="${detail.chk_3 == 'Y'}" id="chk3_y">
+                                    <label for="chk3_y">예</label>
+                                </div>
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_3" value="N" th:checked="${detail.chk_3 == 'N'}" id="chk3_n">
+                                    <label for="chk3_n">아니오</label>
+                                </div>
+                            </div>
+                            <div class="check-reason-container" id="reason3">
+                                    <textarea name="chk_reason_3" class="check-reason-textarea"
+                                              placeholder="사유를 입력해주세요" th:text="${detail.chk_reason_3}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">부동산</div>
+                    <div class="detail-value">
+                        <div class="check-description">
+                            <i class="bi bi-info-circle"></i>
+                            <span>부동산 공인중개사무소를 통하여 거래하는가</span>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-radio-group">
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_4" value="Y" th:checked="${detail.chk_4 == 'Y'}" id="chk4_y">
+                                    <label for="chk4_y">예</label>
+                                </div>
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_4" value="N" th:checked="${detail.chk_4 == 'N'}" id="chk4_n">
+                                    <label for="chk4_n">아니오</label>
+                                </div>
+                            </div>
+                            <div class="check-reason-container" id="reason4">
+                                    <textarea name="chk_reason_4" class="check-reason-textarea"
+                                              placeholder="사유를 입력해주세요" th:text="${detail.chk_reason_4}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="detail-item">
+                    <div class="detail-label">보증금</div>
+                    <div class="detail-value">
+                        <div class="check-description">
+                            <i class="bi bi-info-circle"></i>
+                            <span>등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</span>
+                        </div>
+                        <div class="check-item">
+                            <div class="check-radio-group">
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_5" value="Y" th:checked="${detail.chk_5 == 'Y'}" id="chk5_y">
+                                    <label for="chk5_y">예</label>
+                                </div>
+                                <div class="check-radio">
+                                    <input type="radio" name="chk_5" value="N" th:checked="${detail.chk_5 == 'N'}" id="chk5_n">
+                                    <label for="chk5_n">아니오</label>
+                                </div>
+                            </div>
+                            <div class="check-reason-container" id="reason5">
+                                    <textarea name="chk_reason_5" class="check-reason-textarea"
+                                              placeholder="사유를 입력해주세요" th:text="${detail.chk_reason_5}"></textarea>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="action-buttons">
+                <button type="submit" class="action-button save-button">
+                    <i class="bi bi-check-lg"></i>
+                    저장
+                </button>
+                <button type="button" class="action-button cancel-button" onclick="history.back()">
+                    <i class="bi bi-x-lg"></i>
+                    취소
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+
+
+    $(document).ready(function() {
+
+        // 체크리스트 N 선택 시 사유 입력 텍스트에어리어 표시/숨김
+        for (let i = 1; i <= 5; i++) {
+            // 페이지 로드 시 초기 상태 설정
+            if ($(`input[name="chk_${i}"]:checked`).val() === 'N') {
+                $(`#reason${i}`).show();
+            }
+
+            // 라디오 버튼 변경 시 이벤트
+            $(`input[name="chk_${i}"]`).change(function() {
+                if ($(this).val() === 'N') {
+                    $(`#reason${i}`).slideDown(300);
+                } else {
+                    $(`#reason${i}`).slideUp(300);
+                    $(`#reason${i} textarea`).val(''); // Y 선택 시 사유 초기화
+                }
+            });
+        }
+
+        // 폼 제출 전 검증
+        $('.edit-form').submit(function(e) {
+
+            // 필수 필드 체크
+            const requiredFields = {
+                'address': '주소',
+                'address_d': '상세주소',
+                'cont_date': '계약일',
+                'move_date': '이사일',
+                'cont_amt': '계약금',
+                'deposit_amt': '보증금',
+                'rent_amt': '월세',
+                'area': '면적',
+                'accu': '사용인원',
+                'source': '부동산정보'
+            };
+
+            let hasError = false;
+            Object.keys(requiredFields).forEach(field => {
+                const value = $(`input[name="${field}"]`).val();
+                if (!value || value.trim() === '') {
+                    alert(`${requiredFields[field]}을(를) 입력해주세요.`);
+                    hasError = true;
+                    return false;
+                }
+            });
+
+            // 셀렉트 박스 필수 체크
+            const requiredSelects = {
+                'res_type': '주거유형',
+                'trans_type': '거래유형'
+            };
+
+            Object.keys(requiredSelects).forEach(field => {
+                const value = $(`select[name="${field}"]`).val();
+                if (!value || value === '') {
+                    alert(`${requiredSelects[field]}을(를) 선택해주세요.`);
+                    hasError = true;
+                    return false;
+                }
+            });
+
+            // 숫자 필드 검증
+            const numberFields = ['cont_amt', 'deposit_amt', 'rent_amt', 'area'];
+            numberFields.forEach(field => {
+                const value = $(`input[name="${field}"]`).val();
+                if (value && isNaN(value)) {
+                    alert(`${field}은 숫자만 입력 가능합니다.`);
+                    hasError = true;
+                    return false;
+                }
+            });
+
+            // 체크리스트 검증 - 모든 체크리스트 항목에 예/아니오 선택 필수
+            for (let i = 1; i <= 5; i++) {
+                const checkedValue = $(`input[name="chk_${i}"]:checked`).val();
+
+                // 체크리스트 필수 선택 검증
+                if (!checkedValue) {
+                    let checklistNames = {
+                        1: '실행예산',
+                        2: '법인명의',
+                        3: '전세권설정',
+                        4: '부동산',
+                        5: '보증금'
+                    };
+
+                    alert(`체크리스트 - ${checklistNames[i]} 항목의 예/아니오를 선택해주세요.`);
+                    hasError = true;
+                    return false;
+                }
+
+                // '아니오'일 경우 사유 필수 입력 검증
+                if (checkedValue === 'N') {
+                    const reasonText = $(`textarea[name="chk_reason_${i}"]`).val();
+                    if (!reasonText || reasonText.trim() === '') {
+                        let checklistNames = {
+                            1: '실행예산',
+                            2: '법인명의',
+                            3: '전세권설정',
+                            4: '부동산',
+                            5: '보증금'
+                        };
+
+                        alert(`체크리스트 - ${checklistNames[i]} 항목의 아니오 선택 시 사유를 반드시 입력해주세요.`);
+                        $(`textarea[name="chk_reason_${i}"]`).focus();
+                        hasError = true;
+                        return false;
+                    }
+                }
+            }
+
+            if (hasError) {
+                e.preventDefault();
+                return false;
+            }
+
+            // 저장 전 최종 확인
+            if (!confirm('입력한 내용을 저장하시겠습니까?')) {
+                e.preventDefault();
+                return false;
+            }
+
+        });
+    });
+</script>
+</body>
+</html>

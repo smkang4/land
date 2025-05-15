@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dage.rent.DAO.oracle.RentDAO">
+    <select id="selectLogin" resultType="com.dage.rent.DTO.LoginDTO">
+        Select
+        b.emp_no as empNo,
+        a.user_no as userNo,
+        a.user_id as userId,
+        a.password as userPassword,
+        a.user_nm as userName,
+        b.sub_dept_code as deptCode,
+        SF_PROJ_NAME(b.sub_dept_code) as deptName,
+        C.POSITION_CODE as positionCode,
+        SF_POSITION_NAME(B.POSITION_CODE) as positionName,
+        C.SEQ AS posSeq,
+        a.USE_FG as useFlag
+        From TCC_EMPLOYE a
+        ,THR_PM_BASE b
+        ,THR_POSITION_CODE c
+        Where a.empno = b.EMP_NO
+        AND B.POSITION_CODE = C.POSITION_CODE
+        And a.user_id = #{userId}
+        And a.USE_FG = 'T'
+    </select>
+
+    <select id="getAllProjects" resultType="com.dage.rent.DTO.ProjDTO">
+        select 
+            proj_code as projCode,
+            proj_name as projName
+        from tcc_proj_code e
+        where proj_knd_tg = 'S'
+            and exists(
+                select 'y'
+                from TAC_F_REQ_FUND_WORK k
+                where to_char(k.work_ym,'yyyy') = decode(to_char(sysdate,'yyyy'),'2024',to_char(sysdate,'yyyy'),to_char(sysdate,'yyyy')-1)
+                    and k.proj_code = e.proj_code
+            )
+            AND PROJ_CODE NOT IN ('2021022402','2021021901','2021022404','2014062501','2021022403','2021022405','2014062502','2021022406','2021022407')
+        order by proj_code
+    </select>
+</mapper>

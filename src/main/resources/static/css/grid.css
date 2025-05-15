@@ -1,0 +1,39 @@
+    .custom-txt-color{
+        background-color: #FF0000;
+        color:white;
+    }
+
+    body {
+        font-family: '맑은 고딕', 'Malgun Gothic', sans-serif;
+    }
+
+    .tui-grid-header-area {
+        background-color: #f0f0f0;
+        border-bottom: 1px solid #ccc;
+    }
+    .tui-grid-header-area .tui-grid-cell {
+        background-color: #f0f0f0;
+        font-weight: bold;
+        border-right: 1px solid #ccc;
+    }
+    .tui-grid-body-area .tui-grid-cell {
+        border-right: 1px solid #ccc;
+        border-bottom: 1px solid #ccc;
+    }
+    .tui-grid-row.odd .tui-grid-cell {
+        background-color: #f9f9f9;
+    }
+    .tui-grid-row.even .tui-grid-cell {
+        background-color: #ffffff;
+    }
+    .tui-grid-cell-selected {
+        background-color: #d3d3d3;
+    }
+    .tui-grid-row:hover .tui-grid-cell {
+        background-color: #e0e0e0;
+    }
+
+    .tui-grid-header-content {
+        white-space: normal !important;
+        word-break: break-word;
+    }

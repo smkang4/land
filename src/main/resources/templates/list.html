@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <div th:replace="fragments/header-grid :: fragment-header-grid"></div>
+
+<!--    <meta charset="UTF-8">-->
+<!--    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">-->
+<!--    <meta name="viewport" content="width=device-width, initial-scale=1">-->
+<!--    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">-->
+<!--    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">-->
+<!--    <title>계약서 목록</title>-->
+    <style>
+        @charset "UTF-8";
+        html, body {
+            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            height : 100%;
+            height: 93%;
+        }
+        .container-fluid {
+          height: 92%;
+        }
+<!--        .bg-style-search{-->
+<!--            background-color:#F5F5F5; padding:5px 5px 5px 0px;-->
+<!--        }-->
+        .card {
+            transition: transform 0.2s;
+            cursor: pointer;
+            border: none;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            background: rgba(255, 255, 255, 0.95);
+        }
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+        }
+        .status-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            padding: 8px 12px;
+            border-radius: 20px;
+            font-weight: 500;
+            color: white;
+        }
+        .search-box {
+            max-width: 300px;
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 10px;
+            padding: 10px;
+        }
+        .header {
+            background: white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            padding: 1rem 0;
+            margin-bottom: 0.5rem;
+        }
+        .welcome-text {
+            color: #495057;
+            font-size: 1.1rem;
+            margin-bottom: 0;
+        }
+        .page-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+        }
+        .pagination {
+            margin-top: 2rem;
+        }
+        .pagination .page-link {
+            color: #2c3e50;
+            border: none;
+            margin: 0 2px;
+            border-radius: 5px;
+        }
+        .pagination .page-item.active .page-link {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .pagination .page-link:hover {
+            background-color: #f8f9fa;
+            color: #2c3e50;
+        }
+        .btn-outline-primary {
+            color: #2c3e50;
+            border-color: #2c3e50;
+        }
+        .btn-outline-primary:hover {
+            background-color: #2c3e50;
+            color: white;
+        }
+        .card-title {
+            color: #2c3e50;
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        .card-text {
+            color: #6c757d;
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="container-fluid">
+            <div class="mt-3 d-flex justify-content-between align-items-center">
+                <div class="d-flex align-items-center">
+                    <img src="/images/dongah.gif" alt="로고" width="40" height="32" class="me-3">
+                    <h4 class="mt-0">동아지질 부동산물건관리 시스템</h4>
+                </div>
+                <div class="d-flex align-items-center">
+                    <span class="welcome-text me-3" th:text="${#authentication.principal.userName + '님 환영합니다.'}"></span>
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-outline-primary">로그아웃</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col col-12 col-md-6 col-lg-6" >
+                <h4 class="page-title" >계약서 목록</h4>
+            </div>
+            <div class="col-md-6">
+                <form id="search_form" method="get">
+                    <div class="input-group ">
+                        <input type="text" class="form-control" id="searchInput" name="search" placeholder="검색어를 입력하세요">
+                        <button class="btn btn-outline-primary" type="button" id="searchBtn">검색</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row" style="height:91%">
+            <div class="col col-12" id="grid"></div>
+        </div>
+    </div>
+
+
+<!--    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>-->
+<!--    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>-->
+    <script th:inline="javascript">
+
+        const grid = new Grid({
+          el: document.getElementById('grid'), // Container element
+          //data: dataSource,
+          bodyHeight: 'fitToParent',
+          rowHeight: 20,
+          rowHeaders: [
+            { type: 'rowNum', width: 30, align: 'right', valign: 'middle' },
+            {
+                type: 'checkbox',
+                header:
+                `<label for="all-checkbox" class="checkbox">
+                <input type="checkbox" id="all-checkbox" class="hidden-input" name="_checked" />
+                <span class="custom-input"></span>
+                </label>` ,
+                renderer: {
+                    type: CheckboxRenderer
+                }
+            }
+          ],
+          header:{
+              height: 50,
+              complexColumns: [
+              {
+                header: '고용허가기간',
+                name: 'mergeColumn1',
+                childNames: ['goyong_date1', 'goyong_date2']
+              }
+            ]
+          },
+          hideLoadingBar: false,
+          pageOptions: {
+            useClient: true,
+            type: 'scroll',
+            perPage: -1
+          },
+          columns: [
+            { header: '계약번호',name: 'seq',width: 70, align: 'center',sortable: true ,hidden: true},
+            { header: '결재번호',name: 'appr_seq',width: 70, align: 'center',sortable: true ,hidden: true},
+            { header: '결재상태',name: 'approval',width: 90, align: 'center',sortable: true
+                ,formatter: function (e) {
+                    return decode(e.value,'0','','1','승인요청','2','진행중','3','승인완료','4','반려','')
+                }
+            },
+            { header: '상세',name: 'detail',width: 70, align: 'center',sortable: false
+                ,formatter:function(e){
+                    return '<button class="btn btn-sm btn-dark"><i class="bi bi-file-text"></i></button>'
+                }
+            },
+            { header: '결재',name: 'confirm',width: 70, align: 'center',sortable: false
+                ,formatter:function(e){
+                    if(e.row.APPROVAL == 0){
+                        return '';
+                    }else{
+                        return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
+                    }
+                }
+            },
+            { header: '현장코드',name: 'proj_code',sortable: true, filter: 'text' , hidden: true},
+            { header: '현장명',name: 'proj_name',width: 250, sortable: true, filter:{type:'text'}},
+
+
+            { header: '주거형태',name: 'res_type',width: 80, align: 'center',sortable: true,hidden:false},
+            { header: '거래방식',name: 'trans_type',width: 80, align: 'center',sortable: true,hidden:false},
+            { header: '면적',name: 'area',width: 80, align: 'center',sortable: true,hidden:false},
+            { header: '사용인원',name: 'accu',width: 80, align: 'center',sortable: true,hidden:false},
+            { header: '부동산',name: 'source',width: 80, align: 'center',sortable: true,hidden:false
+
+            },
+            { header: '주소',name: 'address',width: 250, sortable: true, filter:{type:'text'}
+                ,formatter:function(e){
+                    return '<a href="#">'+e.value+'</a>'
+                }
+            },
+            { header: '주소(상세)',name: 'address_d',width: 250, sortable: true, filter:{type:'text'}},
+
+            { header: '계약(예정)일',name: 'cont_date',sortable: true ,width: 100, align: 'center', hidden: false,
+                 formatter: function (e) {
+                    return toStringByFormatting(e.value)
+                }
+            },
+            { header: '입주(예정)일',name: 'move_date',sortable: true ,width: 100, align: 'center', hidden: false,
+                formatter: function (e) {
+                    return toStringByFormatting(e.value)
+                }
+            },
+            { header: '계약금',name: 'cont_amt',width: 80, align: 'right',sortable: true,
+                formatter: function (e) {
+                    return ufn_comma(e.value)
+                }
+            },
+
+            { header: '보증금',name: 'deposit_amt',width: 100, align: 'right',sortable: true,
+                formatter: function (e) {
+                    return ufn_comma(e.value)
+                }
+            },
+
+            { header: '월세',name: 'rent_amt',width: 100, align: 'right',sortable: true,
+                formatter: function (e) {
+                    return ufn_comma(e.value)
+                }
+            },
+
+
+<!--            { header: '반려사유',name: 'reject',width: 80, align: 'center',sortable: true,hidden:true},-->
+
+<!--            { header: '기안자',name: 'f_emp_nm',width: 100, align: 'center', sortable: true},-->
+<!--            { header: '기안일',name: 'f_appr_dt',width: 100, align: 'center', sortable: true-->
+<!--                ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}-->
+<!--            },-->
+<!--            { header: '최종결재자',name: 'l_emp_nm',width: 100, align: 'center', sortable: true },-->
+<!--            { header: '최종결재일',name: 'l_appr_dt',width: 100, align: 'center', sortable: true ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}},-->
+<!--            { header: '결재완료일',name: 'e_appr_dt',width: 100, align: 'center', sortable: true ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}},-->
+<!--            { header: '경과일수',name: 'd_appr_dt',width: 100, align: 'center', sortable: true},-->
+
+          ],
+          columnOptions: {
+            resizable: true
+          }
+        });
+
+        grid.on('click',(ev)=>{
+            if (ev.targetType === 'cell' && ev.columnName === 'address') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+
+                openMap(row.address);
+            }
+            if (ev.targetType === 'cell' && ev.columnName === 'detail') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+
+                detailView(row.seq);
+            }
+
+            if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+                if(row.conf_stat == '0'){
+                    return false;
+                }else if(row.conf_stat == '4'){
+                   var vHtml = "";
+                   vHtml += "<h3 class='text-center text-danger'>반려사유</h3>";
+                   vHtml += "<p class='pt-2'>"+row.appr_remark+"</p>";
+                   MsgBox.Alert(vHtml);
+                   return false;
+                }else{
+                    confirmButtonClick(row.seq, row.appr_seq);
+                }
+            }
+
+            if (ev.targetType === 'cell' && ev.columnName === 'docu_file') {
+                const rowIndex = ev.rowKey;
+                const row = grid.getRow(rowIndex);
+                if(row.fn_tg == 'F'){
+                    return false;
+                }else{
+                    btnDocContractDown(row.seq);
+                }
+            }
+        });
+
+        $("#searchBtn").on("click",function(e){
+            G_load(grid,"/api/cont_list/2015051101","search_form");
+        });
+
+         function openMap(searchTxt){
+            var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+            window.open("https://map.naver.com/p/search/"+searchTxt, 'docu',options);
+        }
+
+        function detailView(seq){
+            var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+            window.open("/detail?seq="+seq, 'docu',options);
+        }
+
+        $(document).ready(function() {
+
+        });
+    </script>
+</body>
+</html> 

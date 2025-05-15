@@ -1,0 +1,340 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dage.rent.DAO.mysql.ContractDAO">
+    
+    <select id="getNextSeq" resultType="int">
+        SELECT COALESCE(MAX(seq), 0) + 1 FROM contract_m
+    </select>
+
+    <insert id="insertContractM" parameterType="com.dage.rent.DTO.ContractMDTO">
+        INSERT INTO contract_m (
+        SEQ,
+        EMP_NO,
+        USER_NM,
+        PROJ_CODE,
+        PROJ_NAME,
+        CRTDATE
+        ) VALUES (
+        #{seq},
+        #{empNo},
+        #{userNm},
+        #{projCode},
+        #{projName},
+        NOW()
+        )
+    </insert>
+
+    <insert id="insertContractD" parameterType="com.dage.rent.DTO.ContractDDTO">
+        INSERT INTO contract_d (
+        SEQ,
+        CONT_DATE,
+        MOVE_DATE,
+        CONT_AMT,
+        DEPOSIT_AMT,
+        RENT_AMT,
+        ADDRESS,
+        ADDRESS_D,
+        RES_TYPE,
+        TRANS_TYPE,
+        AREA,
+        CRTDATE,
+        ACCU,
+        SOURCE,
+        CHK_1,
+        CHK_2,
+        CHK_3,
+        CHK_4,
+        CHK_5
+        <if test="chkReason1 != null">, CHK_REASON_1</if>
+        <if test="chkReason2 != null">, CHK_REASON_2</if>
+        <if test="chkReason3 != null">, CHK_REASON_3</if>
+        <if test="chkReason4 != null">, CHK_REASON_4</if>
+        <if test="chkReason5 != null">, CHK_REASON_5</if>
+        ) VALUES (
+        #{seq},
+        #{contDate},
+        #{moveDate},
+        #{contAmt},
+        #{depositAmt},
+        #{rentAmt},
+        #{address},
+        #{addressD},
+        #{resType},
+        #{transType},
+        #{area},
+        NOW(),
+        #{accu},
+        #{source},
+        #{chk1},
+        #{chk2},
+        #{chk3},
+        #{chk4},
+        #{chk5}
+        <if test="chkReason1 != null">, #{chkReason1}</if>
+        <if test="chkReason2 != null">, #{chkReason2}</if>
+        <if test="chkReason3 != null">, #{chkReason3}</if>
+        <if test="chkReason4 != null">, #{chkReason4}</if>
+        <if test="chkReason5 != null">, #{chkReason5}</if>
+        )
+    </insert>
+
+    <select id="getContractDetail" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT
+        m.seq,
+        m.emp_no,
+        m.user_nm,
+        m.proj_code,
+        m.proj_name,
+        m.appr_no,
+        d.cont_date,
+        d.move_date,
+        d.cont_amt,
+        d.deposit_amt,
+        d.rent_amt,
+        d.address,
+        d.address_d,
+        d.res_type,
+        d.trans_type,
+        d.area,
+        d.crtdate,
+        d.accu,
+        d.source,
+        d.chk_1,
+        d.chk_2,
+        d.chk_3,
+        d.chk_4,
+        d.chk_5,
+        d.chk_reason_1,
+        d.chk_reason_2,
+        d.chk_reason_3,
+        d.chk_reason_4,
+        d.chk_reason_5
+        FROM contract_m m
+        , contract_d d
+        WHERE m.seq = d.seq
+        and m.seq = #{seq}
+    </select>
+
+    <select id="getContractDetailForAdmin" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT
+        m.seq,
+        m.emp_no,
+        m.user_nm,
+        m.proj_code,
+        m.proj_name,
+        m.appr_no,
+        d.cont_date,
+        d.move_date,
+        d.cont_amt,
+        d.deposit_amt,
+        d.rent_amt,
+        d.address,
+        d.address_d,
+        d.res_type,
+        d.trans_type,
+        d.area,
+        d.crtdate,
+        d.accu,
+        d.source,
+        d.chk_1,
+        d.chk_2,
+        d.chk_3,
+        d.chk_4,
+        d.chk_5,
+        d.chk_reason_1,
+        d.chk_reason_2,
+        d.chk_reason_3,
+        d.chk_reason_4,
+        d.chk_reason_5
+        FROM contract_m m
+        , contract_d d
+        , approval_m am
+        WHERE m.appr_no = (
+        SELECT appr_no
+        FROM contract_m
+        WHERE seq = #{seq}
+        )
+        AND am.appr_no = m.appr_no
+        AND d.seq = m.seq
+    </select>
+
+    <select id="getContracts" resultType="com.dage.rent.DTO.ContractMDTO">
+        SELECT
+        SEQ as seq,
+        EMP_NO as empNo,
+        USER_NM as userNm,
+        PROJ_CODE as projCode,
+        PROJ_NAME as projName,
+        CRTDATE as crtdate
+        FROM contract_m
+        <where>
+            <if test="empNo != null">
+                AND EMP_NO = #{empNo}
+            </if>
+            <if test="search != null and search != ''">
+                AND (
+                    PROJ_NAME LIKE CONCAT('%', #{search}, '%')
+                    OR USER_NM LIKE CONCAT('%', #{search}, '%')
+                )
+            </if>
+        </where>
+        ORDER BY SEQ DESC
+        LIMIT #{pageable.offset}, #{pageable.pageSize}
+    </select>
+
+    <select id="getContractList" resultType="com.dage.rent.DTO.ContractDTO">
+
+        SELECT
+        m.seq
+        ,m.emp_no
+        ,m.user_nm
+        ,m.proj_code
+        ,m.proj_name
+        ,m.appr_no
+        ,d.cont_date
+        ,d.move_date
+        ,d.cont_amt
+        ,d.deposit_amt
+        ,d.rent_amt
+        ,d.address
+        ,d.address_d
+        ,d.res_type
+        ,d.trans_type
+        ,d.area
+        ,d.crtdate
+        ,d.accu
+        ,d.source
+        ,d.chk_1
+        ,d.chk_2
+        ,d.chk_3
+        ,d.chk_4
+        ,d.chk_5
+        ,d.chk_reason_1
+        ,d.chk_reason_2
+        ,d.chk_reason_3
+        ,d.chk_reason_4
+        ,d.chk_reason_5
+        FROM contract_m m
+        , contract_d d
+        WHERE m.seq = d.seq
+        AND m.proj_code = #{proj_code}
+
+    </select>
+
+    <select id="countContracts" resultType="long">
+        SELECT COUNT(*)
+        FROM contract_m
+        <where>
+            <if test="empNo != null">
+                AND EMP_NO = #{empNo}
+            </if>
+            <if test="search != null and search != ''">
+                AND (
+                    PROJ_NAME LIKE CONCAT('%', #{search}, '%')
+                    OR USER_NM LIKE CONCAT('%', #{search}, '%')
+                )
+            </if>
+        </where>
+    </select>
+
+    <select id="getContractAddress" resultType="com.dage.rent.DTO.ContractDDTO">
+        SELECT
+        ADDRESS as address,
+        ADDRESS_D as addressD
+        FROM contract_d
+    </select>
+
+    <select id="getContractListForAppr" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT *
+        FROM (
+        SELECT
+        m.seq,
+        m.emp_no,
+        m.user_nm,
+        m.proj_code,
+        m.proj_name,
+        m.appr_no,
+        d.cont_date,
+        d.move_date,
+        d.cont_amt,
+        d.deposit_amt,
+        d.rent_amt,
+        d.address,
+        d.address_d,
+        d.res_type,
+        d.trans_type,
+        d.area,
+        d.crtdate,
+        d.accu,
+        d.source,
+        d.chk_1,
+        d.chk_2,
+        d.chk_3,
+        d.chk_4,
+        d.chk_5,
+        d.chk_reason_1,
+        d.chk_reason_2,
+        d.chk_reason_3,
+        d.chk_reason_4,
+        d.chk_reason_5,
+        ROW_NUMBER() OVER (PARTITION BY m.appr_no ORDER BY m.seq) AS rn
+        FROM contract_m m
+        , contract_d d
+        , approval_m a1
+        where m.seq = d.seq
+        AND m.appr_no = a1.appr_no
+        ) sub
+        WHERE rn = 1
+    </select>
+
+    <select id="getApprAllM" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT  appr_stat,
+                appr_emp_no,
+                appr_emp_nm,
+                appr_date,
+                appr_stat,
+                reject
+        FROM approval_m
+    </select>
+
+    <select id="getApprM" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT  appr_stat,
+        appr_emp_no,
+        appr_emp_nm,
+        appr_date,
+        appr_stat,
+        reject
+        FROM approval_m
+        WHERE appr_no = #{appr_no}
+    </select>
+
+    <update id="updateContract">
+        UPDATE contract_d
+        SET
+        cont_date = #{cont_date},
+        move_date = #{move_date},
+        cont_amt = #{cont_amt},
+        deposit_amt = #{deposit_amt},
+        rent_amt = #{rent_amt},
+        address = #{address},
+        address_d = #{address_d},
+        res_type = #{res_type},
+        trans_type = #{trans_type},
+        area = #{area},
+        crtdate = #{crtdate},
+        accu = #{accu},
+        source = #{source},
+        chk_1 = #{chk_1},
+        chk_2 = #{chk_2},
+        chk_3 = #{chk_3},
+        chk_4 = #{chk_4},
+        chk_5 = #{chk_5},
+        <if test="chk_reason_1 != null">chk_reason_1 = #{chk_reason_1},</if>
+        <if test="chk_reason_2 != null">chk_reason_2 = #{chk_reason_2},</if>
+        <if test="chk_reason_3 != null">chk_reason_3 = #{chk_reason_3},</if>
+        <if test="chk_reason_4 != null">chk_reason_4 = #{chk_reason_4},</if>
+        <if test="chk_reason_5 != null">chk_reason_5 = #{chk_reason_5}</if>
+        WHERE seq = #{seq};
+    </update>
+
+</mapper> 
