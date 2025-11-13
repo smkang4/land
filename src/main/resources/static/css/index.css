@@ -1,0 +1,356 @@
+/* Font Import */
+@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+
+/* Root Variables */
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --secondary-color: #64748b;
+    --success-color: #22c55e;
+    --danger-color: #ef4444;
+    --border-color: #e2e8f0;
+    --text-primary: #1e293b;
+    --text-secondary: #64748b;
+}
+
+
+/* Container */
+.container {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 2rem;
+}
+
+/* Main Content */
+main {
+    min-height: calc(100vh - 60px);
+}
+
+/* Section Title */
+.section-title {
+    color: var(--text-primary);
+    font-weight: 600;
+    margin-bottom: 1.5rem;
+    font-size: 1.5rem;
+    position: relative;
+    padding-bottom: 0.75rem;
+}
+
+.section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 50px;
+    height: 3px;
+    background-color: var(--primary-color);
+    border-radius: 2px;
+}
+
+/* Form Elements */
+.form-label {
+    font-weight: 500;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+}
+
+.form-control, .form-select {
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    padding: 0.75rem 1rem;
+    transition: all 0.2s ease;
+}
+
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Checklist Section */
+.checklist-section {
+    background: rgba(255, 255, 255, 0.6) !important;
+    border-radius: 16px !important;
+    padding: 2rem !important;
+    margin-bottom: 2rem !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1) !important;
+    border: 1px solid var(--border-color) !important;
+    height: 100% !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.list-group {
+    flex: 1 !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.list-group-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 1rem !important;
+    padding: 2rem 1.25rem !important;
+    background: var(--card-background) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 12px !important;
+    margin-bottom: 1rem !important;
+    transition: all 0.2s ease !important;
+}
+
+/* Row and Column */
+.row {
+    display: flex !important;
+    flex-wrap: wrap !important;
+}
+
+.col-lg-6 {
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+.list-group-item:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+.list-group-item h6 {
+    color: var(--text-primary);
+    margin-bottom: 0.25rem;
+}
+
+.list-group-item small {
+    color: var(--text-secondary);
+}
+
+/* Checkbox Styles */
+.form-check-input {
+    width: 1.25rem !important;
+    height: 1.25rem !important;
+    border: 2px solid var(--border-color) !important;
+    border-radius: 6px !important;
+    cursor: pointer !important;
+    transition: all 0.2s ease !important;
+}
+
+.form-check-input:checked {
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color) !important;
+}
+
+/* Button Styles */
+.btn {
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.btn-primary:hover {
+    background-color: var(--primary-hover);
+    border-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+.btn-action {
+    background-color: var(--primary-color);
+    color: white;
+    border: none;
+    padding: 0.5rem 1rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+}
+
+.btn-action:hover {
+    background-color: var(--primary-hover);
+    transform: translateY(-1px);
+}
+
+/* input-group 내부의 주소검색 버튼 radius 고정 */
+.input-group .btn-action {
+    border-radius: 6px !important;
+}
+
+/* File Upload Section */
+.file-upload-container {
+    background: var(--card-background) !important;
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-top: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.file-list .list-group-item {
+    background: var(--card-background) !important;
+    border: 1px solid var(--border-color);
+    margin-bottom: 0.5rem;
+}
+
+.file-info {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.file-icon {
+    font-size: 1.5rem;
+    color: var(--primary-color);
+}
+
+/* Submit Section */
+.submit-section {
+
+    margin-top: 1rem;
+    text-align: center;
+    justify-self: right;
+}
+
+.submit-section .btn {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+    width: 100%;
+    max-width: 300px;
+}
+
+/* Select2 Customization */
+.select2-container--default .select2-selection--single {
+    height: 45px !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__rendered {
+    line-height: 45px !important;
+    padding-left: 1rem !important;
+}
+
+.select2-container--default .select2-selection--single .select2-selection__arrow {
+    height: 43px !important;
+}
+
+.select2-dropdown {
+    border: 1px solid var(--border-color) !important;
+    border-radius: 8px !important;
+    box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1) !important;
+}
+
+.select2-container--default .select2-results__option--highlighted[aria-selected] {
+    background-color: var(--primary-color) !important;
+}
+
+/* Checklist Content */
+.checklist-content {
+    display: none !important;
+    margin-top: 12px !important;
+    padding: 16px !important;
+    background: var(--card-background) !important;
+    border-radius: 8px !important;
+    border: 1px solid var(--border-color) !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05) !important;
+    transition: all 0.3s ease !important;
+}
+
+.list-group-item input[type="checkbox"]:checked ~ .checklist-content {
+    display: block !important;
+    animation: slideDown 0.3s ease-out !important;
+}
+
+/* File Section */
+.file-section {
+    display: none;
+    background: var(--card-background);
+    border-radius: 12px;
+    padding: 1.5rem;
+    margin-bottom: 1rem;
+    border: 1px solid var(--border-color);
+}
+
+.file-section.show {
+    display: block !important;
+}
+
+/* Reason Section */
+[id^="reason_li_"] {
+    display: none !important;
+}
+
+[id^="reason_li_"]:not(.d-none) {
+    display: block !important;
+}
+
+/* Footer */
+footer {
+    padding: 1.5rem;
+    border-top: 1px solid var(--border-color);
+    margin-top: 3rem;
+}
+
+/* Modal */
+.modal-content {
+
+    border: 1px solid var(--border-color);
+}
+
+.modal-header {
+
+    border-bottom: 1px solid var(--border-color);
+}
+
+.modal-footer {
+
+    border-top: 1px solid var(--border-color);
+}
+
+
+
+/* Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--secondary-color);
+    border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: var(--primary-color);
+}
+
+/* Animations */
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .container {
+        padding: 1rem;
+    }
+    
+    .checklist-section {
+        padding: 1rem !important;
+    }
+    
+    .list-group-item {
+        padding: 0.75rem 1rem !important;
+    }
+    
+    .btn {
+        padding: 0.5rem 1rem;
+    }
+} 

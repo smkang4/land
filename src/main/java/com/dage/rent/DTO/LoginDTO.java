@@ -10,6 +10,7 @@ public class LoginDTO {
     private String userPassword;
     private String userName;
     private String deptCode;
+    private String headCode;
     private String useFlag;
     private String positionName;
     private int positionCode;

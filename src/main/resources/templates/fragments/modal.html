@@ -1,0 +1,30 @@
+<html lang="ko"
+      xmlns:th="http://www.thymeleaf.org"
+      xmlns:layout="http://www.ultraq.net.nz/thymeleaf/layout">
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>modal</title>
+</head>
+<body>
+    <div th:fragment="fragment-modal">
+        <div id="msg_popup" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" >
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content rounded-3 shadow">
+                    <div class="modal-body p-4 text-center">
+                        <h5 class="p-3" id="altr_title" >Enable this setting?</h5>
+                        <p class="mb-0" id="altr_sub_title">You can always change your mind in your account settings.</p>
+                    </div>
+                    <div class="modal-footer flex-nowrap p-0" id="btn_confirm">
+                        <button type="button" id="confirm_yes" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0 border-end" data-bs-dismiss=""><strong>Yes</strong></button>
+                        <button type="button" id="confirm_no" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0" data-bs-dismiss="">No</button>
+                    </div>
+                    <div class="modal-footer flex-nowrap p-0" id="btn_alert">
+                        <button type="button" id="alert_ok" class="btn btn-lg btn-link fs-6 text-decoration-none col-12 py-3 m-0 rounded-0 border-end" data-bs-dismiss=""><strong>Yes</strong></button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

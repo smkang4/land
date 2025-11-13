@@ -6,11 +6,47 @@
     <meta charset="UTF-8">
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <title>동아지질 부동산 관리 시스템</title>
+    
+    <script>
+        // 페이지 로드 시 공지사항 팝업 체크
+        document.addEventListener('DOMContentLoaded', function() {
+            checkNoticePopup();
+        });
+        
+        function checkNoticePopup() {
+            const today = new Date().toDateString();
+            const hideNotice = localStorage.getItem('hideNotice');
+            
+            // 오늘 날짜와 저장된 날짜가 다르거나, 저장된 값이 없으면 팝업 표시
+            if (hideNotice !== today) {
+                showNoticePopup();
+            }
+        }
+        
+        function showNoticePopup() {
+            const modal = new bootstrap.Modal(document.getElementById('noticeModal'));
+            modal.show();
+        }
+        
+        function hideNoticeForToday() {
+            const hideCheckbox = document.getElementById('hideNoticeToday');
+            
+            if (hideCheckbox.checked) {
+                const today = new Date().toDateString();
+                localStorage.setItem('hideNotice', today);
+            }
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('noticeModal'));
+            modal.hide();
+        }
+    </script>
 
     <style>
         :root {
@@ -22,195 +58,260 @@
             --border-color: #e9ecef;
         }
 
-        html, body {
-            height: 100%;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-            color: var(--text-color);
+        html {
+           height : 1%;
         }
+        footer {
+            padding: 1.5rem;
 
-        .main-header {
-            background-color: rgba(255, 255, 255, 0.95);
-            backdrop-filter: blur(10px);
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-            border-bottom: 1px solid rgba(0,0,0,0.05);
+            margin-top: 3rem;
         }
-
-        .header-content {
-            max-width: 1200px;
-            margin: 0 auto;
-            padding: 0.8rem 1rem;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-
-        .logo-container {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .logo {
-            height: 32px;
-            width: auto;
-        }
-
-        .header-title {
-            font-size: 1.1rem;
-            font-weight: 500;
-            color: var(--text-color);
-        }
-
-        .user-info {
-            display: flex;
-            align-items: center;
-            gap: 0.8rem;
-        }
-
-        .user-name {
-            font-weight: 500;
-            color: var(--text-color);
-            font-size: 0.95rem;
-        }
-
         .main-content {
             max-width: 1200px;
             margin: 1.5rem auto;
             padding: 0 1rem;
         }
 
-        .welcome-section {
-            background: white;
+                .welcome-section {
+            background: transparent;
             color: var(--text-color);
-            padding: 1.5rem;
-            border-radius: 10px;
-            margin-bottom: 2rem;
-            text-align: left;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: 1px solid rgba(0,0,0,0.05);
+            padding: 3rem 2rem;
+            text-align: center;
+            position: relative;
         }
 
         .welcome-section h1 {
-            font-size: 1.5rem;
-            font-weight: 600;
-            margin-bottom: 0.5rem;
-            color: rgba(13, 110, 253, 0.9);
+            font-size: 2rem;
+            font-weight: 700;
+            margin-top: 1rem;
+            margin-bottom: 1rem;
+            color: #1a73e8;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            opacity: 0;
+            transform: translateY(20px);
+            animation: titleSlideIn 1.5s ease-out forwards;
         }
 
-        .welcome-section p {
-            font-size: 1rem;
+        .welcome-section .welcome-subtitle {
+            font-size: 1.3rem;
+            font-weight: 500;
+            color: var(--text-color);
+            opacity: 0.9;
+        }
+
+        @keyframes titleSlideIn {
+            0% { 
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            100% { 
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .welcome-section .welcome-description {
+            font-size: 1.1rem;
             color: var(--text-color);
             opacity: 0.8;
             margin: 0;
+            line-height: 1.6;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .card-grid {
+        .menu-container {
+            display: flex;
+            flex-direction: column;
+            gap: 2rem;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            padding: 0 1rem;
+        }
+
+        .menu-section {
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .menu-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 1.5rem;
-            margin-top: 1rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
         }
 
-        .card {
-            background: white;
-            border: none;
-            border-radius: 15px;
-            box-shadow: 0 10px 20px rgba(0,0,0,0.1);
-            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        .menu-item {
+            display: flex;
+            align-items: center;
+            padding: 3rem 1.2rem;
+            background: rgba(248, 249, 250, 0.5);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(233, 236, 239, 0.3);
+            border-radius: 12px;
+            text-decoration: none;
+            color: #212529;
+            transition: all 0.3s ease;
+            position: relative;
             overflow: hidden;
         }
 
-        .card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(0,0,0,0.2);
+        .menu-item:hover {
+            background: rgba(255, 255, 255, 0.7);
+            transform: translateY(-3px) scale(1.02);
+            box-shadow: 0 8px 25px rgba(var(--menu-color-rgb), 0.1);
         }
 
-        .card-header {
-            background: linear-gradient(45deg, rgba(13, 110, 253, 0.9), rgba(10, 88, 202, 0.9));
+        .menu-item::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+           // background: linear-gradient(135deg, var(--menu-color), rgba(var(--menu-color-rgb), 0.7));
+            border-radius: 12px;
+            opacity: 0;
+            transition: all 0.4s ease;
+            transform: scale(0.8);
+        }
+
+        .menu-item:hover::before {
+            opacity: 0.1;
+            transform: scale(1);
+        }
+
+        .menu-icon {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            background: var(--menu-color);
             color: white;
-            padding: 1.5rem;
-            border: none;
+            font-size: 1.2rem;
+            margin-right: 1rem;
+            flex-shrink: 0;
         }
 
-        .card-header h4 {
-            margin: 0;
-            font-weight: 600;
+        .menu-text {
+            font-weight: 500;
+            font-size: 0.95rem;
+            line-height: 1.3;
         }
 
-        .card-body {
-            padding: 2rem;
+        /* 각 메뉴별 색상 */
+        .menu-blue {
+            --menu-color: #1a73e8;
+            --menu-color-rgb: 26, 115, 232;
         }
 
-        .card-body p {
-            color: var(--text-color);
-            margin: 0;
+        .menu-purple {
+            --menu-color: #7c3aed;
+            --menu-color-rgb: 124, 58, 237;
         }
 
-        .btn-logout {
-            background-color: transparent;
-            border: 2px solid var(--primary-color);
-            color: var(--primary-color);
-            padding: 0.5rem 1.5rem;
-            border-radius: 10px;
-            font-weight: 600;
-            transition: all 0.3s ease;
+        .menu-green {
+            --menu-color: #059669;
+            --menu-color-rgb: 5, 150, 105;
         }
 
-        .btn-logout:hover {
-            background: linear-gradient(45deg, var(--primary-color), var(--secondary-color));
-            color: white;
-            transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.3);
+        .menu-orange {
+            --menu-color: #ea580c;
+            --menu-color-rgb: 234, 88, 12;
         }
 
+        .menu-red {
+            --menu-color: #dc2626;
+            --menu-color-rgb: 220, 38, 38;
+        }
+
+        /* 반응형 디자인 */
         @media (max-width: 768px) {
-            .header-content {
-                flex-direction: row;
-                gap: 0.5rem;
-                padding: 0.5rem 1rem;
-            }
-
-            .logo-container {
-                flex: 1;
-                min-width: 0;
-            }
-
-            .header-title {
-                font-size: 1rem;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-            }
-
-            .user-info {
-                flex-shrink: 0;
-                gap: 0.5rem;
-            }
-
-            .user-name {
-                display: none;
-            }
-
-            .btn-logout {
-                padding: 0.3rem 0.8rem;
-                font-size: 0.9rem;
-            }
-
             .welcome-section {
-                padding: 1rem;
+                padding: 2.5rem 1.5rem;
+                margin-bottom: 1.5rem;
             }
 
             .welcome-section h1 {
+                font-size: 1.8rem;
+            }
+
+            .welcome-section .welcome-subtitle {
                 font-size: 1.2rem;
             }
 
-            .card-grid {
-                grid-template-columns: 1fr;
+            .welcome-section .welcome-description {
+                font-size: 1rem;
             }
+
+            .menu-container {
+                max-width: 100%;
+                margin: 1.5rem auto;
+            }
+
+            .menu-section {
+                padding: 1.5rem;
+            }
+
+            .menu-grid {
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 0.8rem;
+            }
+
+            .menu-item {
+                padding: 0.8rem 1rem;
+            }
+
+            .menu-icon {
+                width: 35px;
+                height: 35px;
+                font-size: 1.1rem;
+                margin-right: 0.8rem;
+            }
+
+            .menu-text {
+                font-size: 0.9rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .menu-section {
+                padding: 1rem;
+            }
+
+            .menu-grid {
+                grid-template-columns: 1fr;
+                gap: 0.6rem;
+            }
+
+            .menu-item {
+                padding: 0.7rem 0.8rem;
+            }
+
+            .menu-icon {
+                width: 32px;
+                height: 32px;
+                font-size: 1rem;
+                margin-right: 0.7rem;
+            }
+
+            .menu-text {
+                font-size: 0.85rem;
+            }
+        }
+        .page-header {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-fixed-width {
+            width: 200px !important;
+            margin: 5px;
         }
     </style>
 </head>
@@ -218,47 +319,109 @@
     <header class="main-header">
         <div class="header-content">
             <div class="logo-container">
-                <img class="logo" src="/images/dongah.gif" alt="로고">
-                <span class="header-title">동아지질 부동산 물건 관리 시스템</span>
+                <img src="/images/dongah.gif" alt="로고" class="logo">
+                <span class="header-title">부동산 임차관리 플랫폼</span>
             </div>
             <div class="user-info">
-                <span class="user-name" th:text="${#authentication.principal.userName}"></span>
-                <button type="button" class="btn-logout" data-bs-toggle="modal" data-bs-target="#logoutModal">로그아웃</button>
+                <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
+                <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
+                <form th:action="@{/logout}" method="post" class="d-inline">
+                    <button type="submit" class="btn btn-action">로그아웃</button>
+                </form>
             </div>
         </div>
     </header>
 
     <main class="main-content">
         <section class="welcome-section">
-            <h1>동아지질 부동산 물건 관리 시스템</h1>
-            <p><span th:text="${#authentication.principal.userName}"></span> 님의 부동산 물건관리 페이지 입니다.</p>
-            <p>부동산 물건요청서를 작성하거나 작성한 요청서를 조회할 수 있습니다.</p>
+            <h1>부동산 임차관리 플랫폼</h1>
+            <div class="welcome-subtitle">
+                <span th:text="${#authentication.principal.userName}"></span> 님 환영합니다
+            </div>
+<!--            <div class="welcome-description">-->
+<!--                부동산 임차관리 플랫폼에서는 부동산 사전조사서 작성, 결재 등을 수행할 수 있습니다.-->
+<!--            </div>-->
         </section>
 
-        <div class="card-grid">
-            <a href="/request" style="text-decoration: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>부동산 사전조사서 작성</h4>
-                    </div>
-                    <div class="card-body">
-                        <p>부동산 물건 사전조사서를 작성해주세요</p>
-                    </div>
+        <div class="menu-container">
+            <div class="menu-section">
+                <div class="menu-grid">
+                    <a href="/request" class="menu-item menu-blue">
+                        <div class="menu-icon">
+                            <i class="bi bi-house-door"></i>
+                        </div>
+                        <div class="menu-text">부동산 물건<br>사전조사서 작성</div>
+                    </a>
+                    <a href="/list" class="menu-item menu-purple">
+                        <div class="menu-icon">
+                            <i class="bi bi-clipboard-check"></i>
+                        </div>
+                        <div class="menu-text">작성 조사서<br>확인 및 요청</div>
+                    </a>
+                    <a href="/appr_list" class="menu-item menu-green">
+                        <div class="menu-icon">
+                            <i class="bi bi-inbox"></i>
+                        </div>
+                        <div class="menu-text">결재함</div>
+                    </a>
+                    <a href="/draft_list" class="menu-item menu-red" >
+                        <div class="menu-icon">
+                            <i class="bi bi-file-earmark-plus"></i>
+                        </div>
+                        <div class="menu-text">기안서 작성 및 관리</div>
+                    </a>
                 </div>
-            </a>
+            </div>
 
-            <a href="/list" style="text-decoration: none;">
-                <div class="card">
-                    <div class="card-header">
-                        <h4>사전조사서 조회</h4>
+            <div class="menu-section" th:if="${admin == 'Y'}">
+                 <div class="menu-grid">
+                    <a href="/admin" class="menu-item menu-orange">
+                        <div class="menu-icon">
+                            <i class="bi bi-person-gear"></i>
+                        </div>
+                        <div class="menu-text">관리자</div>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+    </main>
+
+    <!-- 공지사항 모달 -->
+    <div class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+        <script>
+            // 모달이 닫힐 때 체크박스 초기화
+            document.getElementById('noticeModal').addEventListener('hidden.bs.modal', function () {
+                document.getElementById('hideNoticeToday').checked = false;
+            });
+        </script>
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="noticeModalLabel">
+                        <i class="bi bi-megaphone me-2"></i>공지사항
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-3">
+                    <img src="/images/notice.jpg" alt="공지사항" class="img-fluid rounded shadow" style="max-width: 85%;">
+                </div>
+                <div class="modal-footer flex-column align-items-stretch">
+                    <div class="form-check mb-3 text-start">
+                        <input class="form-check-input" type="checkbox" id="hideNoticeToday">
+                        <label class="form-check-label" for="hideNoticeToday">
+                            오늘은 더 이상 보지 않기
+                        </label>
                     </div>
-                    <div class="card-body">
-                        <p>작성했던 사전조사서를 조회해주세요</p>
+                    <div class="d-grid gap-2 w-100">
+                        <button type="button" class="btn btn-primary" onclick="hideNoticeForToday()">
+                            <i class="bi bi-check-circle me-2"></i>확인
+                        </button>
                     </div>
                 </div>
-            </a>
+            </div>
         </div>
-    </main>
+    </div>
 
     <footer class="my-5 pt-5 text-muted text-center text-small">
         <small class="mb-1">©2025. Dong-Ah Geological Engineering Company Ltd. All Rights Reserved.</small>
@@ -273,7 +436,7 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
                 </div>
                 <div class="modal-body">
-                    로그아웃 하시겠습니까?
+                    로그아웃하시겠습니까?
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>

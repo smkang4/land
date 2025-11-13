@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>임대차 계약 기안서</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+    <style>
+        @media print {
+            body {
+                margin: 0;
+                padding: 0;
+            }
+            .no-print {
+                display: none !important;
+            }
+            .a4-page {
+                box-shadow: none !important;
+                margin: 0 !important;
+                page-break-after: always;
+            }
+        }
+
+      html {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+        }
+
+        body {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%) !important;
+            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
+            min-height: 100vh;
+        }
+
+        .a4-page {
+            width: 210mm;
+            min-height: 260mm;
+            margin: 20px auto;
+            background: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            padding: 15mm;
+            box-sizing: border-box;
+        }
+
+        .document-header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #333;
+            padding-bottom: 15px;
+        }
+
+        .document-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 8px;
+            color: #1a1a1a;
+        }
+
+        .document-subtitle {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+
+        .section {
+            margin-bottom: 25px;
+        }
+
+        .section-title {
+            font-size: 14px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            color: #1a1a1a;
+        }
+
+        .info-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+
+        .info-label {
+            font-weight: 600;
+            min-width: 70px;
+            margin-right: 8px;
+            color: #1a1a1a;
+            font-size: 12px;
+        }
+
+        .info-value {
+            flex: 1;
+            padding: 8px 12px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            background: #f8f9fa;
+            font-size: 12px;
+            color: #2c3e50;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        .text-area {
+            width: 100%;
+            min-height: 60px;
+            padding: 12px;
+            border: 1px solid #e1e5e9;
+            border-radius: 4px;
+            background: #f8f9fa;
+            resize: vertical;
+            font-size: 12px;
+            color: #2c3e50;
+            line-height: 1.6;
+        }
+
+        .attachment-section {
+            margin-top: 20px;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+        }
+
+        .attachment-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 8px 10px;
+            border: 1px solid #e1e5e9;
+            border-radius: 6px;
+            background: #ffffff;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .attachment-info {
+            display: flex;
+            align-items: center;
+            flex: 1;
+        }
+
+        .attachment-icon {
+            width: 18px;
+            height: 18px;
+            margin-right: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 3px;
+            font-size: 10px;
+        }
+
+        .attachment-icon.pdf {
+            background: #dc3545;
+            color: white;
+        }
+
+        .attachment-icon.image {
+            background: #28a745;
+            color: white;
+        }
+
+        .attachment-icon.doc {
+            background: #007bff;
+            color: white;
+        }
+
+        .attachment-icon.excel {
+            background: #17a2b8;
+            color: white;
+        }
+
+        .attachment-details {
+            flex: 1;
+        }
+
+        .attachment-name {
+            font-weight: 600;
+            font-size: 11px;
+            color: #1a1a1a;
+            margin-bottom: 1px;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .attachment-meta {
+            font-size: 10px;
+            color: #6c757d;
+        }
+
+        .attachment-size {
+            font-size: 10px;
+            color: #6c757d;
+            margin-left: 8px;
+        }
+
+        .print-button {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        @media (max-width: 768px) {
+            .a4-page {
+                width: 100%;
+                height: auto;
+                margin: 10px;
+                padding: 15px;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .attachment-section {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+
+
+    <!-- 인쇄 버튼 -->
+    <div class="print-button no-print">
+        <button type="button" class="btn btn-primary" onclick="window.print()">
+            <i class="bi bi-printer"></i> 인쇄
+        </button>
+    </div>
+
+    <!-- A4 문서 -->
+    <div class="a4-page">
+        <!-- 문서 헤더 -->
+        <div class="document-header">
+            <div class="document-title">임대차 계약 기안서</div>
+            <div class="document-subtitle">Dong-Ah Geological Engineering Company Ltd.</div>
+        </div>
+
+        <!-- 기안 정보 -->
+        <div class="section">
+            <div class="section-title">1. 기안 정보</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">기안일자:</span>
+                    <span class="info-value" id="draftDate-display">2024년 1월 15일</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">기안자:</span>
+                    <span class="info-value" id="drafter-display">홍길동 (총무팀)</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">현장명:</span>
+                    <span class="info-value" id="projectName-display">강남사무실</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 계약 기본 정보 -->
+        <div class="section">
+            <div class="section-title">2. 계약 기본 정보</div>
+            <div class="info-grid">
+                <div class="info-item">
+                    <span class="info-label">용도:</span>
+                    <span class="info-value" id="purpose-display">사무실</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">부동산 소재지:</span>
+                    <span class="info-value" id="location-display">서울시 강남구</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">면적:</span>
+                    <span class="info-value" id="area-display">50㎡</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">계약기간:</span>
+                    <span class="info-value" id="contractPeriod-display">2024.01.01~2024.12.31</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">보증금:</span>
+                    <span class="info-value" id="deposit-display">5,000만원</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">월세:</span>
+                    <span class="info-value" id="monthlyRent-display">100만원</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">전세권설정:</span>
+                    <span class="info-value" id="mortgageSetting-display">있음</span>
+                </div>
+                <div class="info-item">
+                    <span class="info-label">사용인원:</span>
+                    <span class="info-value" id="userCount-display">5명</span>
+                </div>
+                <div class="info-item full-width">
+                    <span class="info-label">중개수수료:</span>
+                    <span class="info-value" id="brokerageFee-display">200만원</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- 계약 사유 -->
+        <div class="section">
+            <div class="section-title">3. 임대차 계약 사유</div>
+            <div class="text-area" id="contractReason-display">
+                현재 사무실 공간이 부족하여 추가 임대가 필요합니다. 
+                신규 프로젝트 진행을 위한 팀원 확장으로 인한 공간 확보가 시급한 상황입니다.
+            </div>
+        </div>
+
+        <!-- 특이사항 -->
+        <div class="section">
+            <div class="section-title">4. 계약상 특이사항</div>
+            <div class="text-area" id="specialTerms-display">
+                • 계약 기간 중 시설물 수리 및 보수는 임차인이 부담합니다.
+                • 월세는 매월 1일에 납부하며, 연체 시 연체이자를 부과합니다.
+                • 임대차 계약 갱신 시 임차인에게 우선권을 부여합니다.
+            </div>
+        </div>
+
+        <!-- 첨부파일 -->
+        <div class="section">
+            <div class="section-title">5. 첨부파일</div>
+            <div class="attachment-section">
+                <div class="attachment-item">
+                    <div class="attachment-info">
+                        <div class="attachment-icon pdf">PDF</div>
+                        <div class="attachment-details">
+                            <div class="attachment-name">임대차계약서_강남사무실.pdf</div>
+                            <div class="attachment-meta">2024.01.15 업로드</div>
+                        </div>
+                    </div>
+                    <div class="attachment-size">2.3MB</div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-info">
+                        <div class="attachment-icon image">IMG</div>
+                        <div class="attachment-details">
+                            <div class="attachment-name">사무실_내부사진_01.jpg</div>
+                            <div class="attachment-meta">2024.01.15 업로드</div>
+                        </div>
+                    </div>
+                    <div class="attachment-size">1.8MB</div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-info">
+                        <div class="attachment-icon image">IMG</div>
+                        <div class="attachment-details">
+                            <div class="attachment-name">사무실_내부사진_02.jpg</div>
+                            <div class="attachment-meta">2024.01.15 업로드</div>
+                        </div>
+                    </div>
+                    <div class="attachment-size">2.1MB</div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-info">
+                        <div class="attachment-icon excel">XLS</div>
+                        <div class="attachment-details">
+                            <div class="attachment-name">이체내역서_20240115.xlsx</div>
+                            <div class="attachment-meta">2024.01.15 업로드</div>
+                        </div>
+                    </div>
+                    <div class="attachment-size">0.5MB</div>
+                </div>
+                <div class="attachment-item">
+                    <div class="attachment-info">
+                        <div class="attachment-icon pdf">PDF</div>
+                        <div class="attachment-details">
+                            <div class="attachment-name">중개수수료_영수증.pdf</div>
+                            <div class="attachment-meta">2024.01.15 업로드</div>
+                        </div>
+                    </div>
+                    <div class="attachment-size">0.8MB</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // URL 파라미터에서 데이터 가져오기
+        function getUrlParameter(name) {
+            name = name.replace(/[\[]/, '\\[').replace(/[\]]/, '\\]');
+            var regex = new RegExp('[\\?&]' + name + '=([^&#]*)');
+            var results = regex.exec(location.search);
+            return results === null ? '' : decodeURIComponent(results[1].replace(/\+/g, ' '));
+        }
+
+        // 페이지 로드 시 데이터 표시
+        document.addEventListener('DOMContentLoaded', function() {
+            // URL 파라미터에서 데이터 가져와서 표시
+            const purpose = getUrlParameter('purpose') || '사무실';
+            const location = getUrlParameter('location') || '서울시 강남구';
+            const area = getUrlParameter('area') || '50㎡';
+            const contractPeriod = getUrlParameter('contractPeriod') || '2024.01.01~2024.12.31';
+            const deposit = getUrlParameter('deposit') || '5,000만원';
+            const monthlyRent = getUrlParameter('monthlyRent') || '100만원';
+            const mortgageSetting = getUrlParameter('mortgageSetting') || '있음';
+            const userCount = getUrlParameter('userCount') || '5명';
+            const brokerageFee = getUrlParameter('brokerageFee') || '200만원';
+            const contractReason = getUrlParameter('contractReason') || '현재 사무실 공간이 부족하여 추가 임대가 필요합니다.';
+            const specialTerms = getUrlParameter('specialTerms') || '계약 기간 중 시설물 수리 및 보수는 임차인이 부담합니다.';
+            const projectName = getUrlParameter('projectName') || '강남사무실';
+
+            // 데이터 표시
+            document.getElementById('purpose-display').textContent = purpose;
+            document.getElementById('location-display').textContent = location;
+            document.getElementById('area-display').textContent = area;
+            document.getElementById('contractPeriod-display').textContent = contractPeriod;
+            document.getElementById('deposit-display').textContent = deposit;
+            document.getElementById('monthlyRent-display').textContent = monthlyRent;
+            document.getElementById('mortgageSetting-display').textContent = mortgageSetting;
+            document.getElementById('userCount-display').textContent = userCount;
+            document.getElementById('brokerageFee-display').textContent = brokerageFee;
+            document.getElementById('contractReason-display').textContent = contractReason;
+            document.getElementById('specialTerms-display').textContent = specialTerms;
+            document.getElementById('projectName-display').textContent = projectName;
+
+            // 현재 날짜 표시
+            const today = new Date();
+            const dateString = today.getFullYear() + '년 ' + (today.getMonth() + 1) + '월 ' + today.getDate() + '일';
+            document.getElementById('draftDate-display').textContent = dateString;
+        });
+    </script>
+</body>
+</html> 

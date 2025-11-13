@@ -1,51 +1,59 @@
 var Grid = tui.Grid;
 Grid.setLanguage('ko'); // set Korean
-Grid.applyTheme('custom',{
-  selection: {
-    background: '#4daaf9',
-    border: '#004082'
-  },
-  scrollbar: {
-    background: '#f5f5f5',
-    thumb: '#d9d9d9',
-    active: '#c1c1c1'
-  },
-  row: {
-    even: {
-      //background: '#f3ffe3'
+Grid.applyTheme('custom', {
+    selection: {
+        background: 'rgba(25, 118, 210, 0.08)',
+        border: '#1976d2'
     },
-    hover: {
-      //background: 'yellow'
+    scrollbar: {
+        background: '#f5f5f5',
+        thumb: '#bdbdbd',
+        active: '#9e9e9e'
+    },
+    row: {
+        even: {
+            background: '#ffffff'
+        },
+        hover: {
+            background: '#f5f5f5'
+        }
+    },
+    cell: {
+        normal: {
+            background: '#ffffff',
+            border: 'rgba(0,0,0,0.08)',
+            showVerticalBorder: true,
+            text: '#333333'
+        },
+        header: {
+            background: '#ffffff',
+            border: 'rgba(0,0,0,0.08)',
+            showVerticalBorder: true,
+            text: '#1a1a1a'
+        },
+        rowHeader: {
+            border: 'rgba(0,0,0,0.08)',
+            showVerticalBorder: true,
+            text: '#757575'
+        },
+        editable: {
+            background: '#ffffff'
+        },
+        selectedHeader: {
+            background: 'rgba(25, 118, 210, 0.08)'
+        },
+        focused: {
+            border: '#1976d2'
+        },
+        disabled: {
+            text: '#9e9e9e'
+        }
+    },
+    pagination: {
+        background: '#ffffff',
+        border: 'rgba(0,0,0,0.08)',
+        text: '#424242'
     }
-  },
-  cell: {
-    normal: {
-      background: 'white',
-      border: '#e0e0e0',
-      showVerticalBorder: true
-    },
-    header: {
-      background: '#eee',
-      border: '#ccc',
-      showVerticalBorder: true
-    },
-    rowHeader: {
-      border: '#ccc',
-      showVerticalBorder: true
-    },
-    editable: {
-      background: '#fbfbfb'
-    },
-    selectedHeader: {
-      background: '#d8d8d8'
-    },
-    focused: {
-      border: '#418ed4'
-    },
-    disabled: {
-      text: '#b0b0b0'
-    }
-  }
 }); // Call API of static method
 
 function setDefaultFilterCondition(grid, columnName, condition = 'contain') {
@@ -61,16 +69,22 @@ $(document).ready(function(){
         setTimeout(() => {
             const filterInput = document.querySelector('.tui-grid-filter-input');
             if (filterInput) {
-              filterInput.focus();
-
-              filterInput.addEventListener('keydown', function(e) {
-                  if (e.key === "Enter") {
-                    // 엔터 키를 누르면 필터를 적용하고 팝업을 닫기
-                    const closeButton = document.querySelector('.tui-grid-btn-close');
-                    if (closeButton) {
-                      closeButton.click();
+                filterInput.focus();
+                
+                // 필터 입력 필드 스타일 개선
+                filterInput.style.transition = 'all 0.2s ease';
+                filterInput.style.border = '1px solid rgba(0,0,0,0.12)';
+                filterInput.style.borderRadius = '4px';
+                filterInput.style.padding = '8px';
+                filterInput.style.fontSize = '0.875rem';
+                
+                filterInput.addEventListener('keydown', function(e) {
+                    if (e.key === "Enter") {
+                        const closeButton = document.querySelector('.tui-grid-btn-close');
+                        if (closeButton) {
+                            closeButton.click();
+                        }
                     }
-                  }
                 });
             }
         }, 100);

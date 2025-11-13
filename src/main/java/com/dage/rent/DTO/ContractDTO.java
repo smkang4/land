@@ -11,6 +11,7 @@ public class ContractDTO {
     private String proj_name;
     private String appr_no;
     private String cont_date;
+    private String cont_period; // DB와 통일
     private String move_date;
     private String cont_amt;
     private String deposit_amt;
@@ -33,4 +34,35 @@ public class ContractDTO {
     private String chk_reason_3;
     private String chk_reason_4;
     private String chk_reason_5;
+    private String appr_stat;
+    private String reject;
+    private String real_estate_files;
+    private String credit_files;
+    private String accu_type; // DB와 통일
+    private String rewrite;
+    private String post_code;
+    
+    // 계약 상세 정보 필드 추가
+    private String lessor;        // 임대사업자
+    private String lessorName;     // 임대사업자명
+    private String lessorAccount;  // 임대인 계좌번호
+    private String lessorBank;     // 임대인 은행
+    private String existingCustCode; // 기존 거래처 코드
+    private String custCode;      // 오라클 고객 코드
+    private String paymentDate;   // 지급일
+    private String rsrcCode;      // 자원 코드 (원룸/오피스텔/아파트 구분)
+
+    private String d_seq;
+    private String appr_num;
+    private String appr_date;
+    private String appr_emp_no;
+    private String appr_emp_nm;
+    private String appr_position;
+    private String first_appr_emp_nm;
+    private String first_appr_date;
+    private String next_appr_emp_nm;
+    private String last_appr_emp_nm;
+    private String last_appr_date;
+    private String temp_flag;
+
 }

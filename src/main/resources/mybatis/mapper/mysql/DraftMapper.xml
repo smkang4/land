@@ -1,0 +1,205 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dage.rent.DAO.mysql.DraftDAO">
+
+    <!-- 기안서 저장 -->
+    <insert id="saveDraft" parameterType="com.dage.rent.DTO.DraftDTO" useGeneratedKeys="true" keyProperty="id">
+        INSERT INTO draft (
+            emp_no, user_nm, proj_code, proj_name, gw_code,
+            rent_reason, rent_source,
+            execution_budget,
+            created_date, updated_date
+        ) VALUES (
+            #{emp_no}, #{user_nm}, #{proj_code}, #{proj_name}, #{gw_code},
+            #{rent_reason}, #{rent_source},
+            #{execution_budget},
+            NOW(), NOW()
+        )
+    </insert>
+
+    <!-- 계약내용 상세 저장 -->
+    <insert id="saveContractDetail" parameterType="com.dage.rent.DTO.DraftDTO$ContractDetailDTO">
+        INSERT INTO draft_contract_detail (
+            draft_id, appr_no, row_no, type, address, address_d, post_code, rsrc_code, area,
+            cont_date_s, cont_date_e, chk_3, accu,
+            deposit_amt, rent_amt, cont_amt, bigo,
+            payment_date, lessor, lessor_name, lessor_account, lessor_bank
+            <if test="custCode != null and custCode != ''">, cust_code</if>,
+            created_date
+        ) VALUES (
+            #{draftId}, #{appr_no}, #{rowNo}, #{type}, #{address}, #{addressD}, #{postCode}, #{rsrcCode}, #{area},
+            #{contDate_s}, #{contDate_e}, #{chk_3}, #{accu},
+            #{depositAmt}, #{rentAmt}, #{contAmt}, #{bigo},
+            #{paymentDate}, #{lessor}, #{lessorName}, #{lessorAccount}, #{lessorBank}
+            <if test="custCode != null and custCode != ''">, #{custCode}</if>,
+            NOW()
+        )
+    </insert>
+
+    <!-- 기안 미작성 목록 조회 (mst_seq가 없거나 결재문서가 생성되지 않은 경우) -->
+    <select id="getDraftPendingList" parameterType="String" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.gw_code, d.mst_seq,
+            d.rent_reason, d.rent_source, d.execution_budget,
+            d.erp_reg, d.cust_reg_attempted,
+            d.created_date, d.updated_date
+        FROM draft d
+        WHERE (d.mst_seq IS NULL OR d.mst_seq = '')
+        AND d.emp_no = #{user_no}
+        ORDER BY d.created_date DESC
+    </select>
+
+    <!-- 기안 미완료 목록 조회 (업로드 필요: conf_status = 00, 40, 99) -->
+    <select id="getDraftIncompleteList" parameterType="String" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.gw_code, d.mst_seq,
+            d.rent_reason, d.rent_source, d.execution_budget,
+            d.erp_reg, d.cust_reg_attempted,
+            d.created_date, d.updated_date
+        FROM draft d
+        WHERE d.mst_seq IS NOT NULL 
+        AND d.mst_seq != ''
+        AND d.emp_no = #{user_no}
+        ORDER BY d.updated_date DESC
+    </select>
+
+    <!-- 기안완료 목록 조회 (결재 진행/완료: conf_status = 10, 20, 30) -->
+    <select id="getDraftCompletedList" parameterType="String" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.gw_code, d.mst_seq,
+            d.rent_reason, d.rent_source, d.execution_budget,
+            d.erp_reg, d.cust_reg_attempted,
+            d.created_date, d.updated_date
+        FROM draft d
+        WHERE d.mst_seq IS NOT NULL 
+        AND d.mst_seq != ''
+        AND d.emp_no = #{user_no}
+        ORDER BY d.updated_date DESC
+    </select>
+
+    <!-- 기안서 조회 -->
+    <select id="getDraftById" parameterType="int" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.gw_code, d.mst_seq,
+            d.rent_reason, d.rent_source,
+            d.execution_budget, d.cust_reg_attempted,
+            d.created_date, d.updated_date
+        FROM draft d
+        WHERE d.id = #{id}
+    </select>
+
+    <!-- 승인번호로 기안서 조회 -->
+    <select id="getDraftByApprNo" parameterType="int" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.gw_code, d.mst_seq,
+            d.rent_reason, d.rent_source,
+            d.execution_budget, d.cust_reg_attempted,
+            d.created_date, d.updated_date
+        FROM draft d
+        JOIN draft_contract_detail dcd ON d.id = dcd.draft_id
+        WHERE dcd.appr_no = #{appr_no}
+        LIMIT 1
+    </select>
+
+    <!-- mstSeq로 기안서 조회 -->
+    <select id="getDraftByMstSeq" parameterType="string" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            id, emp_no, user_nm, proj_code, proj_name, gw_code, mst_seq,
+            rent_reason, rent_source,
+            execution_budget, cust_reg_attempted,
+            created_date, updated_date
+        FROM draft 
+        WHERE mst_seq = #{mst_seq}
+        ORDER BY created_date DESC
+        LIMIT 1
+    </select>
+
+    <!-- 계약내용 상세 조회 -->
+    <select id="getContractDetailsByDraftId" parameterType="int" resultType="com.dage.rent.DTO.DraftDTO$ContractDetailDTO">
+        SELECT 
+            id, draft_id as draftId, appr_no, row_no as rowNo, type, address, address_d as addressD, post_code as postCode, rsrc_code as rsrcCode, area,
+            cont_date_s as contDate_s, cont_date_e as contDate_e, chk_3 as chk_3, accu,
+            deposit_amt as depositAmt, rent_amt as rentAmt, cont_amt as contAmt, bigo,
+            payment_date as paymentDate, lessor, lessor_name as lessorName, lessor_account as lessorAccount, lessor_bank as lessorBank, cust_code as custCode,
+            created_date
+        FROM draft_contract_detail 
+        WHERE draft_id = #{draftId}
+        ORDER BY row_no
+    </select>
+
+    <!-- 기안서 목록 조회 -->
+    <select id="getDraftList" parameterType="map" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.gw_code, d.mst_seq,
+            d.rent_reason, d.rent_source,
+            d.execution_budget, d.cust_reg_attempted,
+            d.created_date, d.updated_date
+        FROM draft d
+        WHERE 1=1
+        <if test="emp_no != null">
+            AND d.emp_no = #{emp_no}
+        </if>
+        <if test="proj_code != null and proj_code != ''">
+            AND d.proj_code = #{proj_code}
+        </if>
+        ORDER BY d.created_date DESC
+    </select>
+
+    <!-- 기안서 수정 -->
+    <update id="updateDraft" parameterType="com.dage.rent.DTO.DraftDTO">
+        UPDATE draft SET
+            gw_code = #{gw_code},
+            rent_reason = #{rent_reason},
+            rent_source = #{rent_source},
+            execution_budget = #{execution_budget},
+            updated_date = NOW()
+        WHERE id = #{id}
+    </update>
+
+    <!-- 계약내용 상세 삭제 -->
+    <delete id="deleteContractDetailsByDraftId" parameterType="int">
+        DELETE FROM draft_contract_detail WHERE draft_id = #{draftId}
+    </delete>
+
+    <!-- 기안서 삭제 -->
+    <delete id="deleteDraft" parameterType="int">
+        DELETE FROM draft WHERE id = #{id}
+    </delete>
+    
+    <!-- draftId로 custCode 조회 -->
+    <select id="getCustCodeByDraftId" parameterType="string" resultType="string">
+        SELECT dcd.cust_code 
+        FROM draft d
+        INNER JOIN draft_contract_detail dcd ON d.id = dcd.draft_id
+        WHERE d.mst_seq = #{draftId} 
+        LIMIT 1
+    </select>
+    
+    <!-- Long 타입으로 드래프트 조회 (기본 정보만) -->
+    <select id="getDraftByIdLong" parameterType="long" resultType="com.dage.rent.DTO.DraftDTO">
+        SELECT 
+            d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.gw_code, d.mst_seq,
+            d.rent_reason, d.rent_source,
+            d.execution_budget, d.cust_reg_attempted,
+            d.created_date, d.updated_date
+        FROM draft d
+        WHERE d.id = #{id}
+        LIMIT 1
+    </select>
+    
+    <!-- ERP 등록 상태 업데이트 -->
+    <update id="updateErpRegStatus">
+        UPDATE draft 
+        SET erp_reg = #{erpReg}
+        WHERE id = #{draftId}
+    </update>
+    
+    <!-- mst_seq 업데이트 (업로드 시점에만 생성) -->
+    <update id="updateDraftMstSeq" parameterType="map">
+        UPDATE draft 
+        SET mst_seq = #{mst_seq},
+            updated_date = NOW()
+        WHERE id = #{id}
+    </update>
+
+</mapper> 

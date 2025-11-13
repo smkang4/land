@@ -5,6 +5,7 @@ import com.dage.rent.DTO.ApprovalDTO;
 import com.dage.rent.DTO.ContractDDTO;
 import com.dage.rent.DTO.ContractDTO;
 import com.dage.rent.DTO.ContractMDTO;
+import org.apache.ibatis.annotations.Param;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
@@ -13,6 +14,7 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -70,13 +72,64 @@ public class ContractService {
     }
 
     @Transactional("mysqlTransactionManager")
-    public List<ContractDTO> getContractList(String proj_code) {
-        return contractDAO.getContractList(proj_code);
+    public int insertRewrite(ContractDTO requestData) {
+
+        System.out.println(" insertRewrite ");
+        int seq = contractDAO.getNextSeq();
+        LocalDateTime now = LocalDateTime.now();
+        DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
+
+        ContractMDTO contractM = new ContractMDTO();
+        contractM.setSeq(seq);
+        contractM.setEmpNo(Integer.parseInt(requestData.getEmp_no()));
+        contractM.setUserNm((String) requestData.getUser_nm());
+        contractM.setProjCode(Integer.parseInt(requestData.getProj_code()));
+        contractM.setProjName((String) requestData.getProj_name());
+        contractM.setCrtdate(now);
+        contractM.setTemp_flag("N");
+        contractDAO.insertContractM(contractM);
+
+        ContractDDTO contractD = new ContractDDTO();
+        contractD.setSeq(seq);
+        contractD.setContDate(LocalDate.parse((String) requestData.getCont_date(), dateFormatter));
+        contractD.setMoveDate(LocalDate.parse((String) requestData.getMove_date(), dateFormatter));
+        contractD.setDepositAmt(Integer.parseInt(requestData.getDeposit_amt()));
+        contractD.setRentAmt(Integer.parseInt(requestData.getRent_amt()));
+        contractD.setCont_period((String) requestData.getCont_period());
+        contractD.setAddress((String) requestData.getAddress());
+        contractD.setAddressD((String) requestData.getAddress_d());
+        contractD.setResType((String) requestData.getRes_type());
+        contractD.setTransType((String) requestData.getTrans_type());
+        contractD.setArea(Integer.parseInt(requestData.getArea()));
+        contractD.setCrtdate(now);
+        contractD.setAccu(Integer.parseInt(requestData.getAccu()));
+        contractD.setAccu_type(requestData.getAccu_type());
+        contractD.setChk1((String) requestData.getChk_1());
+        contractD.setChk2((String) requestData.getChk_2());
+        contractD.setChk3((String) requestData.getChk_3());
+        contractD.setChk4((String) requestData.getChk_4());
+        contractD.setChk5((String) requestData.getChk_5());
+        contractD.setChkReason1((String) requestData.getChk_reason_1());
+        contractD.setChkReason2((String) requestData.getChk_reason_2());
+        contractD.setChkReason3((String) requestData.getChk_reason_3());
+        contractD.setChkReason4((String) requestData.getChk_reason_4());
+        contractD.setChkReason5((String) requestData.getChk_reason_5());
+        contractD.setRealEstateFiles((String) requestData.getReal_estate_files());
+        contractD.setCreditFiles((String) requestData.getCredit_files());
+        contractDAO.insertContractD(contractD);
+
+        return seq;
+    }
+
+
+    @Transactional("mysqlTransactionManager")
+    public List<ContractDTO> getContractList(HashMap<String, Object> map) {
+        return contractDAO.getContractList(map);
     }
 
     @Transactional("mysqlTransactionManager")
-    public List<ContractDTO> getContractListForAppr() {
-        return contractDAO.getContractListForAppr();
+    public List<ContractDTO> getContractListForAppr(HashMap<String,Object> map) {
+        return contractDAO.getContractListForAppr(map);
     }
 
     @Transactional("mysqlTransactionManager")
@@ -93,11 +146,46 @@ public class ContractService {
     public List<ContractDTO> getContractDetailForAdmin(Integer seq) {
         return contractDAO.getContractDetailForAdmin(seq);
     }
+    @Transactional("mysqlTransactionManager")
+    public List<ContractDTO> getContractDetailForList(Integer appr_no) {
+        return contractDAO.getContractDetailForList(appr_no);
+    }
+
+    @Transactional("mysqlTransactionManager")
+    public List<ContractDTO> getContractDetailForReceipt() {
+        return contractDAO.getContractDetailForReceipt();
+    }
 
     @Transactional("mysqlTransactionManager")
     public ContractDTO getContractDetail(Integer seq) {
         return contractDAO.getContractDetail(seq);
     }
 
+    @Transactional("mysqlTransactionManager")
+    public ContractDTO getContractDetailForTemp(Integer user_no) {
+        return contractDAO.getContractDetailForTemp(user_no);
+    }
+
+    public void updateContractMasterApprNo(@Param("appr_no") int appr_no , @Param("seqList") List<String> sqlList){
+        contractDAO.updateContractMasterApprNo(appr_no, sqlList);
+    }
+
+    @Transactional("mysqlTransactionManager")
+    public void updateContractRewrite(Integer seq) {
+        contractDAO.updateContractRewrite(seq);
+    }
+
+    @Transactional("mysqlTransactionManager")
+    public void deleteContracts(List<Integer> seqList) {
+        // contract_d 테이블에서 삭제
+        contractDAO.deleteContractDetails(seqList);
+        // contract_m 테이블에서 삭제
+        contractDAO.deleteContractMasters(seqList);
+    }
+
+    @Transactional("mysqlTransactionManager")
+    public int getMaxDseq(int appr_no) {
+        return contractDAO.getMaxDseq(appr_no);
+    }
 
 }

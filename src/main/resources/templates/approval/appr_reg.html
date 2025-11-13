@@ -1,0 +1,1027 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <!-- Select2   -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link rel="stylesheet" th:href="@{/css/detail.css}">
+
+    <style>
+        input[type='date']{
+           text-align:center;
+        }
+        .dt{
+            font-size: 0.8em;
+        }
+        .checklist-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .checklist-item {
+            background: #fff;
+            border-radius: 6px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
+        }
+
+        .checklist-item:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .checklist-success {
+            border-left: 3px solid #198754;
+        }
+
+        .checklist-danger {
+            border-left: 3px solid #dc3545;
+        }
+
+        .checklist-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 0.75rem;
+        }
+
+        .checklist-icon {
+            font-size: 1.25rem;
+            line-height: 1;
+        }
+
+        .checklist-success .checklist-icon i {
+            color: #198754;
+        }
+
+        .checklist-danger .checklist-icon i {
+            color: #dc3545;
+        }
+
+        .checklist-title {
+            flex: 1;
+        }
+
+        .checklist-title h6 {
+            color: #212529;
+            font-weight: 500;
+            font-size: 0.9rem;
+            margin-bottom: 0.1rem;
+        }
+
+        .checklist-title small {
+            color: #6c757d;
+            font-size: 0.8rem;
+        }
+
+        .checklist-body {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .checklist-reason {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            color: #dc3545;
+            font-size: 0.8rem;
+        }
+
+        .checklist-reason i {
+            font-size: 0.9rem;
+        }
+
+        .reason-label {
+            font-weight: 600;
+            color: #dc3545;
+        }
+
+        .btn-action {
+            padding: 0.5rem 1.25rem;
+            font-weight: 500;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+            border: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-action:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+        .btn-action:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+
+        .btn-action i {
+            font-size: 1.1rem;
+        }
+
+        .btn-primary {
+            background-color: #0d6efd;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0b5ed7;
+        }
+
+        .btn-success {
+            background-color: #198754;
+            color: white;
+        }
+
+        .btn-success:hover {
+            background-color: #157347;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background-color: #bb2d3b;
+        }
+
+        .btn-secondary {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background-color: #5c636a;
+        }
+
+        .btn-outline-secondary {
+            background-color: transparent;
+            color: #6c757d;
+            border: 1px solid #6c757d;
+        }
+
+        .btn-outline-secondary:hover {
+            background-color: #6c757d;
+            color: white;
+        }
+
+        /* 결재취소 버튼 스타일 */
+        .btn-warning {
+            background-color: #6c757d;
+            color: white;
+            border: 1px solid #6c757d;
+        }
+
+        .btn-warning:hover {
+            background-color: #5c636a;
+            border-color: #5c636a;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
+        }
+
+        .btn-warning:active {
+            background-color: #495057;
+            border-color: #495057;
+            transform: translateY(0);
+        }
+
+        /* 결재취소 폼 스타일 */
+        #apprCancel {
+            background: #f8f9fa;
+            border: 1px solid #dee2e6;
+            border-radius: 12px;
+            padding: 20px;
+            margin-top: 15px;
+            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.1);
+        }
+
+        #apprCancel p {
+            color: #6c757d;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .action-panel {
+            background: #fff !important;
+            border-radius: 12px !important;
+            padding: 15px !important;
+            height: 100% !important;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
+        }
+
+        .form-control {
+            border-radius: 6px;
+            border: 1px solid #ced4da;
+            padding: 0.5rem 0.75rem;
+            transition: all 0.2s ease;
+        }
+
+        .form-control:focus {
+            border-color: #86b7fe;
+            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
+        }
+
+        .form-floating > .form-control {
+            padding: 1rem 0.75rem;
+        }
+
+        .form-floating > label {
+            padding: 1rem 0.75rem;
+        }
+
+        /* Custom Tooltip Styles */
+        .approval-card {
+            position: relative;
+            cursor: pointer;
+        }
+
+        .approval-card .tooltip-content {
+            visibility: hidden;
+            position: absolute;
+            z-index: 1000;
+            top: 110%;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #495057;
+            color: white;
+            text-align: center;
+            padding: 0.75rem 1rem;
+            border-radius: 6px;
+            font-size: 0.875rem;
+            white-space: normal;
+            min-width: 200px;
+            max-width: 400px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .approval-card .tooltip-content::after {
+            content: "";
+            position: absolute;
+            bottom: 100%;
+            left: 50%;
+            margin-left: -4px;
+            border-width: 4px;
+            border-style: solid;
+            border-color: transparent transparent #495057 transparent;
+        }
+
+        .approval-card:hover .tooltip-content {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .approval-card .tooltip-content.empty {
+            display: none;
+        }
+
+        .approval-card .tooltip-content .tooltip-header {
+            font-weight: 600;
+            margin-bottom: 0.25rem;
+            color: #fff;
+            font-size: 0.8rem;
+        }
+
+        .approval-card .tooltip-content .tooltip-body {
+            line-height: 1.4;
+            color: #e9ecef;
+            white-space: pre-wrap;
+        }
+
+        .approval-card .tooltip-content .no-memo {
+            font-style: italic;
+            color: #adb5bd;
+        }
+        /* 결재취소 Modal 스타일 */
+        #cancelModal .modal-header {
+            background: #f8f9fa;
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        #cancelModal .modal-title {
+            color: #495057;
+            font-weight: 600;
+        }
+
+        #cancelModal .modal-body {
+            padding: 2rem 1.5rem;
+        }
+
+        #cancelModal .modal-body p {
+            font-size: 1.1rem;
+            color: #495057;
+            margin-bottom: 0.5rem;
+        }
+
+        #cancelModal .modal-body small {
+            color: #6c757d;
+        }
+
+        #cancelModal .modal-footer {
+            border-top: 1px solid #dee2e6;
+            padding: 1rem 1.5rem;
+        }
+
+        /* 결재취소 모달 버튼 크기 통일 */
+        .modal-btn {
+            min-width: 120px;
+            padding: 0.5rem 1rem;
+        }
+
+        /* 결재취소 버튼 기본 스타일 (hover 상태 색상을 기본값으로) */
+        .btn-outline-warning {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #000 !important;
+        }
+
+        /* 결재취소 버튼 hover 효과 */
+        .btn-outline-warning:hover {
+            background-color: #ffc107 !important;
+            border-color: #ffc107 !important;
+            color: #000 !important;
+        }
+
+        /* 돌아가기 버튼 커스텀 스타일 */
+        .btn-custom-secondary {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: #fff !important;
+        }
+
+        .btn-custom-secondary:hover,
+        .btn-custom-secondary:focus,
+        .btn-custom-secondary:active {
+            background-color: #6c757d !important;
+            border-color: #6c757d !important;
+            color: #fff !important;
+            box-shadow: none !important;
+            transform: none !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container-fluid">
+        <hr>
+        <div class="row">
+            <div class="col col-auto" th:each="list, i : ${appr_list}">
+                <div class="card text-center w-20 approval-card" style="min-width:120px;" 
+                     th:attr="data-remarks=${list.appr_remarks}">
+                    <div class="tooltip-content" th:classappend="${list.appr_remarks == null or list.appr_remarks == '' ? 'empty' : ''}">
+                        <div th:if="${list.appr_remarks != null and list.appr_remarks != ''}">
+                            <div class="tooltip-header">의견</div>
+                            <div class="tooltip-body" th:text="${list.appr_remarks}" style="white-space: pre-wrap;"></div>
+                        </div>
+                        <div th:unless="${list.appr_remarks != null and list.appr_remarks != ''}">
+                            <div class="no-memo">메모가 없습니다</div>
+                        </div>
+                    </div>
+                    <div class="card-header">
+                        <span th:text="${list.appr_position}"></span>
+                    </div>
+                    <div class="card-body">
+                        <h5 class="card-title">
+                            <span th:text="${list.appr_emp_nm}"></span>
+                        </h5>
+                    </div>
+                    <div class="card-footer text-body-secondary">
+                        <p class="p-0 m-0 text-success" th:if="${list.appr_tg} == T"><i class="bi bi-check-circle text-success"></i> <span th:text="${list.appr_tg_nm}"></span></p>
+                        <p class="p-0 m-0 text-danger" th:if="${list.appr_tg} == F"><i class="bi bi-x-circle"></i> <span th:text="${list.appr_tg_nm}"></span></p>
+                        <p class="p-0 m-0" th:if="${list.appr_tg} == N"><i class="bi bi-hourglass-split"></i> <span th:text="${list.appr_tg_nm}"></span></p>
+                        <p th:if="${list.appr_tg} == T" class="p-0 m-0">(<span class="dt" th:text="${list.appr_date}"></span>)</p>
+                    </div>
+                </div>
+            </div>
+            <hr class="mt-3">
+        </div>
+
+        <!--부동산 정보 추가 시작-->
+
+        <div class="d-flex justify-content-end mb-3" >
+            <!-- 결재취소 버튼 - 마지막 결재자인 경우에만 표시 -->
+            <button type="button" class="btn btn-action btn-custom-secondary me-2"
+                     th:if="${is_last_approver} == 'T'"
+                     data-bs-toggle="modal" 
+                     data-bs-target="#cancelModal">
+                <i class="bi bi-arrow-counterclockwise"></i> 결재취소
+            </button>
+            
+            <button type="button" class="btn btn-action btn-outline-secondary" th:if="${last} == T"
+                    th:attr="data-seq=${appr_no}" onclick="copyDraftLink(this.getAttribute('data-seq'))">
+                <i class="bi bi-link-45deg"></i> 기안서용 링크 복사
+            </button>
+        </div>
+
+        <div class="detail-container" th:each="detail : ${contract}">
+            <input type="hidden" id="appr_num" value="${detail.appr_num}">
+<!--            <div class="d-flex justify-content-end mb-2"-->
+<!--                 th:if="${#authentication.principal.userNo.toString() == detail.emp_no-->
+<!--                      and detail.appr_no == null and flag == 'Y'-->
+<!--             }">-->
+<!--                <button class="btn edit-button"-->
+<!--                        th:attr="data-seq=${detail.seq}" onclick="edit(this.getAttribute('data-seq'))">-->
+<!--                    <i class="bi bi-pencil-square me-1"></i>-->
+<!--                    수정하기-->
+<!--                </button>-->
+<!--            </div>-->
+            
+            <div class="detail-card">
+                <div class="detail-header">
+                    <h2 class="detail-title" th:text="${detail.proj_name}">프로젝트명</h2>
+                    <div class="detail-info">
+                        <span><i class="bi bi-person"></i> <span th:text="${detail.user_nm}">작성자</span></span>
+                        <span><i class="bi bi-calendar"></i> <span th:text="${detail.crtdate}">작성일</span></span>
+                    </div>
+                </div>
+
+                <div class="detail-content">
+                    <!-- 상단 좌우 레이아웃 -->
+                    <div class="row g-3 mb-3">
+                        <!-- 왼쪽: 물건정보 -->
+                        <div class="col-md-6">
+                            <div class="detail-section h-100">
+                                <h3 class="detail-section-title"><i class="bi bi-info-circle"></i> 물건정보</h3>
+                                <div class="row g-2">
+                                    <div class="col-12">
+                                        <div class="detail-item">
+                                            <div class="detail-label">주소</div>
+                                            <div class="detail-value" th:text="${detail.address}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-12">
+                                        <div class="detail-item">
+                                            <div class="detail-label">상세주소</div>
+                                            <div class="detail-value" th:text="${detail.address_d}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">계약일</div>
+                                            <div class="detail-value" th:text="${detail.cont_date}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6" th:if="${detail.cont_period != null and detail.cont_period != ''}">
+                                        <div class="detail-item">
+                                            <div class="detail-label">계약기간</div>
+                                            <div class="detail-value" th:text="${detail.cont_period + '개월'}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">이사일</div>
+                                            <div class="detail-value" th:text="${detail.move_date}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">보증금</div>
+                                            <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.deposit_amt, 3, 'COMMA') + '만원'}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">월세</div>
+                                            <div class="detail-value amount" th:text="${detail.rent_amt + '만원'}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">주거유형</div>
+                                            <div class="detail-value" th:text="${detail.res_type}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">거래유형</div>
+                                            <div class="detail-value" th:text="${detail.trans_type}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">면적</div>
+                                            <div class="detail-value" th:text="${detail.area + '㎡'}" th:data-area="${detail.area}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="detail-item">
+                                            <div class="detail-label">사용인원</div>
+                                            <div class="detail-value" th:text="${detail.accu}">-</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6" th:if="${detail.accu_type != null and detail.accu_type != ''}">
+                                        <div class="detail-item">
+                                            <div class="detail-label">인원유형</div>
+                                            <div class="detail-value" th:text="${detail.accu_type}">-</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- 오른쪽: 체크리스트 -->
+                        <div class="col-md-6">
+                            <div class="detail-section h-100">
+                                <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
+                                <div class="checklist-container">
+                                    <div class="checklist-item" th:classappend="${detail.chk_1 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                        <div class="checklist-header">
+                                            <div class="checklist-icon">
+                                                <i th:classappend="${detail.chk_1 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                            </div>
+                                            <div class="checklist-title">
+                                                <h6 class="mb-0">실행예산에 반영되어 있는가</h6>
+                                            </div>
+                                        </div>
+                                        <div class="checklist-body" th:if="${detail.chk_1 == 'N'}">
+                                            <div class="checklist-reason">
+                                                <i class="bi bi-info-circle"></i>
+                                                <span class="reason-label">사유 및 후속조치:</span>
+                                                <span th:text="${detail.chk_reason_1}">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="checklist-item" th:classappend="${detail.chk_2 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                        <div class="checklist-header">
+                                            <div class="checklist-icon">
+                                                <i th:classappend="${detail.chk_2 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                            </div>
+                                            <div class="checklist-title">
+                                                <h6 class="mb-0">㈜동아지질 법인명의로 계약하는가</h6>
+                                            </div>
+                                        </div>
+                                        <div class="checklist-body" th:if="${detail.chk_2 == 'N'}">
+                                            <div class="checklist-reason">
+                                                <i class="bi bi-info-circle"></i>
+                                                <span class="reason-label">사유:</span>
+                                                <span th:text="${detail.chk_reason_2}">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="checklist-item" th:classappend="${detail.chk_3 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                        <div class="checklist-header">
+                                            <div class="checklist-icon">
+                                                <i th:classappend="${detail.chk_3 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                            </div>
+                                            <div class="checklist-title">
+                                                <h6 class="mb-0">전세권을 설정하는가</h6>
+                                            </div>
+                                        </div>
+                                        <div class="checklist-body" th:if="${detail.chk_3 == 'N'}">
+                                            <div class="checklist-reason">
+                                                <i class="bi bi-info-circle"></i>
+                                                <span class="reason-label">사유:</span>
+                                                <span th:text="${detail.chk_reason_3}">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="checklist-item" th:classappend="${detail.chk_4 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                        <div class="checklist-header">
+                                            <div class="checklist-icon">
+                                                <i th:classappend="${detail.chk_4 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                            </div>
+                                            <div class="checklist-title">
+                                                <h6 class="mb-0">부동산 공인중개사무소를 통하여 거래하는가</h6>
+                                            </div>
+                                        </div>
+                                        <div class="checklist-body" th:if="${detail.chk_4 == 'N'}">
+                                            <div class="checklist-reason">
+                                                <i class="bi bi-info-circle"></i>
+                                                <span class="reason-label">사유:</span>
+                                                <span th:text="${detail.chk_reason_4}">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="checklist-item" th:classappend="${detail.chk_5 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                        <div class="checklist-header">
+                                            <div class="checklist-icon">
+                                                <i th:classappend="${detail.chk_5 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                            </div>
+                                            <div class="checklist-title">
+                                                <h6 class="mb-0">등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</h6>
+                                            </div>
+                                        </div>
+                                        <div class="checklist-body" th:if="${detail.chk_5 == 'N'}">
+                                            <div class="checklist-reason">
+                                                <i class="bi bi-info-circle"></i>
+                                                <span class="reason-label">사유:</span>
+                                                <span th:text="${detail.chk_reason_5}">-</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 하단: 첨부파일 -->
+                    <div class="row g-3">
+                        <div class="col-12">
+                            <div class="detail-section">
+                                <h3 class="detail-section-title"><i class="bi bi-paperclip"></i> 첨부파일</h3>
+                                <div class="row g-3">
+                                    <!-- 부동산정보 파일 섹션 -->
+                                    <div class="col-md-6">
+                                        <div class="file-section h-100">
+                                            <h6 class="file-section-title mb-2">
+                                                <i class="bi bi-building"></i> 공인중개 관련
+                                                <small class="text-muted ms-2">(부동산명함 및 정보)</small>
+                                            </h6>
+                                            <div class="file-list" th:if="${detail.real_estate_files != null and detail.real_estate_files != ''}">
+                                                <div class="list-group">
+                                                    <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.real_estate_files, ';')}">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="file-info">
+                                                                <i class="bi bi-file-earmark-text file-icon"></i>
+                                                                <span class="file-name" th:text="${fileId}">파일명</span>
+                                                            </div>
+                                                            <a th:href="@{'/api/download-file/' + ${fileId}}"
+                                                               class="btn btn-sm btn-outline-primary"
+                                                               th:download="${fileId}"
+                                                               target="_blank">
+                                                                <i class="bi bi-download"></i> 다운로드
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="no-files text-muted" th:unless="${detail.real_estate_files != null and detail.real_estate_files != ''}">
+                                                첨부된 파일이 없습니다.
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <!-- 등기부등본 파일 섹션 -->
+                                    <div class="col-md-6">
+                                        <div class="file-section h-100">
+                                            <h6 class="file-section-title mb-2">
+                                                <i class="bi bi-file-earmark-text"></i> 등기부등본
+                                                <small class="text-muted ms-2">(채권순위 확인)</small>
+                                            </h6>
+                                            <div class="file-list" th:if="${detail.credit_files != null and detail.credit_files != ''}">
+                                                <div class="list-group">
+                                                    <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.credit_files, ';')}">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="file-info">
+                                                                <i class="bi bi-file-earmark-text file-icon"></i>
+                                                                <span class="file-name" th:text="${fileId}">파일명</span>
+                                                            </div>
+                                                            <a th:href="@{'/api/download-file/' + ${fileId}}"
+                                                               class="btn btn-sm btn-outline-primary"
+                                                               th:download="${fileId}"
+                                                               target="_blank">
+                                                                <i class="bi bi-download"></i> 다운로드
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="no-files text-muted" th:unless="${detail.credit_files != null and detail.credit_files != ''}">
+                                                첨부된 파일이 없습니다.
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <!--부동산 정보 추가 끝-->
+
+        <div class="row">
+            <div class="col col-auto" th:if="${admin_tg} == 'T'">
+                <button type="button" class="btn btn-action btn-primary" data-bs-toggle="collapse" data-bs-target="#nextTarget" aria-expanded="false" aria-controls="nextTarget">
+                    <i class="bi bi-arrow-right-square"></i> 관리부서접수
+                </button>
+            </div>
+            <div class="col col-auto" th:if="${admin_tg} == 'T'">
+                <button class="btn btn-action btn-danger" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
+                    <i class="bi bi-slash-square"></i> 반려
+                </button>
+            </div>
+            <div class="col col-auto" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}">
+                <button class="btn btn-action btn-success" data-bs-toggle="collapse" data-bs-target="#apprRemark" aria-expanded="false" aria-controls="apprRemark">
+                    <i class="bi bi-check-square"></i> 확인
+                </button>
+            </div>
+            <div class="col col-auto" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}">
+                <button class="btn btn-action btn-danger" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
+                    <i class="bi bi-slash-square"></i> 반려
+                </button>
+            </div>
+         </div>
+        <div class="row">
+            <div class="col-12 mt-2">
+                <div class="collapse" id="nextTarget">
+                        <select class="form-control w-100 btn-conf" id="next_emp_user"></select>
+                        <textarea class="form-control mt-2" placeholder="comment" id="appr_remarks" style="height: 100px"></textarea>
+                        <button type="button" class="btn btn-action btn-primary btn-conf mt-2" id="btnAddConfirm">확인</button>
+                </div>
+
+                <div class="collapse" id="apprRemark">
+                    <div class="action-panel">
+                        <textarea class="form-control" placeholder="comment" id="appr_add_remarks" style="height: 100px"></textarea>
+                        <button type="button" class="btn btn-action btn-success btn-conf mt-2" id="btnConfirm">확인</button>
+                    </div>
+                </div>
+
+                <div class="collapse" id="apprBan">
+                    <div class="form-floating">
+                        <textarea class="form-control" placeholder="Leave a comment here" id="banRemark" style="height: 100px"></textarea>
+                        <label for="banRemark">반려 사유를 입력해주세요</label>
+                    </div>
+                    <button type="button" class="btn btn-action btn-danger btn-conf mt-2" id="btnBan">반려</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- 결재취소 확인 Modal -->
+        <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="cancelModalLabel">
+                            <i class="bi bi-exclamation-triangle text-warning me-2"></i>
+                            결재취소 확인
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body text-center">
+                        <p class="mb-0">결재를 취소하시겠습니까?</p>
+                        <small class="text-muted">이 작업은 되돌릴 수 없습니다.</small>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-custom-secondary modal-btn" data-bs-dismiss="modal">돌아가기</button>
+                        <button type="button" class="btn btn-outline-warning modal-btn" id="btnCancel">결재취소</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row mt-4">
+            <div class="col col-12 text-center">
+                <button type="button" class="btn btn-action btn-secondary" id="btn_confirm_close">
+                    <i class="bi bi-door-closed"></i> 닫기
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <div th:replace="~{fragments/modal.html :: fragment-modal}"></div>
+
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Custom   -->
+    <script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
+    <script th:inline="javascript">
+
+        var emp_no = [[${#authentication.principal.empNo}]];
+        var appr_no = [[${appr_no}]];
+        var appr_num = [[${appr_num}]];
+        var appr_d_seq = [[${appr_d_seq}]];
+
+
+        $("#btn_confirm_close").on("click",function(){
+            window.close();
+        });
+
+        function openMap(searchTxt){
+            var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+            window.open("https://map.naver.com/p/search/"+searchTxt, 'docu',options);
+        }
+
+        function copyDraftLink(seq) {
+            var baseUrl = window.location.origin;
+            var draftLink = baseUrl + "/view?seq=" + seq;
+            
+            // Create a temporary input element to copy the link
+            var tempInput = document.createElement("input");
+            tempInput.value = draftLink;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            tempInput.setSelectionRange(0, 99999); // For mobile devices
+            
+            try {
+                document.execCommand("copy");
+                MsgBox.Alert("기안서용 링크가 클립보드에 복사되었습니다.");
+            } catch (err) {
+                // Fallback for modern browsers
+                navigator.clipboard.writeText(draftLink).then(function() {
+                    MsgBox.Alert("기안서용 링크가 클립보드에 복사되었습니다.");
+                }).catch(function() {
+                    MsgBox.Alert("링크 복사에 실패했습니다. 수동으로 복사해주세요: " + draftLink);
+                });
+            }
+            
+            document.body.removeChild(tempInput);
+        }
+
+        $('button').on('click',function(){
+
+            var admin_tag = [[${admin_tag}]];
+
+            var vId = $(this).attr('id');
+
+            if(vId == 'btnConfirm'){
+                console.log("확인 후 완료");
+                btnConfirmApply("T",appr_d_seq,appr_no,appr_num,emp_no,"F");
+            }else if(vId == 'btnAddConfirm'){
+                console.log("부서접수 완료");
+                btnConfirmApply("A",appr_d_seq,appr_no,appr_num,emp_no,"F");
+            }else if(vId == 'btnBan'){
+                console.log("반려");
+                btnConfirmApply("F",appr_d_seq,appr_no,appr_num,emp_no,"F");
+            }else{
+                return false;
+            }
+        });
+
+        function btnConfirmApply(gubun,d_seq,appr_no,appr_num,appr_emp_no,last_chk){
+
+        var next_emp_user = $("#next_emp_user").val();
+
+        var params = "";
+        params += "gubun="+gubun;
+        params += "&appr_d_seq="+d_seq;
+        params += "&appr_emp_no="+appr_emp_no;
+        params += "&appr_no="+appr_no;
+        params += "&appr_num="+appr_num;
+        params += "&next_emp_user="+next_emp_user;
+
+        if(gubun == "T"){
+              params += "&banRemark="+encodeURIComponent($("#appr_add_remarks").val());
+        }else if(gubun == "A"){
+              params += "&banRemark="+encodeURIComponent($("#appr_remarks").val());
+        }else{
+              params += "&banRemark="+encodeURIComponent($("#banRemark").val());
+        }
+
+
+        var vUrl = "/appr/update/detail";
+        ufn_transaction(
+            vUrl
+            ,"POST"
+            ,params
+            ,"text"
+            ,function(){} //before
+            ,function(){ //success
+                // 팝업 창인 경우 부모창 새로고침
+                if(window.opener && !window.opener.closed) {
+                    window.opener.location.reload();
+                    window.close();
+                } else {
+                    location.reload();
+                }
+            }
+            ,function(){
+                MsgBox.Alert("*결재오류, 관리자에게 문의하세요.");
+                $(".btn-conf").prop("disabled",false);
+            }, //error
+            "" // 성공 메시지
+        );
+    }
+
+   // 결재 취소 버튼 클릭 시
+    $("#btnCancel").on("click", function() {
+        var params = "";
+        params += "appr_no=" + appr_no;
+        params += "&appr_emp_no=" + emp_no;
+
+        var vUrl = "/appr/cancel";
+        ufn_transaction(
+            vUrl
+            ,"POST"
+            ,params
+            ,"text"
+            ,function(){
+                $(".btn-conf").prop("disabled",true);
+            } //before
+            ,function(response){
+                try {
+                    var result = JSON.parse(response);
+                    if (result.success) {
+                        MsgBox.Alert("결재가 취소되었습니다.", function(){
+                            $(".btn-conf").prop("disabled",false);
+                            window.close();
+                        });
+                    } else {
+                        MsgBox.Alert("결재 취소 실패: " + result.message);
+                        $(".btn-conf").prop("disabled",false);
+                    }
+                } catch (e) {
+                    MsgBox.Alert("결재가 취소되었습니다.", function(){
+                        $(".btn-conf").prop("disabled",false);
+                        window.close();
+                    });
+                }
+            } //success
+            ,function(){
+                MsgBox.Alert("결재 취소 중 오류가 발생했습니다. 관리자에게 문의하세요.");
+                $(".btn-conf").prop("disabled",false);
+            }, //error
+            "" // 성공 메시지
+        );
+    });
+
+    $('#nextTarget').on('shown.bs.collapse', function () {
+
+        $.ajax({
+            url: '/api/code/proj/admin',
+            dataType: "json",
+            contentType: "application/json; UTF-8;",
+            success: function(data) {
+                console.log(data);
+
+                // 기존 select2가 있다면 제거
+                if ($('#next_emp_user').data('select2')) {
+                    $('#next_emp_user').select2('destroy');
+                }
+
+                // select 초기화
+                $('#next_emp_user').empty();
+
+                // 기본 옵션 추가
+                $('#next_emp_user').append('<option value=""></option>');
+
+                // 데이터를 직접 option으로 추가
+                data.forEach(function(item) {
+                    $('#next_emp_user').append(
+                        $('<option></option>')
+                            .val(item.emp_no)
+                            .text(item.name)
+                    );
+                });
+
+                // Select2 초기화
+                $('#next_emp_user').select2({
+                    allowClear: true,
+                    theme: "bootstrap-5",
+                    placeholder: "다음확인자",
+                    width: '100%',
+                    minimumResultsForSearch: 0,
+                    language: {
+                        noResults: function() {
+                            return "검색 결과가 없습니다.";
+                        }
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error("API 호출 에러:", error);
+            }
+        });
+    });
+
+    // '확인' 영역 열릴 때 → '반려'는 닫기
+    $('#apprRemark').on('show.bs.collapse', function () {
+        $('#apprBan').collapse('hide');
+    });
+
+    // '반려' 영역 열릴 때 → '확인'은 닫기
+    $('#apprBan').on('show.bs.collapse', function () {
+        $('#apprRemark').collapse('hide');
+    });
+
+    // 면적에 평수 계산 추가
+    $(document).ready(function() {
+        $('.detail-value[data-area]').each(function() {
+            var area = $(this).data('area');
+            if (area && area !== '') {
+                var pyeong = (parseFloat(area) / 3.30578).toFixed(2);
+                $(this).text(area + '㎡ (' + pyeong + '평)');
+            }
+        });
+    });
+
+    </script>
+
+
+</body>
+
+</html>

@@ -1,0 +1,2153 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/checkbox.css}">
+    <link rel="stylesheet" th:href="@{/css/grid.css}">
+
+    <!-- Select2   -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+    <!-- Toast Grid CSS -->
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+    <!-- Toast Grid 대체 CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tui-grid@4.21.16/dist/tui-grid.css" />
+    <style>
+        @charset "UTF-8";
+        .container-fluid {
+          height: 92%;
+        }
+
+                 /* 포커스 상태일 때 생기는 테두리 제거 */
+         .tui-grid-cell.tui-grid-cell-has-focus {
+           outline: none !important;
+           box-shadow: none !important;
+           border: none !important;
+         }
+
+         /* 혹시 생길 수 있는 내부 엘리먼트 포커스도 제거 */
+         .tui-grid-cell-content:focus {
+           outline: none !important;
+           box-shadow: none !important;
+           border: none !important;
+         }
+
+         /* 탭 컨테 있너 */
+         .tab-container {
+             background: #fff;
+             border-radius: 16px;
+             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+             overflow: hidden;
+             border: 1px solid #e9ecef;
+         }
+
+         /* 탭 네비게이션 */
+         .tab-navigation {
+             display: flex;
+             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+             position: relative;
+         }
+
+         .tab-btn {
+             flex: 1;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 10px;
+             padding: 16px 24px;
+             border: none;
+             background: transparent;
+             font-weight: 600;
+             font-size: 15px;
+             color: #6c757d;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             border-bottom: 3px solid transparent;
+         }
+
+         .tab-btn:hover {
+             background: rgba(0,123,255,0.05);
+             color: #495057;
+         }
+
+         .tab-btn.active {
+             background: #fff;
+             color: #007bff;
+             border-bottom-color: #007bff;
+         }
+
+         .tab-btn.active {
+             background: #fff;
+             color: #007bff;
+             border-bottom-color: #007bff;
+         }
+
+         /* 탭 콘텐츠 */
+         .tab-content-wrapper {
+             padding: 2rem;
+             min-height: calc(100vh - 200px);
+             background: #fff;
+         }
+
+         .tab-pane {
+             display: none;
+         }
+
+         .tab-pane.active {
+             display: block;
+         }
+
+         /* 그리드 컨테이너 */
+         .grid-container {
+             height: 100%;
+             display: flex;
+             flex-direction: column;
+         }
+         
+         /* 그리드 컨테이너 높이 강제 설정 */
+         #pendingGrid, #incompleteGrid, #completedGrid {
+             min-height: 400px;
+             height: 100% !important;
+         }
+         
+         /* Toast Grid 래퍼 스타일 */
+         .tui-grid-container {
+             height: 100% !important;
+         }
+
+         /* 버튼 스타일 개선 */
+         .btn {
+             transition: all 0.2s ease;
+         }
+
+         .btn:disabled {
+             opacity: 0.6;
+             cursor: not-allowed;
+         }
+
+         /* 선택 카운터 스타일 */
+         .text-muted.small {
+             font-size: 0.875rem;
+         }
+
+         /* 반응형 디자인 */
+         @media (max-width: 768px) {
+             .tab-btn {
+                 padding: 12px 16px;
+                 font-size: 14px;
+             }
+             
+             .tab-content-wrapper {
+                 padding: 1rem;
+             }
+         }
+
+         /* 로딩 스피너 */
+         .spinner-border-sm {
+             width: 1rem;
+             height: 1rem;
+         }
+
+         /* 성공/오류 메시지 */
+         .alert {
+             border-radius: 8px;
+             border: none;
+         }
+
+         /* 그리드 헤더 스타일 */
+         .tui-grid-header {
+             background: #f8f9fa;
+             border-bottom: 2px solid #dee2e6;
+         }
+
+         /* 커스텀 스크롤바 */
+         ::-webkit-scrollbar {
+             width: 8px;
+         }
+
+         ::-webkit-scrollbar-track {
+             background: #f1f1f1;
+             border-radius: 4px;
+         }
+
+         ::-webkit-scrollbar-thumb {
+             background: #c1c1c1;
+             border-radius: 4px;
+         }
+
+         ::-webkit-scrollbar-thumb:hover {
+             background: #a8a8a8;
+         }
+         
+         /* 탭 설명 스타일 */
+         .tab-description {
+             border-radius: 12px;
+             border: none;
+             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+         }
+         
+         .tab-description .alert-info {
+             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
+             border: 1px solid #90caf9;
+             color: #1565c0;
+         }
+         
+         .tab-description .alert-warning {
+             background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%);
+             border: 1px solid #ffb74d;
+             color: #e65100;
+         }
+         
+         .tab-description .alert-success {
+             background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
+             border: 1px solid #81c784;
+             color: #2e7d32;
+         }
+         
+         .tab-description i {
+             font-size: 1.2rem;
+         }
+         
+         .tab-description strong {
+             font-weight: 600;
+         }
+    </style>
+</head>
+<body>
+    <header class="main-header">
+        <div class="header-container">
+            <div class="header-content">
+                <div class="logo-container">
+                    <img src="/images/dongah.gif" alt="로고" class="logo">
+                    <span class="header-title">부동산임차관리 플랫폼</span>
+                </div>
+                <div class="user-info">
+                    <span class="user-name" th:text="${#authentication.principal.userName + '님'}"></span>
+                    <span class="user-position" th:text="${#authentication.principal.deptName}"></span>
+                    <a href="/" class="btn btn-back me-2">
+                        <i class="bi bi-arrow-left"></i> 메인
+                    </a>
+                    <form th:action="@{/logout}" method="post" class="d-inline">
+                        <button type="submit" class="btn btn-action">로그아웃</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </header>
+
+<main>
+    <div class="container-fluid">
+       <div class="row mb-4">
+           <h3>기안서 관리</h3>
+           <span>결재 완료된 요청서를 선택하여 기안서를 작성, 업로드 후 완료된 기안서를 확인할 수 있습니다.</span>
+       </div>
+       <div class="row mb-4 process-steps">
+           <div style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #495057;">
+               <div style="display: flex; align-items: center; gap: 6px;">
+                   <div style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #007bff; color: white; border-radius: 50%; font-weight: 600; font-size: 12px;">1</div>
+                   <strong style="font-weight: 500;">기안서 작성</strong>
+               </div>
+               <i class="bi bi-arrow-right" style="color: #adb5bd;"></i>
+               <div style="display: flex; align-items: center; gap: 6px;">
+                   <div style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #007bff; color: white; border-radius: 50%; font-weight: 600; font-size: 12px;">2</div>
+                   <strong style="font-weight: 500;">기안서 업로드(그룹웨어 결재)</strong>
+               </div>
+               <i class="bi bi-arrow-right" style="color: #adb5bd;"></i>
+               <div style="display: flex; align-items: center; gap: 6px;">
+                   <div style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #007bff; color: white; border-radius: 50%; font-weight: 600; font-size: 12px;">3</div>
+                   <strong style="font-weight: 500;">완료기안 확인</strong>
+               </div>
+           </div>
+       </div>
+
+                          <!-- 탭 컨테이너 -->
+         <div class="tab-container">
+             <!-- 탭 네비게이션 -->
+             <div class="tab-navigation">
+                 <button class="tab-btn active" id="pending-tab" type="button">
+                     <i class="bi bi-pencil-square"></i>
+                     <span>기안서 작성</span>
+                 </button>
+                 <button class="tab-btn" id="incomplete-tab" type="button">
+                     <i class="bi bi-cloud-upload"></i>
+                     <span>기안서 업로드</span>
+                 </button>
+                 <button class="tab-btn" id="completed-tab" type="button">
+                     <i class="bi bi-check2-all"></i>
+                     <span>기안완료</span>
+                 </button>
+             </div>
+
+             <!-- 탭 콘텐츠 -->
+             <div class="tab-content-wrapper">
+                 <!-- 기안 미작성 탭 -->
+                 <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                     <!-- 탭 설명 -->
+                     <div class="row mb-3">
+                         <div class="col-12">
+                             <div class="alert alert-info d-flex align-items-center tab-description">
+                                 <i class="bi bi-pencil-square me-2"></i>
+                                 <div>
+                                     <strong>기안서작성</strong> - 결재가 완료된 사전조사서 중 기안서를 작성하지 않은 항목들을 확인할 수 있습니다.
+                                     필요한 항목을 선택하여 기안서를 작성하세요.
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <!-- 기안서 작성 버튼과 다중선택 기능 -->
+                     <div class="row mb-3">
+                         <div class="col-12">
+                             <div class="d-flex flex-column">
+                                 <div class="mb-2">
+                                     <button type="button" class="btn btn-primary" id="createDraftBtn" disabled>
+                                         <i class="bi bi-file-earmark-plus"></i> 기안서 작성
+                                     </button>
+                                     <span class="ms-2 text-muted small">선택된 항목: <span id="selectedCount">0</span>개</span>
+                                 </div>
+                                 <div>
+                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="selectAllBtn">
+                                         <i class="bi bi-check-all"></i> 전체선택
+                                     </button>
+                                     <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="deselectAllBtn">
+                                         <i class='bi bi-x-circle'></i> 전체해제
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <div class="row" style="height: calc(100vh - 600px);">
+                         <div class="col col-12" id="pendingGrid" style="height: 100%;"></div>
+                     </div>
+                 </div>
+                 
+                 <!-- 기안 미완료 탭 -->
+                 <div class="tab-pane fade" id="incomplete" role="tabpanel" aria-labelledby="incomplete-tab">
+                     <!-- 탭 설명 -->
+                     <div class="row mb-3">
+                         <div class="col-12">
+                             <div class="alert alert-warning d-flex align-items-center tab-description">
+                                 <i class="bi bi-cloud-upload me-2"></i>
+                                 <div>
+                                     <strong>기안서 업로드</strong> -  작성된 기안서를 확인하여 그룹웨어로 업로드 할 수 있습니다.
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <div class="row" style="height: calc(100vh - 600px);">
+                         <div class="col col-12" id="incompleteGrid" style="height: 100%;"></div>
+                     </div>
+                 </div>
+                 
+                 <!-- 기안완료 탭 -->
+                 <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                     <!-- 탭 설명 -->
+                     <div class="row mb-3">
+                         <div class="col-12">
+                             <div class="alert alert-success d-flex align-items-center tab-description">
+                                 <i class="bi bi-check2-all me-2"></i>
+                                 <div>
+                                     <strong>기안완료</strong> - 그룹웨어에 업로드가 완료된 항목들을 확인할 수 있습니다.
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <div class="row" style="height: calc(100vh - 600px);">
+                         <div class="col col-12" id="completedGrid" style="height: 100%;"></div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery (먼저 로드) -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- 부트스트랩 JS 번들 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Toast Grid 의존성 -->
+    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+    <!-- Toast Grid 메인 라이브러리 -->
+    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+    <!-- 로컬 그리드 커스텀 설정 -->
+    <script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
+    
+    <!-- Approver Integration -->
+    <script th:src="@{/js/approval-integration.js}"></script>
+
+<script th:inline="javascript">
+    // 전역 변수
+    const user_no = /*[[${#authentication.principal.userNo}]]*/ '';
+    const userId = /*[[${#authentication.principal.userId}]]*/ '';
+    
+        // 다중선택 관련 변수
+        let selectedRows = new Set();
+    
+    // 그리드 인스턴스
+    let pendingGrid = null;
+    let incompleteGrid = null;
+    let completedGrid = null;
+
+         // 기본 컬럼 정의 (상태, ERP등록 컬럼 제외)
+    const baseColumns = [
+        { header: '계약seq', name: 'd_seq', width: 70, align: 'center', sortable: true, hidden: true },
+        { header: '결재순번', name: 'appr_num', width: 70, align: 'center', sortable: true, hidden: true },
+        { header: '결재번호', name: 'appr_no', width: 70, align: 'center', sortable: true, hidden: true },
+        { header: '결재자', name: 'appr_emp_no', width: 70, align: 'center', sortable: true, hidden: true },
+        { header: '현장코드', name: 'proj_code', sortable: true, filter: 'text', hidden: true },
+        { header: '현장명', name: 'proj_name', width: 300, sortable: true, filter: { type: 'text' } },
+        { header: 'mst_seq', name: 'mst_seq', width: 100, align: 'center', sortable: true, hidden: true },
+        { 
+            header: '주소', 
+            name: 'address', 
+            width: 500, 
+            sortable: true, 
+            filter: { type: 'text' },
+            formatter: function(e) {
+                return '<a href="#">' + e.value + '</a>';
+            }
+        },
+    ];
+    
+    // 결재상태 컬럼 정의 (맨 뒤에 추가용)
+    const statusColumn = { 
+        header: '결재상태', 
+        name: 'conf_status_name', 
+        width: 100, 
+        align: 'center', 
+        sortable: true,
+        formatter: function(e) {
+            const status = e.row.conf_status;
+            const statusName = e.value || '미전송';
+            
+            // 상태에 따른 배지 색상 설정
+            let badgeClass = 'badge bg-secondary';
+            switch(status) {
+                case '00': badgeClass = 'badge bg-secondary'; break; // 미전송
+                case '40': badgeClass = 'badge bg-danger'; break;     // 반려
+                case '99': badgeClass = 'badge bg-dark'; break;       // 삭제
+                case '10': badgeClass = 'badge bg-warning'; break;    // 결재중
+                case '20': badgeClass = 'badge bg-info'; break;       // 보류
+                case '30': badgeClass = 'badge bg-success'; break;    // 완료
+                default: badgeClass = 'badge bg-secondary'; break;
+            }
+            
+            return '<span class="' + badgeClass + '">' + statusName + '</span>';
+        }
+    };
+
+        // 그리드 생성 함수
+    function createGrid(containerId, showCheckbox = false) {
+        // 그리드 타입에 따라 컬럼 설정
+        let columns;
+        
+        // 모든 탭에서 기본 컬럼 사용 (상태, ERP등록 컬럼 제외)
+        columns = [...baseColumns];
+        
+        if (containerId === 'pendingGrid') {
+            // 기안 미작성 탭: 결재완료일자 추가
+            const apprDateColumn = {
+                header: '결재완료일자',
+                name: 'appr_date',
+                width: 120,
+                align: 'center',
+                sortable: true,
+                defaultValue: '',
+                formatter: function(e) {
+                    if (e.value) {
+                        // YYYY-MM-DD 형식으로 표시
+                        return e.value.substring(0, 10);
+                    }
+                    return '';
+                }
+            };
+            columns.push(apprDateColumn);
+            
+            // 확인 버튼 추가
+            const confirmColumn = {
+                header: '확인', 
+                name: 'confirm', 
+                width: 70, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    if (e.row.appr_stat == '999' || e.row.appr_stat == '4') {
+                        return '';
+                    } else {
+                        return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>';
+                    }
+                }
+            };
+            columns.push(confirmColumn);
+        } else if (containerId === 'incompleteGrid') {
+            // 기안서 업로드 탭: 확인 버튼, 수정 버튼, 업로드 버튼 추가
+            
+            // 확인 버튼 컬럼
+            const confirmColumn = {
+                header: '확인', 
+                name: 'confirm', 
+                width: 70, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    // draft_id가 있으면 확인 버튼 표시 (draft_id 우선)
+                    if (e.row.draft_id || e.row.mst_seq) {
+                        return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>';
+                    } else {
+                        return '';
+                    }
+                }
+            };
+            columns.push(confirmColumn);
+            
+            // 수정 버튼 컬럼
+            const editColumn = {
+                header: '수정', 
+                name: 'edit', 
+                width: 70, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    // draft_id가 있으면 수정 버튼 표시
+                    if (e.row.draft_id) {
+                        return '<button class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i></button>';
+                    } else {
+                        return '';
+                    }
+                }
+            };
+            columns.push(editColumn);
+            
+            // 업로드 버튼 컬럼
+            const uploadColumn = {
+                header: '업로드', 
+                name: 'upload', 
+                width: 120, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    return '<button class="btn btn-primary" data-draft-id="' + (e.row.draft_id || e.row.id || '') + '">' +
+                           '<i class="bi bi-cloud-upload"></i> 업로드' +
+                           '</button>';
+                }
+            };
+            columns.push(uploadColumn);
+            columns.push(statusColumn); // 결재상태 맨 뒤에 추가
+        } else {
+            // 기안완료 탭: 확인 버튼 추가
+            
+            // 확인 버튼 컬럼
+            const confirmColumn = {
+                header: '확인', 
+                name: 'confirm', 
+                width: 70, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    if (e.row.mst_seq) {
+                        return '<button class="btn btn-sm btn-primary"><i class="bi bi-file-text"></i></button>';
+                    } else {
+                        return '';
+                    }
+                }
+            }; 
+            
+             // 확인 버튼을 마지막에 추가
+             columns.push(confirmColumn);
+             columns.push(statusColumn); // 결재상태 맨 뒤에 추가
+         }
+         
+         const containerElement = document.getElementById(containerId);
+         
+         if (!containerElement) {
+             return null;
+         }
+         
+        // 정렬 기본값 설정 (기안 미작성 탭은 결재완료일자 최신순)
+        const sortingOptions = {
+            useClient: true,
+            initialState: containerId === 'pendingGrid' 
+                ? { columnName: 'appr_date', ascending: false } // 기안 미작성: 결재완료일자 최신순
+                : { columnName: 'seq', ascending: false }        // 나머지: seq 내림차순
+        };
+        
+        const gridOptions = {
+            el: containerElement,
+            bodyHeight: 400, // 고정 높이로 설정
+            rowHeight: 50,
+            selection: {
+                type: 'row',
+                showCheckbox: showCheckbox,
+                enableCellSelection: false
+            },
+            focus: false,
+            rowHeaders: showCheckbox ? [
+                { type: 'checkbox', width: 50, align: 'center', valign: 'middle' },
+                { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
+            ] : [
+                { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
+            ],
+            header: { height: 50 },
+            hideLoadingBar: false,
+            pageOptions: {
+                useClient: true,
+                type: 'scroll',
+                perPage: -1
+            },
+            sortingOptions: sortingOptions,
+            columns: columns,
+            columnOptions: { resizable: true }
+        };
+
+        try {
+            // Grid 클래스가 로드되었는지 확인 (grid_custom.js에서 Grid = tui.Grid로 설정)
+            if ((typeof tui !== 'undefined' && typeof tui.Grid !== 'undefined') || 
+                typeof Grid !== 'undefined') {
+                const grid = new (typeof Grid !== 'undefined' ? Grid : tui.Grid)(gridOptions);
+                
+                // 클릭 이벤트 등록 (incompleteGrid는 제외)
+                if (containerId !== 'incompleteGrid') {
+                    grid.on('click', handleGridClick);
+                }
+                
+                return grid;
+            } else {
+                // 대체 메시지 표시
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '<div class="alert alert-info mt-3">Toast Grid 라이브러리를 로드하는 중입니다...</div>';
+                }
+                return null;
+            }
+        } catch (error) {
+            // 오류 시 대체 메시지 표시
+            const container = document.getElementById(containerId);
+            if (container) {
+                container.innerHTML = '<div class="alert alert-danger mt-3">그리드 생성 중 오류가 발생했습니다: ' + error.message + '</div>';
+            }
+            return null;
+        }
+    }
+
+    // 그리드 클릭 이벤트 핸들러
+    const handleGridClick = (ev) => {
+        // ev.instance가 그리드 인스턴스인지 확인
+        let gridInstance = null;
+        if (ev.instance && typeof ev.instance.getData === 'function') {
+            gridInstance = ev.instance;
+        } else if (ev && typeof ev.getData === 'function') {
+            gridInstance = ev;
+        } else if (ev.target && typeof ev.target.getData === 'function') {
+            gridInstance = ev.target;
+        } else if (ev.grid && typeof ev.grid.getData === 'function') {
+            gridInstance = ev.grid;
+        } else {
+            return;
+        }
+              
+              if (ev.targetType === 'cell' && ev.columnName === 'address') {
+                  const rowIndex = ev.rowKey;
+                   const row = gridInstance.getData()[rowIndex];
+                  openMap(row.address);
+              }
+
+              if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
+                  const rowIndex = ev.rowKey;
+                   const row = gridInstance.getData()[rowIndex];
+                  
+                   // 현재 그리드의 ID를 확인
+                   const gridId = gridInstance.el ? gridInstance.el.id : '';
+                   
+                   // 기안 미작성 탭에서는 기존 로직 사용
+                   if (gridId === 'pendingGrid') {
+                  openApproval(row.appr_no);
+                   } else {
+                       // 기안완료 탭에서는 mst_seq를 사용해서 기안서 보기
+                       if (row.mst_seq) {
+                           openDraftDocument(row.mst_seq);
+                       }
+                   }
+               }
+               
+               // 업로드 버튼 클릭 처리
+               if (ev.targetType === 'cell' && ev.columnName === 'upload') {
+                   const rowIndex = ev.rowKey;
+                   const row = gridInstance.getData()[rowIndex];
+                   
+                   // draft_id 또는 id 필드 확인
+                   const draftId = row ? (row.draft_id || row.id) : null;
+                   
+                   if (draftId) {
+                       uploadSingleDraft(draftId);
+                   } else {
+                       alert('기안서 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+                   }
+               }
+           };
+
+    // 기타 함수들
+    function openMap(searchTxt) {
+        var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+        window.open("https://map.naver.com/p/search/" + searchTxt, 'docu', options);
+    }
+
+         function openApproval(appr_no) {
+         var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+         window.open("/appr/reg/" + appr_no, "approval", options);
+     }
+
+    // mst_seq를 사용해서 기안서 문서 열기
+    function openDraftDocument(mstSeq) {
+        $.ajax({
+            url: '/api/approval/generate-document-by-mstseq',
+            method: 'GET',
+            data: { 
+                mstSeq: mstSeq 
+            },
+            success: function(response) {
+                if (response.success && response.html) {
+                    // 새 새에서 HTML 문서 열기
+                    var options = "toolbar=no,scrollbars=yes,resizable=yes,status=no,menubar=no,width=1200,height=900,top=10,left=100";
+                    var newWindow = window.open("", "draftDocument", options);
+                    
+                    if (newWindow) {
+                        newWindow.document.write(response.html);
+                        newWindow.document.close();
+                    } else {
+                        alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+                    }
+                } else {
+                    alert('기안서 문서를 불러올 수 없습니다.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('기안서 문서 로드 오류:', error);
+                alert('기안서 문서를 불러오는 중 오류가 발생했습니다.');
+            }
+        });
+    }
+    
+    // draft_id를 사용해서 기안서 문서 열기
+    function openDraftDocumentByDraftId(draftId) {
+        $.ajax({
+            url: '/api/approval/generate-document',
+            method: 'GET',
+            data: { 
+                draftId: draftId,
+                projName: '', // 빈 값으로 전달 (서버에서 조회)
+                gwCode: '',   // 빈 값으로 전달 (서버에서 조회)
+                mstSeq: '',   // 빈 값으로 전달 (서버에서 조회)
+                empNo: '',    // 빈 값으로 전달 (서버에서 조회)
+                userNo: '',   // 빈 값으로 전달 (서버에서 조회)
+                projCode: '', // 빈 값으로 전달 (서버에서 조회)
+                eaId: '312'   // 기본값
+            },
+            success: function(response) {
+                if (response.success && response.html) {
+                    // 새 창에서 HTML 문서 열기
+                    var options = "toolbar=no,scrollbars=yes,resizable=yes,status=no,menubar=no,width=1200,height=900,top=10,left=100";
+                    var newWindow = window.open("", "draftDocument", options);
+                    
+                    if (newWindow) {
+                        newWindow.document.write(response.html);
+                        newWindow.document.close();
+                    } else {
+                        alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+                    }
+                } else {
+                    alert('기안서 문서를 불러올 수 없습니다.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('기안서 문서 로드 오류:', error);
+                alert('기안서 문서를 불러오는 중 오류가 발생했습니다.');
+            }
+        });
+    }
+    
+    // 선택된 항목 개수 업데이트
+    function updateSelectedCount() {
+        document.getElementById('selectedCount').textContent = selectedRows.size;
+    }
+
+    // 기안서 작성 버튼 활성화/비활성화
+    function updateCreateDraftButton() {
+        const createDraftBtn = document.getElementById('createDraftBtn');
+        const isDisabled = selectedRows.size === 0;
+        createDraftBtn.disabled = isDisabled;
+    }
+
+    // 전체선택 버튼 스타일 업데이트
+    function updateSelectAllButtonStyle() {
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const allRows = pendingGrid ? pendingGrid.getData() : [];
+        const checkedRows = pendingGrid ? pendingGrid.getCheckedRows() : [];
+        
+        const selectableRows = allRows.filter(row => row.draft_exists !== 'Y');
+        const isAllSelected = selectableRows.length > 0 && checkedRows.length === selectableRows.length;
+        
+        if (isAllSelected) {
+            selectAllBtn.className = 'btn btn-outline-primary btn-sm';
+        } else {
+            selectAllBtn.className = 'btn btn-outline-secondary btn-sm';
+        }
+    }
+
+    // 전체선택
+    function selectAll() {
+        if (!pendingGrid) return;
+        
+        const allRows = pendingGrid.getData();
+        
+        allRows.forEach((row, index) => {
+            if (row.draft_exists !== 'Y') {
+                pendingGrid.check(index);
+            }
+        });
+        
+        // 체크 완료 후 상태 업데이트
+        setTimeout(() => {
+            updateSelectionFromGrid();
+        }, 100);
+    }
+
+    // 전체해제
+    function deselectAll() {
+        if (!pendingGrid) return;
+        
+        pendingGrid.uncheckAll();
+        
+        // 체크 해제 완료 후 상태 업데이트
+        setTimeout(() => {
+            updateSelectionFromGrid();
+        }, 100);
+    }
+
+    // 그리드에서 현재 선택 상태를 가져와서 selectedRows 동기화
+    function updateSelectionFromGrid() {
+        if (!pendingGrid) return;
+        
+        selectedRows.clear();
+        try {
+            const checkedRows = pendingGrid.getCheckedRows();
+            
+            if (checkedRows && checkedRows.length > 0) {
+                checkedRows.forEach(row => {
+                    if (row && row.rowKey !== undefined) {
+                        selectedRows.add(row.rowKey);
+                    }
+                });
+            }
+            
+            updateSelectedCount();
+            updateCreateDraftButton();
+            updateSelectAllButtonStyle();
+        } catch (error) {
+            // 오류 처리
+        }
+    }
+
+
+    // 기안 미완료그리드 클릭 이벤트 핸들러
+    function handleIncompleteGridClick(ev) {
+        // 그리드 인스턴스 확인
+        let gridInstance = null;
+
+        if (ev.instance && typeof ev.instance.getData === 'function') {
+            gridInstance = ev.instance;
+        } else if (ev && typeof ev.getData === 'function') {
+            gridInstance = ev;
+        } else if (ev.target && typeof ev.target.getData === 'function') {
+            gridInstance = ev.target;
+        } else {
+            return;
+        }
+        
+        if (ev.targetType === 'cell' && ev.columnName === 'address') {
+            const rowIndex = ev.rowKey;
+            const row = gridInstance.getData()[rowIndex];
+            openMap(row.address);
+        }
+
+        if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
+            const rowIndex = ev.rowKey;
+            const row = gridInstance.getData()[rowIndex];
+            
+            
+            if (row.draft_id) {
+                // draft_id로 기안서 문서 열기
+                openDraftDocumentByDraftId(row.draft_id);
+            } else if (row.mst_seq) {
+                // 기존 방식 (mst_seq 사용)
+                openDraftDocument(row.mst_seq);
+            } else {
+                alert('기안서 정보를 찾을 수 없습니다.');
+            }
+        }
+
+        if (ev.targetType === 'cell' && ev.columnName === 'edit') {
+            const rowIndex = ev.rowKey;
+            const row = gridInstance.getData()[rowIndex];
+            
+            if (row.draft_id) {
+                // draft_id로 기안서 수정 페이지 이동
+                editDraft(row.draft_id);
+            } else {
+                alert('기안서 정보를 찾을 수 없습니다.');
+            }
+        }
+        
+        if (ev.targetType === 'cell' && ev.columnName === 'upload') {
+            const rowIndex = ev.rowKey;
+            const row = gridInstance.getData()[rowIndex];
+            
+            // draft_id 또는 id 필드 확인
+            const draftId = row ? (row.draft_id || row.id) : null;
+            
+            if (draftId) {
+                uploadSingleDraft(draftId);
+            } else {
+                alert('기안서 ID를 찾을 수 없습니다. 페이지를 새로고침 후 다시 시도해주세요.');
+            }
+        }
+    }
+
+
+
+    // 기안서 수정 모달 열기
+    function editDraft(draftId) {
+        if (!draftId) {
+            alert('기안서 ID를 찾을 수 없습니다.');
+            return;
+        }
+        
+        // draft 데이터 조회
+        $.ajax({
+            url: `/api/draft/${draftId}`,
+            type: 'GET',
+            success: function(draft) {
+                console.log('Draft 데이터 조회 성공:', draft);
+                
+                // 모달에 데이터 채우기
+                openEditModal(draft);
+            },
+            error: function(xhr, status, error) {
+                console.error('Draft 조회 실패:', error);
+                alert('기안서 데이터를 불러오는데 실패했습니다.');
+            }
+        });
+    }
+    
+    // 기안서 수정 모달 열기 및 데이터 채우기
+    function openEditModal(draft) {
+        // 모달 제목 및 기본 정보 채우기
+        $('#editDraftId').val(draft.id);
+        $('#editProjName').val(draft.proj_name || '');
+        $('#editUserName').val(draft.user_nm || '');
+        $('#editRentReason').val(draft.rent_reason || '');
+        $('#editRentSource').val(draft.rent_source || '');
+        
+        // 계약 상세 정보 표시 (카드 형식 - 모든 필드 수정 가능)
+        let contractHtml = '';
+        if (draft.contractDetails && draft.contractDetails.length > 0) {
+            draft.contractDetails.forEach((contract, index) => {
+                contractHtml += `
+                    <div class="card mb-3 contract-card" style="border: 1px solid #dee2e6;">
+                        <div class="card-header bg-light">
+                            <strong>계약 ${index + 1}</strong>
+                            <input type="hidden" class="contract-id" value="${contract.id || ''}">
+                            <input type="hidden" class="contract-apprNo" value="${contract.appr_no || ''}">
+                            <input type="hidden" class="contract-rowNo" value="${contract.rowNo || index + 1}">
+                            <input type="hidden" class="contract-type" value="${contract.type || ''}">
+                            <input type="hidden" class="contract-rsrcCode" value="${contract.rsrcCode || ''}">
+                            <input type="hidden" class="contract-custCode" value="${contract.custCode || ''}">
+                            <input type="hidden" class="contract-lessor" value="${contract.lessor || ''}">
+                            <input type="hidden" class="contract-postCode" value="${contract.postCode || ''}">
+                            <input type="hidden" class="contract-address" value="${contract.address || ''}">
+                            <input type="hidden" class="contract-addressD" value="${contract.addressD || ''}">
+                            <input type="hidden" class="contract-area" value="${contract.area || ''}">
+                            <input type="hidden" class="contract-contDate_s" value="${contract.contDate_s || ''}">
+                            <input type="hidden" class="contract-contDate_e" value="${contract.contDate_e || ''}">
+                            <input type="hidden" class="contract-depositAmt" value="${contract.depositAmt || ''}">
+                            <input type="hidden" class="contract-rentAmt" value="${contract.rentAmt || ''}">
+                            <input type="hidden" class="contract-contAmt" value="${contract.contAmt || ''}">
+                            <input type="hidden" class="contract-lessorName" value="${contract.lessorName || ''}">
+                            <input type="hidden" class="contract-lessorBank" value="${contract.lessorBank || ''}">
+                            <input type="hidden" class="contract-lessorAccount" value="${contract.lessorAccount || ''}">
+                        </div>
+                        <div class="card-body">
+                            <!-- 용도 -->
+                            <div class="row mb-3">
+                                <div class="col-md-12">
+                                    <label class="form-label small fw-bold">용도</label>
+                                    <select class="form-select form-select-sm contract-type-select" onchange="$(this).siblings('.contract-type').val($(this).val())">
+                                        <option value="">선택</option>
+                                        <option value="숙소" ${contract.type === '숙소' ? 'selected' : ''}>숙소</option>
+                                        <option value="사무실" ${contract.type === '사무실' ? 'selected' : ''}>사무실</option>
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 주소 -->
+                            <div class="row mb-3">
+                                <div class="col-md-8">
+                                    <label class="form-label small fw-bold">부동산 소재지</label>
+                                    <input type="text" class="form-control form-control-sm contract-address-input" value="${contract.address || ''}" placeholder="정확한 주소" onchange="$(this).siblings('.contract-address').val($(this).val())">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">상세주소</label>
+                                    <input type="text" class="form-control form-control-sm contract-addressD-input" value="${contract.addressD || ''}" placeholder="상세주소" onchange="$(this).siblings('.contract-addressD').val($(this).val())">
+                                </div>
+                            </div>
+                            
+                            <!-- 면적, 계약기간 -->
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">면적(㎡)</label>
+                                    <input type="number" class="form-control form-control-sm contract-area-input" value="${contract.area || ''}" min="0" step="0.01" placeholder="0" onchange="$(this).siblings('.contract-area').val($(this).val())">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">계약시작일</label>
+                                    <input type="date" class="form-control form-control-sm contract-contDate_s-input" value="${contract.contDate_s || ''}" onchange="$(this).siblings('.contract-contDate_s').val($(this).val())">
+                                </div>
+                                <div class="col-md-4">
+                                    <label class="form-label small fw-bold">계약종료일</label>
+                                    <input type="date" class="form-control form-control-sm contract-contDate_e-input" value="${contract.contDate_e || ''}" onchange="$(this).siblings('.contract-contDate_e').val($(this).val())">
+                                </div>
+                            </div>
+                            
+                            <!-- 전세권설정, 사용인원 -->
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">전세권설정</label>
+                                    <select class="form-select form-select-sm contract-chk_3">
+                                        <option value="">선택</option>
+                                        <option value="Y" ${contract.chk_3 === 'Y' ? 'selected' : ''}>있음</option>
+                                        <option value="N" ${contract.chk_3 === 'N' ? 'selected' : ''}>없음</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label small fw-bold">사용인원</label>
+                                    <input type="number" class="form-control form-control-sm contract-accu" value="${contract.accu || ''}" min="1" placeholder="0">
+                                </div>
+                            </div>
+                            
+                            <!-- 금액 정보 -->
+                            <div class="row mb-3">
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">보증금(원)</label>
+                                    <input type="text" class="form-control form-control-sm contract-depositAmt-input" value="${parseInt(contract.depositAmt || 0).toLocaleString()}" placeholder="0" oninput="formatModalNumber(this)" onchange="$(this).siblings('.contract-depositAmt').val($(this).val().replace(/,/g, ''))">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">월세(원)</label>
+                                    <input type="text" class="form-control form-control-sm contract-rentAmt-input" value="${parseInt(contract.rentAmt || 0).toLocaleString()}" placeholder="0" oninput="formatModalNumber(this)" onchange="$(this).siblings('.contract-rentAmt').val($(this).val().replace(/,/g, ''))">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">중개수수료(원)</label>
+                                    <input type="text" class="form-control form-control-sm contract-contAmt-input" value="${parseInt(contract.contAmt || 0).toLocaleString()}" placeholder="0" oninput="formatModalNumber(this)" onchange="$(this).siblings('.contract-contAmt').val($(this).val().replace(/,/g, ''))">
+                                </div>
+                                <div class="col-md-3">
+                                    <label class="form-label small fw-bold">지급일</label>
+                                    <select class="form-select form-select-sm contract-paymentDate">
+                                        <option value="">선택</option>
+                                        ${Array.from({length: 31}, (_, i) => i + 1).map(day => 
+                                            `<option value="${day}" ${contract.paymentDate == day ? 'selected' : ''}>${day}일</option>`
+                                        ).join('')}
+                                    </select>
+                                </div>
+                            </div>
+                            
+                            <!-- 임대인 정보 -->
+                            <div class="border-top pt-3 mb-3">
+                                <h6 class="mb-2 small fw-bold">임대인 정보</h6>
+                                <div class="row">
+                                    <div class="col-md-12 mb-2">
+                                        <label class="form-label small">임대인명</label>
+                                        <input type="text" class="form-control form-control-sm contract-lessorName-display" value="${contract.lessorName || ''}" readonly style="cursor: pointer; background: white;" onclick="openEditLessorModal(${index})" placeholder="클릭하여 임대인 정보 등록">
+                                    </div>
+                                    ${contract.lessor ? `
+                                    <div class="col-md-12 mb-2 lessor-number-info">
+                                        <label class="form-label small">사업자등록번호/주민등록번호</label>
+                                        <div class="text-muted lessor-number-display">${contract.lessor}</div>
+                                    </div>
+                                    ` : ''}
+                                    ${(contract.lessorBank || contract.lessorAccount) ? `
+                                    <div class="row lessor-bank-account-info">
+                                        <div class="col-md-6">
+                                            <label class="form-label small">은행</label>
+                                            <div class="text-muted lessor-bank-display">${contract.lessorBank || '-'}</div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label small">계좌번호</label>
+                                            <div class="text-muted lessor-account-display">${contract.lessorAccount || '-'}</div>
+                                        </div>
+                                    </div>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            
+                            <!-- 비고 -->
+                            <div>
+                                <label class="form-label small fw-bold">비고</label>
+                                <textarea class="form-control form-control-sm contract-bigo" rows="2" placeholder="비고를 입력하세요">${contract.bigo || ''}</textarea>
+                            </div>
+                        </div>
+                    </div>`;
+            });
+        } else {
+            contractHtml = '<div class="alert alert-warning mb-0">계약 정보가 없습니다.</div>';
+        }
+        
+        $('#editContractInfo').html(contractHtml);
+        
+        // 실행예산 채우기
+        $('#editExecutionBudget').val(draft.execution_budget || '');
+
+        // 모달 표시
+        const editModal = new bootstrap.Modal(document.getElementById('editDraftModal'), {
+            backdrop: 'static',
+            keyboard: false
+        });
+        editModal.show();
+    }
+    
+
+    // 모달 금액 포맷팅 (천단위 콤마)
+    function formatModalNumber(input) {
+        let value = input.value.replace(/,/g, ''); // 콤마 제거
+        value = value.replace(/[^0-9]/g, ''); // 숫자만 남김
+        
+        if (value === '') {
+            input.value = '';
+            return;
+        }
+        
+        // 천단위 콤마 추가
+        input.value = parseInt(value).toLocaleString();
+    }
+    
+    // 임대인 정보 모달 열기
+    function openEditLessorModal(cardIndex) {
+        $('#editLessorCardIndex').val(cardIndex);
+        
+        // 현재 계약 카드의 임대인 정보 가져오기
+        const card = $('#editContractInfo .contract-card').eq(cardIndex);
+        const lessorName = card.find('.contract-lessorName').val();
+        const lessorBank = card.find('.contract-lessorBank').val();
+        const lessorAccount = card.find('.contract-lessorAccount').val();
+        const lessor = card.find('.contract-lessor').val();
+        
+        // 모달에 기존 데이터 채우기
+        $('#editLessorNameInput').val(lessorName || '');
+        $('#editLessorNumberInput').val(lessor || '');
+        $('#editLessorAccountInput').val(lessorAccount || '');
+        
+        // 은행 목록 로드
+        loadEditBankList(lessorBank);
+        
+        // 수정 모달 숨기기
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editDraftModal'));
+        if (editModal) {
+            editModal.hide();
+        }
+        
+        // 임대인 모달 표시
+        const lessorModalEl = document.getElementById('editLessorModal');
+        const lessorModal = new bootstrap.Modal(lessorModalEl);
+        
+        // 임대인 모달이 닫힐 때 수정 모달 다시 열기
+        lessorModalEl.addEventListener('hidden.bs.modal', function(e) {
+            if (editModal) {
+                editModal.show();
+            }
+        }, { once: true });
+        
+        lessorModal.show();
+    }
+    
+    // 계좌번호 숫자와 하이픈만 입력 (실시간)
+    function formatAccountNumber(input) {
+        const cursorPos = input.selectionStart;
+        const oldValue = input.value;
+        
+        // 숫자와 하이픈만 추출
+        const newValue = input.value.replace(/[^0-9-]/g, '');
+        
+        if (oldValue !== newValue) {
+            input.value = newValue;
+            // 커서 위치 보정
+            const diff = oldValue.length - newValue.length;
+            input.setSelectionRange(cursorPos - diff, cursorPos - diff);
+        }
+    }
+    
+    // 사업자등록번호/주민등록번호 하이픈 자동 입력 함수 (실시간)
+    function formatBizNo(input) {
+        // 현재 커서 위치 저장
+        const cursorPos = input.selectionStart;
+        const oldValue = input.value;
+        const oldLength = oldValue.length;
+        
+        // 숫자만 추출
+        let value = input.value.replace(/[^0-9]/g, '');
+        
+        if (value === '') {
+            input.value = '';
+            return;
+        }
+        
+        // 최대 13자리 (주민등록번호)
+        value = value.substring(0, 13);
+        
+        let formatted = value;
+        
+        // 사업자등록번호 (10자리) 또는 주민등록번호 (13자리) 판별
+        if (value.length >= 10) {
+            // 사업자등록번호: XXX-XX-XXXXX
+            formatted = value.substring(0, 3);
+            if (value.length > 3) {
+                formatted += '-' + value.substring(3, 5);
+            }
+            if (value.length > 5) {
+                formatted += '-' + value.substring(5, 10);
+            }
+            // 13자리면 주민등록번호로 추가 처리
+            if (value.length > 10) {
+                formatted = value.substring(0, 6) + '-' + value.substring(6, 13);
+            }
+        } else if (value.length > 6) {
+            // 7~9자리: 주민등록번호 형식으로 시작
+            formatted = value.substring(0, 6) + '-' + value.substring(6);
+        } else if (value.length > 3) {
+            // 4~6자리: 사업자등록번호 형식으로 시작
+            formatted = value.substring(0, 3) + '-' + value.substring(3);
+        }
+        
+        input.value = formatted;
+        
+        // 커서 위치 보정
+        const newLength = formatted.length;
+        let newCursorPos = cursorPos;
+        
+        // 입력 시 커서 위치 자동 조정
+        if (newLength > oldLength) {
+            // 문자가 추가된 경우
+            if (formatted.charAt(cursorPos - 1) === '-') {
+                newCursorPos = cursorPos + 1;
+            } else {
+                newCursorPos = cursorPos + (newLength - oldLength);
+            }
+        } else if (newLength < oldLength) {
+            // 문자가 삭제된 경우
+            newCursorPos = cursorPos;
+        }
+        
+        input.setSelectionRange(newCursorPos, newCursorPos);
+    }
+    
+    // 은행 목록 로드
+    function loadEditBankList(selectedBank) {
+        $.ajax({
+            url: '/api/draft/banks',
+            type: 'GET',
+            success: function(banks) {
+                const select = $('#editLessorBankInput');
+                select.empty();
+                select.append('<option value="">은행 선택</option>');
+                
+                banks.forEach(function(bank) {
+                    const selected = bank.text === selectedBank || bank.id === selectedBank ? 'selected' : '';
+                    select.append(`<option value="${bank.text}" ${selected}>${bank.text}</option>`);
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('은행 목록 로드 실패:', error);
+            }
+        });
+    }
+    
+    // 임대인 정보 저장
+    function saveEditLessor() {
+        const cardIndex = $('#editLessorCardIndex').val();
+        const lessorName = $('#editLessorNameInput').val();
+        const lessorNumber = $('#editLessorNumberInput').val();
+        const lessorAccount = $('#editLessorAccountInput').val();
+        const lessorBank = $('#editLessorBankInput').val();
+        
+        if (!lessorName) {
+            alert('임대인명을 입력해주세요.');
+            return;
+        }
+        
+        // 해당 카드의 hidden input 업데이트
+        const card = $('#editContractInfo .contract-card').eq(cardIndex);
+        card.find('.contract-lessorName').val(lessorName);
+        card.find('.contract-lessor').val(lessorNumber);
+        card.find('.contract-lessorAccount').val(lessorAccount);
+        card.find('.contract-lessorBank').val(lessorBank);
+        
+        // 화면 표시 업데이트
+        card.find('.contract-lessorName-display').val(lessorName);
+        
+        // 사업자등록번호/주민등록번호 정보가 있으면 표시
+        const lessorNumberDiv = card.find('.lessor-number-info');
+        if (lessorNumber) {
+            if (lessorNumberDiv.length === 0) {
+                // 사업자등록번호 div가 없으면 생성
+                const numberHtml = `
+                    <div class="col-md-12 mb-2 lessor-number-info">
+                        <label class="form-label small">사업자등록번호/주민등록번호</label>
+                        <div class="text-muted lessor-number-display">${lessorNumber}</div>
+                    </div>`;
+                card.find('.contract-lessorName-display').closest('.col-md-12').after(numberHtml);
+            } else {
+                // 사업자등록번호 정보가 이미 있으면 업데이트
+                lessorNumberDiv.find('.lessor-number-display').text(lessorNumber);
+            }
+        }
+        
+        // 은행/계좌 정보가 있으면 표시
+        const lessorInfoDiv = card.find('.lessor-bank-account-info');
+        if (lessorBank || lessorAccount) {
+            if (lessorInfoDiv.length === 0) {
+                // 은행/계좌 정보 div가 없으면 생성
+                const infoHtml = `
+                    <div class="row lessor-bank-account-info">
+                        <div class="col-md-6">
+                            <label class="form-label small">은행</label>
+                            <div class="text-muted lessor-bank-display">${lessorBank || '-'}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label small">계좌번호</label>
+                            <div class="text-muted lessor-account-display">${lessorAccount || '-'}</div>
+                        </div>
+                    </div>`;
+                card.find('.contract-lessorName-display').closest('.col-md-12').parent().append(infoHtml);
+            } else {
+                // 은행/계좌 정보가 이미 있으면 업데이트
+                lessorInfoDiv.find('.lessor-bank-display').text(lessorBank || '-');
+                lessorInfoDiv.find('.lessor-account-display').text(lessorAccount || '-');
+            }
+        }
+        
+        // 모달 닫기
+        bootstrap.Modal.getInstance(document.getElementById('editLessorModal')).hide();
+    }
+    
+    // 기안서 수정 저장
+    function saveEditedDraft() {
+        const draftId = $('#editDraftId').val();
+        
+        // 계약 상세 정보 수집
+        const contractDetails = [];
+        $('#editContractInfo .contract-card').each(function(index) {
+            const card = $(this);
+            const contractDetail = {
+                id: card.find('.contract-id').val(),
+                appr_no: card.find('.contract-apprNo').val(),
+                rowNo: card.find('.contract-rowNo').val() || (index + 1),
+                type: card.find('.contract-type').val(),
+                address: card.find('.contract-address').val(),
+                addressD: card.find('.contract-addressD').val(),
+                postCode: card.find('.contract-postCode').val(),
+                rsrcCode: card.find('.contract-rsrcCode').val(),
+                area: card.find('.contract-area').val(),
+                contDate_s: card.find('.contract-contDate_s').val(),
+                contDate_e: card.find('.contract-contDate_e').val(),
+                chk_3: card.find('.contract-chk_3').val(),
+                accu: card.find('.contract-accu').val(),
+                depositAmt: card.find('.contract-depositAmt').val(),
+                rentAmt: card.find('.contract-rentAmt').val(),
+                contAmt: card.find('.contract-contAmt').val(),
+                paymentDate: card.find('.contract-paymentDate').val(),
+                lessor: card.find('.contract-lessor').val(),
+                lessorName: card.find('.contract-lessorName').val(),
+                lessorBank: card.find('.contract-lessorBank').val(),
+                lessorAccount: card.find('.contract-lessorAccount').val(),
+                custCode: card.find('.contract-custCode').val(),
+                bigo: card.find('.contract-bigo').val()
+            };
+            contractDetails.push(contractDetail);
+        });
+        
+        const formData = {
+            id: draftId,
+            proj_name: $('#editProjName').val(),
+            rent_reason: $('#editRentReason').val(),
+            execution_budget: $('#editExecutionBudget').val(),
+            rent_source: $('#editRentSource').val(),
+            attachment_list: attachmentList,
+            contractDetails: contractDetails
+        };
+        
+        console.log('수정 요청 데이터:', formData);
+        
+        $.ajax({
+            url: '/api/draft/update',
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(formData),
+            success: function(response) {
+                if (response.success) {
+                    alert('기안서가 수정되었습니다.');
+                    // 모달 닫기
+                    bootstrap.Modal.getInstance(document.getElementById('editDraftModal')).hide();
+                    // 그리드 새로고침
+                    loadIncompleteData();
+                } else {
+                    alert('수정 실패: ' + response.message);
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('수정 실패:', error);
+                alert('기안서 수정 중 오류가 발생했습니다.');
+            }
+        });
+    }
+    
+    // 단일 기안서 업로드 (프로세저 실행 + 결재문서 생성)
+    let pendingUploadDraftId = null;
+    let attachmentListText = ''; // 첨부파일 리스트 텍스트 (메모리에만 저장)
+    
+    function uploadSingleDraft(draftId) {
+        if (!draftId) {
+            alert('기안서 ID를 찾을 수 없습니다.');
+            return;
+        }
+        
+        // 업로드할 draft ID 저장
+        pendingUploadDraftId = draftId;
+        
+        // 텍스트 영역 초기화
+        document.getElementById('attachmentListTextarea').value = '';
+        
+        // 첨부파일 리스트 입력 모달 표시
+        const attachmentModal = new bootstrap.Modal(document.getElementById('attachmentListModal'));
+        attachmentModal.show();
+    }
+    
+    // 첨부파일 리스트 입력 후 업로드 확인 모달 표시
+    function saveAttachmentListAndUpload() {
+        // 입력된 첨부파일 리스트 가져오기 (메모리에만 저장)
+        attachmentListText = document.getElementById('attachmentListTextarea').value.trim();
+        
+        // 첨부파일 모달 닫기
+        bootstrap.Modal.getInstance(document.getElementById('attachmentListModal')).hide();
+        
+        // 업로드 확인 모달 표시
+        const uploadConfirmModal = new bootstrap.Modal(document.getElementById('uploadConfirmModal'));
+        uploadConfirmModal.show();
+    }
+    
+    // 업로드 확인 처리
+    function confirmUpload() {
+        const draftId = pendingUploadDraftId;
+        
+        if (!draftId) {
+            alert('기안서 ID를 찾을 수 없습니다.');
+            return;
+        }
+        
+        // 모달 닫기
+        bootstrap.Modal.getInstance(document.getElementById('uploadConfirmModal')).hide();
+        
+        // 업로드 처리 시작
+        {
+            // 업로드 버튼 비활성화 (특정 행의 버튼)
+            const uploadButtons = document.querySelectorAll(`button[onclick="uploadSingleDraft(${draftId})"]`);
+            uploadButtons.forEach(btn => {
+                btn.disabled = true;
+                btn.innerHTML = '<i class="bi bi-hourglass-split"></i> 업로드 중...';
+            });
+            
+            // 1단계: 프로세저 실행
+            $.ajax({
+                url: '/api/draft/process',
+                method: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify({ draftIds: [draftId] }),
+                success: function(response) {
+                    if (response.success) {
+                        
+                        // 진행 상태 업데이트
+                        uploadButtons.forEach(btn => {
+                            btn.innerHTML = '<i class="bi bi-file-earmark-check"></i> 결재문서 생성 중...';
+                        });
+                        
+                        // 2단계: 결재문서 생성 (첨부파일 리스트 포함)
+                        setTimeout(() => {
+                            generateApprovalDocumentAfterSave(draftId, attachmentListText);
+                            loadIncompleteData(); // 데이터 새로고침
+                        }, 500);
+                        
+                    } else {
+                        alert('프로세저 실행 중 오류가 발생했습니다: ' + response.message);
+                        
+                        // 버튼 상태 복원
+                        uploadButtons.forEach(btn => {
+                            btn.disabled = false;
+                            btn.innerHTML = '<i class="bi bi-cloud-upload"></i> 업로드';
+                        });
+                    }
+                },
+                error: function(xhr, status, error) {
+                    alert('프로세저 실행 중 오류가 발생했습니다.');
+                    
+                    // 버튼 상태 복원
+                    uploadButtons.forEach(btn => {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-cloud-upload"></i> 업로드';
+                    });
+                }
+            });
+        }
+    }
+
+    // 선택된 항목들로 기안서 작성
+    function createDraftForSelected() {
+        if (!pendingGrid) {
+            alert('그리드가 초기화되지 않았습니다.');
+            return;
+        }
+        
+        // 그리드에서 직접 체크된 행들을 가져오기
+        const checkedRows = pendingGrid.getCheckedRows();
+        
+        if (!checkedRows || checkedRows.length === 0) {
+            alert('선택된 항목이 없습니다.');
+            return;
+        }
+
+        const selectedApprNos = [];
+        checkedRows.forEach(row => {
+            if (row && row.appr_no) {
+                selectedApprNos.push(row.appr_no);
+            }
+        });
+
+        if (selectedApprNos.length > 0) {
+            // 첫 번째 선택된 appr_no를 path variable로, 나머지는 query parameter로 전달
+            const firstApprNo = selectedApprNos[0];
+            const additionalApprNos = selectedApprNos.slice(1); // 첫 번째 제외한 나머지
+            
+            let url = `/appr/draft/${firstApprNo}`;
+            
+            // 추가 appr_no가 있으면 query parameter로 추가
+            if (additionalApprNos.length > 0) {
+                const queryParams = additionalApprNos.map(no => `additional_appr_nos=${no}`).join('&');
+                url += `?${queryParams}`;
+            }
+            
+            window.location.href = url;
+        } else {
+            alert('유효한 결재번호를 찾을 수 없습니다.');
+        }
+    }
+
+    // 탭 전환 함수
+    function switchTab(tabName) {
+        // 모든 탭 비활성화
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+        
+        if (tabName === 'pending') {
+            // 기안 미작성 탭
+            loadPendingData();
+            
+            // 탭 활성화
+            document.getElementById('pending-tab').classList.add('active');
+            document.getElementById('pending').classList.add('show', 'active');
+            
+            // 선택 상태 초기화
+            selectedRows.clear();
+            updateSelectedCount();
+            updateCreateDraftButton();
+            updateSelectAllButtonStyle();
+        } else if (tabName === 'incomplete') {
+            // 기안 미완료 탭
+            loadIncompleteData();
+            
+            // 탭 활성화
+            document.getElementById('incomplete-tab').classList.add('active');
+            document.getElementById('incomplete').classList.add('show', 'active');
+            
+            // 기안서 업로드 탭 활성화 완료
+        } else if (tabName === 'completed') {
+            // 기안완료 탭
+            loadCompletedData();
+            
+            // 탭 활성화
+            document.getElementById('completed-tab').classList.add('active');
+            document.getElementById('completed').classList.add('show', 'active');
+        }
+    }
+
+    // 기안 미작성 데이터 로드
+    function loadPendingData() {
+        $.ajax({
+            url: '/appr/list/draft',
+            method: 'GET',
+            data: { user_no: user_no },
+            success: function(response) {
+                if (!pendingGrid) {
+                    pendingGrid = createGrid('pendingGrid', true);
+                    
+                    if (!pendingGrid) {
+                        return;
+                    }
+                    
+                    // 체크박스 이벤트 등록
+                    pendingGrid.on('check', () => {
+                        setTimeout(updateSelectionFromGrid, 50);
+                    });
+                    pendingGrid.on('uncheck', () => {
+                        setTimeout(updateSelectionFromGrid, 50);
+                    });
+                }
+                
+                // 데이터가 있는지 확인
+                if (response && Array.isArray(response) && response.length > 0) {
+                    // Toast Grid는 resetData 메서드를 사용 (필터링 제거)
+                    pendingGrid.resetData(response);
+                } else {
+                    pendingGrid.resetData([]);
+                }
+            },
+            error: function(xhr, status, error) {
+                // 오류 시 빈 그리드 표시
+                if (pendingGrid) {
+                    pendingGrid.resetData([]);
+                }
+            }
+        });
+    }
+
+    // 기안 미완료 데이터 로드
+    function loadIncompleteData() {
+        $.ajax({
+            url: '/appr/list/draft/incomplete',
+            method: 'GET',
+            data: { user_no: user_no },
+            success: function(response) {
+                if (!incompleteGrid) {
+                    incompleteGrid = createGrid('incompleteGrid', false); // 체크박스 없음
+                    
+                    if (!incompleteGrid) {
+                        return;
+                    }
+                    
+                    // incompleteGrid에 클릭 이벤트 등록
+                    incompleteGrid.on('click', handleIncompleteGridClick);
+                }
+                
+                // Toast Grid는 resetData 메서드를 사용
+                incompleteGrid.resetData(response);
+            },
+            error: function(xhr, status, error) {
+                // 오류 처리
+            }
+        });
+    }
+
+    // 기안완료 데이터 로드
+    function loadCompletedData() {
+        $.ajax({
+            url: '/appr/list/draft/completed',
+            method: 'GET',
+            data: { user_no: user_no },
+            success: function(response) {
+                if (!completedGrid) {
+                    completedGrid = createGrid('completedGrid', false);
+                    
+                    if (!completedGrid) {
+                        return;
+                    }
+                }
+                
+                // Toast Grid는 resetData 메서드를 사용
+                completedGrid.resetData(response);
+            },
+            error: function(xhr, status, error) {
+                // 오류 처리
+            }
+        });
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // Toast Grid가 완전히 로드될 때까지 대기
+        function waitForToastGrid(attemptCount = 0) {
+            const maxAttempts = 50; // 5초간 시도 (100ms * 50)
+            
+            // Grid 클래스가 로드되었는지 확인 (grid_custom.js에서 Grid = tui.Grid로 설정)
+            if ((typeof window.tui !== 'undefined' && typeof window.tui.Grid !== 'undefined') || 
+                typeof window.Grid !== 'undefined') {
+                initializePage();
+            } else if (attemptCount < maxAttempts) {
+                setTimeout(() => waitForToastGrid(attemptCount + 1), 100);
+            } else {
+                showToastGridError();
+            }
+        }
+        
+        function showToastGridError() {
+            // 모든 그리드 컨테이너에 오류 메시지 표시
+            const containers = ['pendingGrid', 'incompleteGrid', 'completedGrid'];
+            containers.forEach(containerId => {
+                const container = document.getElementById(containerId);
+                if (container) {
+                    container.innerHTML = '<div class="alert alert-danger mt-3">Toast Grid 라이브러리를 로드할 수 없습니다. 페이지를 새로고침해주세요.</div>';
+                }
+            });
+        }
+        
+        function initializePage() {
+            // 탭 이벤트 리스너 등록
+            document.getElementById('pending-tab').addEventListener('click', function() {
+                switchTab('pending');
+            });
+            
+            document.getElementById('incomplete-tab').addEventListener('click', function() {
+                switchTab('incomplete');
+            });
+            
+            document.getElementById('completed-tab').addEventListener('click', function() {
+                switchTab('completed');
+            });
+            
+            // 버튼 이벤트 리스너 등록 (기안 미작성 탭)
+            document.getElementById('selectAllBtn').addEventListener('click', selectAll);
+            
+            document.getElementById('deselectAllBtn').addEventListener('click', deselectAll);
+            document.getElementById('createDraftBtn').addEventListener('click', createDraftForSelected);
+            
+            // 기안 미완료 탭은 각 행의 업로드 버튼으로 처리
+            
+            // 초기 탭 설정 (기안 미작성)
+            switchTab('pending');
+        }
+        
+        // 약간의 지연 후 Toast Grid 로딩 확인 시작
+        setTimeout(waitForToastGrid, 100);
+    });
+
+    // 결재문서 생성 함수
+    function generateApprovalDocumentAfterSave(draftId, attachmentList) {
+        if (!draftId) {
+            alert('기안서 ID를 찾을 수 없습니다.');
+            return;
+        }
+
+        // draftId를 사용해서 draft 정보 조회
+        $.ajax({
+            url: '/api/draft/get-by-id',
+            method: 'GET',
+            data: { draftId: draftId },
+            success: function(response) {
+                if (!response.success || !response.draft) {
+                    alert('기안서 정보를 가져올 수 없습니다.');
+                    return;
+                }
+
+                const draft = response.draft;
+                
+                console.log('첨부파일 리스트 전달:', attachmentList);
+                
+                // contractDetails에서 거래처 정보 추출
+                let custCode = '';
+                let custName = '';
+                let bizNo = '';
+                let lessor = '';
+                let lessorAccount = '';
+                let lessorBank = '';
+                let rsrcCode = '';
+                
+                if (draft.contractDetails && draft.contractDetails.length > 0) {
+                    const firstDetail = draft.contractDetails[0];
+                    custCode = firstDetail.custCode || '';
+                    custName = firstDetail.lessorName || '';
+                    bizNo = firstDetail.lessor || '';
+                    lessor = firstDetail.lessor || '';
+                    lessorAccount = firstDetail.lessorAccount || '';
+                    lessorBank = firstDetail.lessorBank || '';
+                    rsrcCode = firstDetail.rsrcCode || '';
+                }
+                
+                
+                // 결재문서 생성 및 그룹웨어/ERP 전송 (approval-intergration.js 사용)
+                const generator = new ApprovalDocumentGenerator();
+                
+                generator.generateAndSendToBothSystems({
+                    draftId: draftId,
+                    eaId: "312",
+                    userId: userId,
+                    projName: draft.proj_name,
+                    gwCode: draft.gw_code,
+                    mstSeq: draft.mst_seq,
+                    empNo: draft.emp_no,
+                    userNo: user_no,
+                    userName: draft.user_nm,
+                    projCode: draft.proj_code,
+                    attachmentList: attachmentList, // 첨부파일 리스트 추가
+                    custCode: custCode, // 계약 상세에서 추출한 cust_code
+                    existingCustCode: custCode, // 기존 거래처 코드 (custCode와 동일)
+                    custName: custName, // 거래처명
+                    bizNo: bizNo, // 사업자등록번호
+                    bossName: custName, // 대표자명
+                    tradeCls: '', // 거래구분
+                    bizCond: '', // 업종
+                    bizKnd: '', // 업태
+                    zipCode: '', // 우편번호
+                    rsrcCode: rsrcCode, // 자원 코드
+                    addr1: '', // 주소1
+                    addr2: '', // 주소2
+                    telNo: '', // 전화번호
+                    headFax: '', // 팩스번호
+                    bankMainCode: '', // 은행코드
+                    bankCode: '', // 은행코드
+                    custAccNo: lessorAccount, // 계좌번호
+                    elctTag: '', // 전자세금계산서 여부
+                    cOwner: custName, // 소유자
+                    remark: '', // 비고
+                    taxCls: '', // 세금구분
+                    representCustCode: '', // 대표거래처코드
+                    sBankNo: '', // 은행번호
+                    regCls: '', // 등록구분
+                    onSuccess: function(message) {
+                        console.log('결재문서 생성 완료: ' + message);
+                        
+                        // 업로드 완료 후 페이지 새로고침
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1000);
+                    },
+                    onError: function(error) {
+                        alert('결재문서 생성 및 전송 중 오류가 발생했습니다: ' + error);
+                        
+                        // 오류 발생 시에도 새로고침 (상태 확인용)
+                        setTimeout(function() {
+                            location.reload();
+                        }, 1500);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                alert('기안서 정보 조회 중 오류가 발생했습니다.');
+            }
+        });
+    }
+    
+    // Toast Grid 대체를 위한 간단한 테이블 표시
+    function showSimpleTable(containerId, data) {
+        const container = document.getElementById(containerId);
+        if (!container || !data || data.length === 0) {
+            if (container) {
+                container.innerHTML = '<div class="alert alert-info mt-3">데이터가 없습니다.</div>';
+            }
+            return;
+        }
+        
+        let html = '<div class="table-responsive"><table class="table table-hover mt-3">';
+        html += '<thead class="table-primary"><tr>';
+        html += '<th>순번</th><th>현장명</th><th>프로젝트명</th><th>작성자</th><th>작성일</th><th>승인일</th><th>사업자등록번호</th><th>처리</th>';
+        html += '</tr></thead><tbody>';
+        
+        data.forEach(row => {
+            html += '<tr>';
+            html += `<td>${row.seq || ''}</td>`;
+            html += `<td>${row.proj_name || ''}</td>`;
+            html += `<td>${row.proj_code || ''}</td>`;
+            html += `<td>${row.user_nm || ''}</td>`;
+            html += `<td>${row.crtdate || ''}</td>`;
+            html += `<td>${row.appdate || ''}</td>`;
+            html += `<td>${row.biz_no || ''}</td>`;
+            html += '<td><button class="btn btn-sm btn-primary">처리</button></td>';
+            html += '</tr>';
+        });
+        
+        html += '</tbody></table></div>';
+        container.innerHTML = html;
+    }
+</script>
+
+<!-- 첨부파일 리스트 입력 모달 -->
+<div class="modal fade" id="attachmentListModal" tabindex="-1" aria-labelledby="attachmentListModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="attachmentListModalLabel">기안서 업로드</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label for="attachmentListTextarea" class="form-label">* 결재문서에 포함될 첨부파일 목록을 입력해주세요.(필수)</label>
+                    <textarea class="form-control" id="attachmentListTextarea" rows="8" 
+                              placeholder="예)&#10;- 부동산 임대차 계약서 1부&#10;- 등기부등본 1부&#10;- 건물 사진 3장"></textarea>
+                    <div class="form-text mt-2">
+                        각 항목을 줄바꿈으로 구분하여 입력하세요. (예: - 항목명)
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="saveAttachmentListAndUpload()">확인 및 업로드</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 업로드 확인 모달 -->
+<div class="modal fade" id="uploadConfirmModal" tabindex="-1" aria-labelledby="uploadConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="uploadConfirmModalLabel">
+                    <i class="bi bi-cloud-upload text-primary"></i> 기안서 업로드
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body text-center py-4">
+                <div class="mb-3">
+                    <i class="bi bi-question-circle text-warning" style="font-size: 3rem;"></i>
+                </div>
+                <h5 class="mb-3">기안서를 업로드하시겠습니까?</h5>
+                <p class="text-muted small mb-0">업로드 후에는 취소할 수 없습니다.</p>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle"></i> 취소
+                </button>
+                <button type="button" class="btn btn-primary" onclick="confirmUpload()">
+                    <i class="bi bi-check-circle"></i> 확인
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 임대인 정보 등록 모달 (수정용) -->
+<div class="modal fade" id="editLessorModal" tabindex="-1" aria-labelledby="editLessorModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editLessorModalLabel">임대인 정보 등록</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <input type="hidden" id="editLessorCardIndex">
+                <div class="row">
+                    <div class="col-md-12">
+                        <div class="alert alert-info" role="alert" style="border-left: 4px solid #0dcaf0; background-color: #f8f9fa; border-radius: 8px;">
+                            <div class="d-flex align-items-center">
+                                <i class="bi bi-info-circle-fill me-2" style="color: #0dcaf0; font-size: 1.1rem;"></i>
+                                <span style="color: #0c5460; font-weight: 500; font-size: 0.95rem;">
+                                    <strong>안내:</strong> 입력정보는 ERP 거래처 등록으로 사용되오니, 임대차 계약서의 내용으로 정확히 작성해주시기 바랍니다.
+                                </span>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editLessorNameInput" class="form-label">임대인/임대사업자 명 <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="editLessorNameInput" 
+                                   placeholder="임대인 또는 임대사업자명을 입력하세요" 
+                                   maxlength="100" required>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editLessorNumberInput" class="form-label">사업자등록번호/주민등록번호</label>
+                            <input type="text" class="form-control" id="editLessorNumberInput" 
+                                   placeholder="사업자등록번호 또는 주민등록번호를 입력하세요"
+                                   maxlength="14" oninput="formatBizNo(this)">
+                            <div class="form-text small text-muted">사업자등록번호: XXX-XX-XXXXX (하이픈 자동 입력)<br>주민등록번호: XXXXXX-XXXXXXX (하이픈 자동 입력)</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editLessorAccountInput" class="form-label">계좌번호</label>
+                            <input type="text" class="form-control" id="editLessorAccountInput" 
+                                   placeholder="계좌번호를 입력하세요" maxlength="20" oninput="formatAccountNumber(this)">
+                            <div class="form-text small text-muted">숫자와 하이픈(-) 입력 가능</div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="editLessorBankInput" class="form-label">은행</label>
+                            <select class="form-select" id="editLessorBankInput">
+                                <option value="">은행 선택</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                <button type="button" class="btn btn-primary" onclick="saveEditLessor()">저장</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 기안서 수정 모달 -->
+<div class="modal fade" id="editDraftModal" tabindex="-1" aria-labelledby="editDraftModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl modal-dialog-centered modal-dialog-scrollable">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editDraftModalLabel">
+                    <i class="bi bi-pencil-square text-primary me-2"></i>기안서 수정
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body" style="padding: 2rem; background: #f8f9fa;">
+                <style>
+                    #editDraftModal .form-control, 
+                    #editDraftModal .form-select {
+                        border: 1px solid #e2e8f0;
+                        border-radius: 8px;
+                        padding: 0.5rem 0.75rem;
+                        transition: all 0.3s ease;
+                        background: white;
+                    }
+                    
+                    #editDraftModal .form-control:focus, 
+                    #editDraftModal .form-select:focus {
+                        border-color: #667eea;
+                        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+                        background: white;
+                    }
+                    
+                    #editDraftModal .card {
+                        border-radius: 12px;
+                        border: 1px solid #e2e8f0;
+                        box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+                        background: white;
+                    }
+                    
+                    #editDraftModal .card-header {
+                        background: #f8f9fa;
+                        border-bottom: 1px solid #e2e8f0;
+                        border-radius: 12px 12px 0 0 !important;
+                        padding: 1rem 1.25rem;
+                    }
+                    
+                    #editDraftModal .card-body {
+                        padding: 1.5rem;
+                    }
+                    
+                    #editDraftModal textarea.form-control {
+                        border-radius: 8px;
+                        resize: vertical;
+                    }
+                    
+                    #editDraftModal .form-label.small {
+                        font-size: 0.875rem;
+                        margin-bottom: 0.375rem;
+                        color: #64748b;
+                    }
+                    
+                    #editDraftModal .form-label.fw-bold {
+                        color: #334155;
+                    }
+                    
+                    #editDraftModal h6 {
+                        color: #1e293b;
+                        font-weight: 600;
+                    }
+                </style>
+                <input type="hidden" id="editDraftId">
+                
+                <!-- 기본 정보 -->
+                <div class="card mb-3" style="border: 1px solid #e2e8f0; border-radius: 12px; background: white;">
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <h6 class="mb-3" style="color: #1e293b; font-weight: 600;">기본 정보</h6>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="editProjName" class="form-label small">프로젝트명</label>
+                                <input type="text" class="form-control form-control-sm" id="editProjName" readonly style="background: #f8f9fa;">
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <label for="editUserName" class="form-label small">작성자</label>
+                                <input type="text" class="form-control form-control-sm" id="editUserName" readonly style="background: #f8f9fa;">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 임대차 계약 사유 -->
+                <div class="card mb-3" style="border: 1px solid #e2e8f0; border-radius: 12px; background: white;">
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <h6 class="mb-3" style="color: #1e293b; font-weight: 600;">1. 임대차 계약 사유 <span class="text-danger">*</span></h6>
+                        <textarea class="form-control" id="editRentReason" rows="4" 
+                                  placeholder="임대차 계약 사유를 상세히 입력하세요" required></textarea>
+                    </div>
+                </div>
+                
+                <!-- 계약 정보 -->
+                <div class="card mb-3" style="border: 1px solid #e2e8f0; border-radius: 12px; background: white;">
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <h6 class="mb-3" style="color: #1e293b; font-weight: 600;">2. 계약내용</h6>
+                        <div id="editContractInfo" style="max-height: 500px; overflow-y: auto;">
+                            <!-- 동적으로 채워짐 -->
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 실행예산 / 견적실행 -->
+                <div class="card mb-3" style="border: 1px solid #e2e8f0; border-radius: 12px; background: white;">
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <h6 class="mb-3" style="color: #1e293b; font-weight: 600;">3. 실행예산 / 견적실행</h6>
+                        <textarea class="form-control" id="editExecutionBudget" rows="4" 
+                                  placeholder="실행예산을 입력하세요. 실행예산이 없을 경우 견적실행을 입력하세요."></textarea>
+                    </div>
+                </div>
+                
+                <!-- 계약상 특이사항 -->
+                <div class="card mb-3" style="border: 1px solid #e2e8f0; border-radius: 12px; background: white;">
+                    <div class="card-body" style="padding: 1.5rem;">
+                        <h6 class="mb-3" style="color: #1e293b; font-weight: 600;">4. 계약상 특이사항</h6>
+                        <textarea class="form-control" id="editRentSource" rows="4" 
+                                  placeholder="계약상 특이사항이나 주의사항을 입력하세요"></textarea>
+                    </div>
+                </div>
+
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-x-circle me-2"></i>취소
+                </button>
+                <button type="button" class="btn btn-primary" onclick="saveEditedDraft()">
+                    <i class="bi bi-check-circle me-2"></i>저장
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+</main>
+</body>
+</html>

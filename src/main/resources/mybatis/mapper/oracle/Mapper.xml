@@ -8,6 +8,7 @@
         a.user_id as userId,
         a.password as userPassword,
         a.user_nm as userName,
+        b.dept_code as headCode,
         b.sub_dept_code as deptCode,
         SF_PROJ_NAME(b.sub_dept_code) as deptName,
         C.POSITION_CODE as positionCode,
@@ -24,18 +25,695 @@
     </select>
 
     <select id="getAllProjects" resultType="com.dage.rent.DTO.ProjDTO">
-        select 
-            proj_code as projCode,
-            proj_name as projName
+        select
+        proj_code as projCode,
+        proj_name as projName
         from tcc_proj_code e
         where proj_knd_tg = 'S'
-            and exists(
-                select 'y'
-                from TAC_F_REQ_FUND_WORK k
-                where to_char(k.work_ym,'yyyy') = decode(to_char(sysdate,'yyyy'),'2024',to_char(sysdate,'yyyy'),to_char(sysdate,'yyyy')-1)
-                    and k.proj_code = e.proj_code
-            )
-            AND PROJ_CODE NOT IN ('2021022402','2021021901','2021022404','2014062501','2021022403','2021022405','2014062502','2021022406','2021022407')
-        order by proj_code
+        and nvl(op_cls,'10') = '10'
+        <!--  본인권한의 프로젝트만 들고오기
+          and proj_code in (Select distinct PROJ_CODE From Table(SFCC_AUTH_PROJ2(#{e_user_no})))-->
+        and use_tag = 'T'
+        order by proj_code desc
     </select>
+
+    <select id="getSelectProjects" resultType="com.dage.rent.DTO.ComCodeDTO">
+
+        select  sati_head_code,sati_dept_code,
+        proj_code as id,
+        sf_proj_name(nvl(sati_dept_code,proj_code))||'>'||'('||proj_code||')'||proj_name as text
+        from tcc_proj_code e
+        where proj_knd_tg in ('S','D')
+        and use_tag = 'T'
+        and nvl(op_cls,'10') = '10'
+        and proj_name NOT like '(신규)%'
+        and sati_dept_code not in (2012,2031)
+        and proj_code in (Select distinct PROJ_CODE From Table(SFCC_AUTH_PROJ2(#{user_no})))
+        order by sati_head_code,sati_dept_code,proj_code desc
+
+    </select>
+
+    <select id="getUserList" resultType="com.dage.rent.DTO.ComCodeDTO">
+        select
+        emp_no id
+        , name||' '||sf_position_name(position_code)||'('||sf_proj_name(sub_dept_code)||')' text
+        from thr_pm_base
+        where retired_dt is null
+    </select>
+
+    <select id="getAdminList" resultType="com.dage.rent.DTO.LoginDTO">
+        Select
+        b.emp_no as empNo,
+        a.user_no as userNo,
+        a.user_id as userId,
+        a.user_nm as userName,
+        b.sub_dept_code as deptCode,
+        SF_PROJ_NAME(b.sub_dept_code) as deptName
+        From TCC_EMPLOYE a
+        ,THR_PM_BASE b
+        ,THR_POSITION_CODE c
+        Where a.empno = b.EMP_NO
+        AND B.POSITION_CODE = C.POSITION_CODE
+        AND B.sub_dept_code = 0107
+        AND b.emp_cls_code in ('001','004')
+        And a.USE_FG = 'T'
+        order by b.emp_no
+    </select>
+
+    <select id="getProjUserList" resultType="com.dage.rent.DTO.ComCodeDTO">
+        select
+            emp_no id
+            , name||' '||sf_position_name(position_code)||'('||sf_proj_name(sub_dept_code)||')' text
+        from thr_pm_base
+        where retired_dt is null
+        and position_code in ('41','40','06','08','27')
+        and dept_code = #{headCode}
+<!--        and emp_cls_code = '001'-->
+    </select>
+
+    <select id="getUserinfo" resultType="com.dage.rent.DTO.LoginDTO">
+        Select
+        b.emp_no as empNo,
+        a.user_no as userNo,
+        a.user_id as userId,
+        null as userPassword,
+        a.user_nm as userName,
+        b.sub_dept_code as deptCode,
+        SF_PROJ_NAME(b.sub_dept_code) as deptName,
+        sf_position_name(b.position_code) as positionName
+        From TCC_EMPLOYE a
+        ,THR_PM_BASE b
+        Where a.empno = b.EMP_NO
+        And a.empno = #{emp_no}
+    </select>
+
+    <!-- ERP 거래처 검색 -->
+    <select id="searchErpCustomers" resultType="map">
+
+        SELECT
+            a.CUST_CODE,
+            a.BIZ_NO,
+            a.CUST_NAME,
+            a.BOSS_NAME,
+            a.TRADE_CLS,
+            nvl(a.ELCT_TAG,'F') ELCT_TAG,
+            nvl(a.pay_stop_cls,'T') pay_stop_cls,
+            a.ADDR1||' '||a.ADDR2 CUST_ADD,
+            a.TELNO
+        FROM
+            TCC_CUST a
+        WHERE a.ACCOUNT_WORK = 'T'
+        AND (a.BIZ_NO||a.CUST_NAME like '%'||#{custCode}||'%'
+             OR a.CUST_NAME like '%'||#{custCode}||'%'
+             OR a.CUST_CODE like '%'||#{custCode}||'%')
+        <![CDATA[ AND ROWNUM <= 500  ]]>
+        ORDER BY
+            a.CUST_NAME,
+            a.BIZ_NO,
+            a.CUST_CODE
+
+    </select>
+
+    <select id="getEmpUserInfo" resultType="com.dage.rent.DTO.EmpUserDTO">
+        <![CDATA[
+        select
+        a.emp_no,
+        b.user_no,
+        a.name,
+        a.e_mail as email,
+        sf_position_name(a.position_code) as position_name,
+        sf_proj_name(a.dept_code) as dept_name,
+        sf_proj_name(a.sub_dept_code) as proj_name
+        from thr_pm_base a,
+        tcc_employe b
+        where a.emp_no = b.empno
+        and emp_no = #{emp_no}
+        ]]>
+    </select>
+
+    <select id="getGwPjcode" parameterType="String" resultType="String">
+        <![CDATA[
+        SELECT LPAD(GW_PROJ_CODE, 4, '0')
+        FROM   TCC_PROJ_CODE
+        WHERE proj_code = #{proj_code}
+        ]]>
+    </select>
+
+    <select id="getMstSeq" resultType="String">
+        Select SCC_E_CONF_STATUS_SEQ.NextVal MST_SEQ From Dual
+    </select>
+
+    <select id="getCustCode" resultType="String">
+        Select SCC_CUSTCODE.NextVal CUST_CODE From Dual
+    </select>
+
+    <!-- 사업자등록번호 중복 체크 -->
+    <select id="checkDuplicateBizNo" parameterType="String" resultType="int">
+        Select NVL(Count(*),0) CUST_CNT
+        From TCC_CUST a
+        Where a.BIZ_NO = SF_CUST_UMASK(#{bizNo})
+    </select>
+
+    <!-- 기존 거래처 목록 조회 (사업자등록번호 기준) -->
+    <select id="getExistingCustomers" parameterType="String" resultType="com.dage.rent.DTO.ComCodeDTO">
+        SELECT * FROM (
+            SELECT
+                a.CUST_CODE as id,
+                a.CUST_NAME || ' (' || Decode(a.TRADE_CLS,'1',SF_Cust_Mask(a.BIZ_NO),'2',SF_Cust_Mask(a.BIZ_NO), a.BIZ_NO) || ')' as text,
+                a.CUST_NAME as custName,
+                Decode(a.TRADE_CLS,'1',SF_Cust_Mask(a.BIZ_NO),'2',SF_Cust_Mask(a.BIZ_NO), a.BIZ_NO) as bizNoMasked,
+                Decode(a.TRADE_CLS,'1',SF_Cust_Mask(a.BIZ_NO),'2',SF_Cust_Mask(a.BIZ_NO), a.BIZ_NO) as bizNo
+            FROM TCC_CUST a
+            WHERE a.ACCOUNT_WORK = 'T'
+            AND a.BIZ_NO = SF_CUST_UMASK(#{bizNo})
+            ORDER BY a.CUST_NAME, a.BIZ_NO, a.CUST_CODE
+        ) WHERE ROWNUM &lt;= 500
+    </select>
+    
+            <!-- 기존 거래처 목록 조회 (디버깅용 - 간단한 버전) -->
+        <select id="getExistingCustomersDebug" parameterType="String" resultType="com.dage.rent.DTO.ComCodeDTO">
+            SELECT
+                a.CUST_CODE as id,
+                a.CUST_NAME as custName,
+                Decode(a.TRADE_CLS,'1',SF_Cust_Mask(a.BIZ_NO),'2',SF_Cust_Mask(a.BIZ_NO), a.BIZ_NO) as bizNoMasked,
+                Decode(a.TRADE_CLS,'1',SF_Cust_Mask(a.BIZ_NO),'2',SF_Cust_Mask(a.BIZ_NO), a.BIZ_NO) as bizNo,
+                a.CUST_NAME || ' (' || Decode(a.TRADE_CLS,'1',SF_Cust_Mask(a.BIZ_NO),'2',SF_Cust_Mask(a.BIZ_NO), a.BIZ_NO) || ')' as text
+            FROM TCC_CUST a
+            WHERE a.ACCOUNT_WORK = 'T'
+            AND a.BIZ_NO = SF_CUST_UMASK(#{bizNo})
+            AND ROWNUM &lt;= 5
+        </select>
+
+    <!-- ERP 프로시저 호출 -->
+    <select id="callERPProcedure" statementType="CALLABLE" parameterType="map">
+        BEGIN
+        SPCC_E_CONF_STATUS_I(
+            #{mstSeq}, #{subSeq}, #{crtUserNo}, #{makeProj}, #{makeDt},
+            #{makeSeq}, #{makeDocNo}, #{requestId}, #{requestEmpNo}, #{eDocCode},
+            #{eDocName}, #{requestName}, #{exportTag}, #{reportFileName}, #{parameters},
+            #{eDocUrl}, #{eDocFileName}, #{eConfStatus}, #{remarks}, #{록하는 ㅂㅂgjMsbh},
+            #{refNm1}, #{refNm2}, #{refNm3}, #{refNm4}, #{refNm5},
+            #{refUrl1}, #{refUrl2}, #{refUrl3}, #{refUrl4}, #{refUrl5},
+            #{makeProjName}, #{requestIdName}, #{eaId}, #{gjSeq}
+        );
+        END;
+    </select>
+
+    <!-- ERP MAKE_SEQ와 MAKE_DOC_NO 조회 -->
+    <select id="getERPMakeSeqAndDocNo" resultType="java.util.Map">
+        Select 
+            (Nvl(MAX(A.MAKE_SEQ),0)+1) MAKE_SEQ, 
+            Replace(#{makeDt},'-','')||'-'||#{makeProj}||'-'||(Nvl(MAX(A.MAKE_SEQ),0)+1) MAKE_DOC_NO 
+        From 
+            TCC_E_CONF_STATUS A 
+        Where 
+            A.MAKE_PROJ = #{makeProj}
+            And A.MAKE_DT = SF_StringToDate(#{makeDt})
+    </select>
+
+    <!-- EAID로 E_DOC_CODE와 E_DOC_NAME 조회 -->
+    <select id="getEDocCodeAndName" resultType="java.util.Map">
+        Select 
+            Nvl(MAX(A.E_DOC_NAME),'') E_DOC_NAME, 
+            Nvl(MAX(A.E_DOC_CODE),'') E_DOC_CODE 
+        From 
+            TCC_E_DOC_CODE A 
+        Where 
+            EAID = #{eaId}
+    </select>
+
+    <!-- 은행 목록 조회 -->
+    <select id="getBankList" resultType="com.dage.rent.DTO.ComCodeDTO">
+        SELECT 
+            A.BANK_MAIN_CODE as id,
+            A.BANK_MAIN_NAME as text
+        FROM TIA_BANK_MAIN A
+        WHERE A.USE_TAG = 'T'
+        ORDER BY A.BANK_MAIN_CODE
+    </select>
+
+    <!-- 고객 프로젝트 등록 프로시저 호출 -->
+    <select id="callCustProjProcedure" statementType="CALLABLE" parameterType="map">
+        BEGIN
+        -- 1. 거래처 등록 프로시저 호출
+        SPCC_CUST_PROJ_I(
+            #{custCode,jdbcType=VARCHAR}, #{crtUserNo,jdbcType=VARCHAR}, #{reqEmpNo,jdbcType=VARCHAR}, #{projCode,jdbcType=VARCHAR}, #{bizNo,jdbcType=VARCHAR},
+            #{custName,jdbcType=VARCHAR}, #{bossName,jdbcType=VARCHAR}, #{tradeCls,jdbcType=VARCHAR}, #{bizCond,jdbcType=VARCHAR}, #{bizKnd,jdbcType=VARCHAR},
+            #{zipCode,jdbcType=VARCHAR}, #{addr1,jdbcType=VARCHAR}, #{addr2,jdbcType=VARCHAR}, #{telNo,jdbcType=VARCHAR}, #{headFax,jdbcType=VARCHAR},
+            #{bankMainCode,jdbcType=VARCHAR}, #{bankCode,jdbcType=VARCHAR}, #{custAccNo,jdbcType=VARCHAR}, #{elctTag,jdbcType=VARCHAR}, #{cOwner,jdbcType=VARCHAR},
+            #{remark,jdbcType=VARCHAR}, #{taxCls,jdbcType=VARCHAR}, #{representCustCode,jdbcType=VARCHAR}, #{sBankNo,jdbcType=VARCHAR}, #{regCls,jdbcType=VARCHAR}
+        );
+        
+        -- 2. 거래처 정보 업데이트 (수정자, 수정일, 요청일, 요청자 정보)
+        UPDATE tcc_cust_proj
+        SET    moduserno = #{crtUserNo,jdbcType=VARCHAR},
+               moddate = sysdate,
+               req_dt = sysdate,
+               req_emp_no = #{reqEmpNo,jdbcType=VARCHAR}
+        WHERE  cust_code = #{custCode,jdbcType=VARCHAR};
+        
+        END;
+    </select>
+
+    <!-- 직원이름 조회 -->
+    <select id="getEmployeeName" parameterType="String" resultType="String">
+        SELECT user_nm FROM tcc_employe WHERE empno = #{emp_no}
+    </select>
+
+    <!-- SFCC_E_CONF_STATUS_LAST 함수 호출 -->
+    <select id="getConfStatus" parameterType="String" resultType="String">
+        SELECT SFCC_E_CONF_STATUS_LAST(#{mstSeq}) FROM DUAL
+    </select>
+
+    <!-- 승인된 거래처 가져오기 -->
+    <select id="getCustCodeForapprT" parameterType="String" resultType="CustDTO">
+        SELECT 
+            cust_code,
+            TO_CHAR(req_dt, 'YYYYMMDD') as req_dt,
+            req_emp_no,
+            app_emp_no,
+            app_tg,
+            proj_code,
+            biz_no,
+            cust_name,
+            boss_name,
+            trade_cls,
+            bizcond,
+            bizknd,
+            zipcode,
+            addr1,
+            addr2,
+            telno,
+            head_fax,
+            bank_main_code,
+            cust_accno,
+            c_owner,
+            tax_cls
+        FROM tcc_cust_proj 
+        WHERE cust_code = #{cust_code}
+<!--  and app_tg = 'T'-->
+    </select>
+
+    <!-- 임대차 계약 시퀀스 조회 -->
+    <select id="getLeaseSeq" resultType="String">
+        SELECT SIA_B_LEASE_SEQ.nextval as SEQ FROM dual
+    </select>
+
+    <!-- 임대차 계약 번호 시퀀스 조회 -->
+    <select id="getLeaseContNo" resultType="String">
+        SELECT SIA_B_LEASE_LR_CONT_SEQ.nextval as SEQ FROM dual
+    </select>
+    
+    <!-- 임대차 계약 상세 시퀀스 조회 -->
+    <select id="getLeaseContSeq" resultType="Integer">
+        SELECT SIA_B_LEASE_CONT_SEQ.nextval as CONT_SEQ FROM dual
+    </select>
+
+    <!-- 임대차 계약 상세 등록 프로시저 호출 -->
+    <select id="callLeaseContProcedure" statementType="CALLABLE" parameterType="com.dage.rent.DTO.LeaseProcedureDTO">
+        BEGIN
+        SPIA_B_LEASE_CONT_I(
+            #{arCompanyCode,jdbcType=VARCHAR},
+            #{arSeq,jdbcType=NUMERIC},
+            1,  -- AR_CONT_SEQ (1차 계약)
+            #{arCrtUserNo,jdbcType=NUMERIC},
+            1,  -- AR_CONT_NAME (1차 계약)
+            #{arExprDt,jdbcType=VARCHAR},  -- AR_CHG_DT
+            #{arDpstAmt,jdbcType=NUMERIC},
+            #{arMonRent,jdbcType=NUMERIC},
+            #{arRemarks,jdbcType=VARCHAR},
+            #{arExprDt,jdbcType=VARCHAR},  -- AR_CONT_BASE_DT
+            #{arExprDt,jdbcType=VARCHAR},  -- AR_EXPR_DT
+            #{arCrncCode,jdbcType=VARCHAR}
+        );
+        END;
+    </select>
+
+    <!-- TIA_B_LEASE_CONT 테이블에 직접 INSERT -->
+    <insert id="insertLeaseCont" parameterType="map">
+        INSERT INTO TIA_B_LEASE_CONT
+        (
+            COMPANY_CODE,
+            SEQ,
+            CONT_SEQ,
+            CRTUSERNO,
+            CRTDATE,
+            CONT_NAME,
+            CHG_DT,
+            DPST_AMT,
+            MON_RENT,
+            REMARKS,
+            EXPR_DT,
+            CRNC_CODE,
+            CONT_BASE_DT
+        )
+        VALUES
+        (
+            #{companyCode},
+            #{seq},
+            #{contSeq},
+            #{crtUserNo,jdbcType=NUMERIC},
+            SYSDATE,
+            #{contName},
+            SF_StringToDate(#{chgDt}),
+            #{dpstAmt},
+            #{monRent},
+            #{remarks},
+            SF_StringToDate(#{exprDt}),
+            #{crncCode},
+            #{contBaseDt}
+        )
+    </insert>
+
+    <!-- TIA_B_LEASE_TRAN 테이블에 직접 INSERT (보증금만 있는 경우) -->
+    <insert id="insertLeaseTranDeposit" parameterType="map">
+        INSERT INTO TIA_B_LEASE_TRAN
+        (COMPANY_CODE, SEQ, TRAN_SEQ, CRTUSERNO, CRTDATE, TRAN_DT,
+         VAT_CODE, DPST_AMT, DPST_AMT_RTN, MON_RENT, VAT_AMT, REMARK,
+         BLTR_COMPANY_CODE, BLTR_SEQ, SLIP_ID, SLIP_IDSEQ, CONT_SEQ)
+        SELECT
+            A.COMPANY_CODE,
+            A.SEQ,
+            SIA_B_LEASE_TRAN_SEQ.NEXTVAL as TRAN_SEQ,
+            #{userNo,jdbcType=NUMERIC} as CRTUSERNO,
+            SYSDATE as CRTDATE,
+            TO_DATE(A.TRAN_DT, 'YYYY-MM-DD') as TRAN_DT,
+            NULL as VAT_CODE,
+            A.DPST_AMT,
+            A.DPST_AMT_RTN,
+            A.MON_RENT,
+            0 as VAT_AMT,
+            A.REMARK,
+            NULL as BLTR_COMPANY_CODE,
+            NULL as BLTR_SEQ,
+            NULL as SLIP_ID,
+            NULL as SLIP_IDSEQ,
+            A.CONT_SEQ
+        FROM (
+            SELECT
+                A.COMPANY_CODE,
+                A.SEQ,
+                B.CONT_SEQ,
+                SF_DATETOSTRING(A.CONT_DT) AS TRAN_DT,
+                B.DPST_AMT,
+                0 as MON_RENT,
+                0 as DPST_AMT_RTN,
+                '최초계약, 보증금' as REMARK
+            FROM TIA_B_LEASE A, TIA_B_LEASE_CONT B
+            WHERE A.SEQ = B.SEQ
+            AND A.SEQ = #{seq}
+            AND B.CONT_SEQ = #{contSeq}
+            
+            UNION ALL
+            
+            SELECT
+                A.COMPANY_CODE,
+                A.SEQ,
+                B.CONT_SEQ,
+                SF_DATETOSTRING(B.CHG_DT) AS TRAN_DT,
+                0 as DPST_AMT,
+                0 as MON_RENT,
+                B.DPST_AMT as DPST_AMT_RTN,
+                '계약종료, 보증금 상환' as REMARK
+            FROM TIA_B_LEASE A, TIA_B_LEASE_CONT B
+            WHERE A.SEQ = B.SEQ
+            AND A.SEQ = #{seq}
+            AND B.CONT_SEQ = #{contSeq}
+        ) A
+    </insert>
+
+    <!-- TIA_B_LEASE_INTR 테이블에 직접 INSERT -->
+    <insert id="insertLeaseIntr" parameterType="map">
+        INSERT INTO TIA_B_LEASE_INTR
+        (COMPANY_CODE, SEQ, INTR_DT_F, CRTUSERNO, CRTDATE,
+         INTR_DT_T, DPST_AMT, INTR_RATE, INTR_AMT, CONT_SEQ)
+        SELECT
+            COMPANY_CODE,
+            SEQ,
+            V_ST as INTR_DT_F,
+            #{userNo,jdbcType=NUMERIC} as CRTUSERNO,
+            SYSDATE as CRTDATE,
+            V_FN as INTR_DT_T,
+            DPST_AMT,
+            DPST_INTR_RATE as INTR_RATE,
+            ROUND(((V_DAY/365)*(DPST_INTR_RATE/100))*DPST_AMT) as INTR_AMT,
+            CONT_SEQ
+        FROM (
+            SELECT
+                LEV,
+                LAST_LEV,
+                CONT_DT,
+                CHG_DT,
+                (CASE WHEN LEV=1 THEN CONT_DT ELSE V_ST END) as V_ST,
+                (CASE WHEN LEV=LAST_LEV THEN CHG_DT ELSE V_FN END) as V_FN,
+                ((CASE WHEN LEV=LAST_LEV THEN CHG_DT ELSE V_FN END)-(CASE WHEN LEV=1 THEN CONT_DT ELSE V_ST END))+1 as V_DAY,
+                DPST_INTR_RATE,
+                DPST_AMT,
+                SEQ,
+                CONT_SEQ,
+                COMPANY_CODE
+            FROM (
+                SELECT
+                    LEVEL as LEV,
+                    CONT_DT,
+                    CHG_DT,
+                    TO_DATE(TO_CHAR(ADD_MONTHS(TO_DATE(ST_DT,'YYYYMM'), LEVEL-1),'YYYY-MM')||'-01', 'YYYY-MM-DD') as V_ST,
+                    LAST_DAY(TO_DATE(TO_CHAR(ADD_MONTHS(TO_DATE(ST_DT,'YYYYMM'), LEVEL-1),'YYYY-MM')||'-01', 'YYYY-MM-DD')) as V_FN,
+                    DPST_INTR_RATE,
+                    DPST_AMT,
+                    COUNT(*)OVER() as LAST_LEV,
+                    SEQ,
+                    CONT_SEQ,
+                    COMPANY_CODE
+                FROM (
+                    SELECT
+                        A.COMPANY_CODE,
+                        A.DPST_INTR_RATE,
+                        B.DPST_AMT,
+                        A.CONT_DT,
+                        B.CHG_DT,
+                        TO_CHAR(A.CONT_DT,'YYYYMM') as ST_DT,
+                        TO_CHAR(B.CHG_DT,'YYYYMM') as FN_DT,
+                        A.SEQ,
+                        B.CONT_SEQ
+                    FROM TIA_B_LEASE A, TIA_B_LEASE_CONT B
+                    WHERE A.SEQ = B.SEQ
+                    AND A.SEQ = #{seq}
+                    AND B.CONT_SEQ = #{contSeq}
+                ) A
+
+         CONNECT BY LEVEL <![CDATA[ <= ]]> MONTHS_BETWEEN(TO_DATE(FN_DT,'YYYYMM'),TO_DATE(ST_DT,'YYYYMM'))+1
+
+            ) Z
+        ) X
+    </insert>
+
+    <!-- TIA_B_LEASE 테이블에 직접 INSERT -->
+    <insert id="insertLease" parameterType="com.dage.rent.DTO.LeaseProcedureDTO">
+        INSERT INTO TIA_B_LEASE
+        (
+            COMPANY_CODE,
+            SEQ,
+            CRTUSERNO,
+            CRTDATE,
+            MODUSERNO,
+            MODDATE,
+            B_LEASE_CLS,
+            CONT_NO,
+            PROJ_CODE,
+            CONT_DT,
+            EXPR_DT,
+            EXPR_CHG_DT,
+            L_CUST_CODE,
+            H_CUST_CODE,
+            ZIPCODE,
+            ADDR1,
+            ADDR2,
+            AREA,
+            USE_TYPE,
+            DPST_AMT,
+            MON_RENT,
+            PAY_DAYS,
+            FIN_TAG,
+            REMARKS,
+            L_CUST_NAME,
+            H_CUST_NAME,
+            BANK_MAIN_CODE,
+            BANK_MAIN_NAME,
+            ACCNO,
+            ACC_OWNER,
+            DPST_INTR_RATE,
+            CAR_NUM,
+            L_CODE,
+            CRNC_CODE,
+            FC_DPST_AMT,
+            FC_MON_RENT,
+            CONT_TITLE,
+            RSRC_CODE,
+            LEQU_TYPE,
+            INSU_END_DT,
+            CHK_END_DT,
+            USERS,
+            AUTO_EXT_YN,
+            AUTO_EXT_LIMIT,
+            EXPR_LIMIT,
+            EXPR_SND_DT,
+            FIN_DT,
+            DAYMON_CLS,
+            PAY_CYCLE,
+            PRE_LATER,
+            LR_CONT_NO
+        )
+        VALUES
+        (
+            #{arCompanyCode},
+            #{arSeq},
+            #{arCrtUserNo},
+            SYSDATE,
+            NULL,
+            NULL,
+            #{arBLeaseCls},
+            #{arContNo},
+            #{arProjCode},
+            <if test="arContDt != null">SF_StringToDate(#{arContDt,jdbcType=VARCHAR})</if>
+            <if test="arContDt == null">NULL</if>,
+            <if test="arExprDt != null">SF_StringToDate(#{arExprDt,jdbcType=VARCHAR})</if>
+            <if test="arExprDt == null">NULL</if>,
+            <if test="arExprChgDt != null">SF_StringToDate(#{arExprChgDt,jdbcType=VARCHAR})</if>
+            <if test="arExprChgDt == null">NULL</if>,
+            #{arLCustCode,jdbcType=NUMERIC},
+            #{arHCustCode,jdbcType=NUMERIC},
+            #{arZipcode,jdbcType=VARCHAR},
+            #{arAddr1,jdbcType=VARCHAR},
+            #{arAddr2,jdbcType=VARCHAR},
+            #{arArea,jdbcType=VARCHAR},
+            #{arUseType,jdbcType=VARCHAR},
+            #{arDpstAmt,jdbcType=NUMERIC},
+            #{arMonRent,jdbcType=NUMERIC},
+            25,
+            #{arFinTag,jdbcType=VARCHAR},
+            #{arRemarks,jdbcType=VARCHAR},
+            #{arLCustName,jdbcType=VARCHAR},
+            #{arHCustName,jdbcType=VARCHAR},
+            #{arBankMainCode,jdbcType=VARCHAR},
+            #{arBankMainName,jdbcType=VARCHAR},
+            #{arAccno,jdbcType=VARCHAR},
+            #{arAccOwner,jdbcType=VARCHAR},
+            #{arDpstIntrRate,jdbcType=NUMERIC},
+            #{arCarNum,jdbcType=VARCHAR},
+            #{arLCode,jdbcType=VARCHAR},
+            #{arCrncCode,jdbcType=VARCHAR},
+            #{arFcDpstAmt,jdbcType=NUMERIC},
+            #{arFcMonRent,jdbcType=NUMERIC},
+            #{arContTitle,jdbcType=VARCHAR},
+            #{arRsrcCode,jdbcType=VARCHAR},
+            #{arLequType,jdbcType=VARCHAR},
+            <if test="arInsuEndDt != null">SF_StringToDate(#{arInsuEndDt,jdbcType=VARCHAR})</if>
+            <if test="arInsuEndDt == null">NULL</if>,
+            <if test="arChkEndDt != null">SF_StringToDate(#{arChkEndDt,jdbcType=VARCHAR})</if>
+            <if test="arChkEndDt == null">NULL</if>,
+            #{arUsers,jdbcType=VARCHAR},
+            #{arAutoExtYn,jdbcType=VARCHAR},
+            #{arAutoExtLimit,jdbcType=VARCHAR},
+            #{arExprLimit,jdbcType=VARCHAR},
+            <if test="arExprSndDt != null">SF_StringToDate(#{arExprSndDt,jdbcType=VARCHAR})</if>
+            <if test="arExprSndDt == null">NULL</if>,
+            <if test="arFinDt != null">SF_StringToDate(#{arFinDt,jdbcType=VARCHAR})</if>
+            <if test="arFinDt == null">NULL</if>,
+            #{arDaymonCls,jdbcType=VARCHAR},
+            #{arPayCycle,jdbcType=NUMERIC},
+            #{arPreLater,jdbcType=VARCHAR},
+            #{arLrContNo,jdbcType=VARCHAR}
+        )
+    </insert>
+
+    <!-- 임대차 계약 등록 프로시저 호출 -->
+    <select id="callLeaseProcedure" statementType="CALLABLE" parameterType="com.dage.rent.DTO.LeaseProcedureDTO">
+        BEGIN
+        SPIA_B_LEASE01_I(
+            #{arCompanyCode,jdbcType=VARCHAR},
+            #{arSeq,jdbcType=NUMERIC},
+            #{arCrtUserNo,jdbcType=NUMERIC},
+            #{arBLeaseCls,jdbcType=VARCHAR},
+            #{arContNo,jdbcType=VARCHAR},
+            #{arProjCode,jdbcType=VARCHAR},
+            #{arContDt,jdbcType=VARCHAR},
+            #{arExprDt,jdbcType=VARCHAR},
+            #{arExprChgDt,jdbcType=VARCHAR},
+            #{arLCustCode,jdbcType=NUMERIC},
+            #{arHCustCode,jdbcType=NUMERIC},
+            #{arZipcode,jdbcType=VARCHAR},
+            #{arAddr1,jdbcType=VARCHAR},
+            #{arAddr2,jdbcType=VARCHAR},
+            #{arArea,jdbcType=VARCHAR},
+            #{arUseType,jdbcType=VARCHAR},
+            #{arDpstAmt,jdbcType=NUMERIC},
+            #{arMonRent,jdbcType=NUMERIC},
+            #{arPayDays,jdbcType=NUMERIC},
+            #{arFinTag,jdbcType=VARCHAR},
+            #{arRemarks,jdbcType=VARCHAR},
+            #{arLCustName,jdbcType=VARCHAR},
+            #{arHCustName,jdbcType=VARCHAR},
+            #{arBankMainCode,jdbcType=VARCHAR},
+            #{arBankMainName,jdbcType=VARCHAR},
+            #{arAccno,jdbcType=VARCHAR},
+            #{arAccOwner,jdbcType=VARCHAR},
+            #{arDpstIntrRate,jdbcType=NUMERIC},
+            #{arCarNum,jdbcType=VARCHAR},
+            #{arLCode,jdbcType=VARCHAR},
+            #{arCrncCode,jdbcType=VARCHAR},
+            #{arFcDpstAmt,jdbcType=NUMERIC},
+            #{arFcMonRent,jdbcType=NUMERIC},
+            #{arContTitle,jdbcType=VARCHAR},
+            #{arRsrcCode,jdbcType=VARCHAR},
+            #{arLequType,jdbcType=VARCHAR},
+            #{arInsuEndDt,jdbcType=VARCHAR},
+            #{arChkEndDt,jdbcType=VARCHAR},
+            #{arUsers,jdbcType=VARCHAR},
+            #{arAutoExtYn,jdbcType=VARCHAR},
+            #{arAutoExtLimit,jdbcType=VARCHAR},
+            #{arExprLimit,jdbcType=VARCHAR},
+            #{arExprSndDt,jdbcType=VARCHAR},
+            #{arFinDt,jdbcType=VARCHAR},
+            #{arDaymonCls,jdbcType=VARCHAR},
+            #{arPayCycle,jdbcType=VARCHAR},
+            #{arPreLater,jdbcType=VARCHAR},
+            #{arLrContNo,jdbcType=VARCHAR}
+        );
+        END;
+    </select>
+
+    <!-- 사업자등록번호로 거래처 코드 조회 -->
+    <select id="getCustCodeByBizNo" parameterType="String" resultType="String">
+        SELECT cust_code 
+        FROM tcc_cust_proj 
+        WHERE biz_no = #{bizNo}
+        AND ROWNUM = 1
+    </select>
+
+    <!-- ERP 등록 테스트 데이터 삭제 (SEQ 기준) -->
+    <!-- 1. TIA_B_LEASE_INTR 삭제 -->
+    <delete id="deleteLeaseIntr" parameterType="Integer">
+        DELETE FROM TIA_B_LEASE_INTR
+        WHERE SEQ = #{seq}
+    </delete>
+    
+    <!-- 2. TIA_B_LEASE_TRAN 삭제 -->
+    <delete id="deleteLeaseTran" parameterType="Integer">
+        DELETE FROM TIA_B_LEASE_TRAN
+        WHERE SEQ = #{seq}
+    </delete>
+    
+    <!-- 3. TIA_B_LEASE_CONT 삭제 -->
+    <delete id="deleteLeaseCont" parameterType="Integer">
+        DELETE FROM TIA_B_LEASE_CONT
+        WHERE SEQ = #{seq}
+    </delete>
+    
+    <!-- 4. TIA_B_LEASE 삭제 -->
+    <delete id="deleteLease" parameterType="Integer">
+        DELETE FROM TIA_B_LEASE
+        WHERE SEQ = #{seq}
+    </delete>
+
 </mapper>

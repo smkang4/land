@@ -1,395 +1,525 @@
 <!DOCTYPE html>
-<html lang="ko" xmlns:th="http://www.w3.org/1999/xhtml">
-<!--<head th:replace="fragments/head :: headFragment">-->
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="_csrf" th:content="${_csrf?.token}"/>
-    <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
-<!--    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR&display=swap" rel="stylesheet">-->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>부동산 임차관리 플랫폼</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <link rel="stylesheet" href="/css/index.css">
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <title>부동산 물건 사전조사서 등록</title>
+    <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
 
-    <script>
-
-        function sample6_execDaumPostcode() {
-
-             new daum.Postcode({
-                 oncomplete: function(data) {
-                     var addr = ''; // 주소 변수
-                     var extraAddr = ''; // 참고항목 변수
-
-                     if (data.userSelectedType === 'R') {
-                         addr = data.roadAddress;
-                     } else { // 사용자가 지번 주소를 선택했을 경우(J)
-                         addr = data.jibunAddress;
-                     }
-
-                     if(data.userSelectedType === 'R'){
-                         // 법정동명이 있을 경우 추가한다. (법정리는 제외)
-                         // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
-                         if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
-                             extraAddr += data.bname;
-                         }
-                         // 건물명이 있고, 공동주택일 경우 추가한다.
-                         if(data.buildingName !== '' && data.apartment === 'Y'){
-                             extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
-                         }
-                         // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
-                         if(extraAddr !== ''){
-                             extraAddr = ' (' + extraAddr + ')';
-                         }
-                         // 조합된 참고항목을 해당 필드에 넣는다.
-                         document.getElementById("address").value = extraAddr;
-
-                     } else {
-                         document.getElementById("address").value = '';
-                     }
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/index.css}">
 
 
-                     document.getElementById("address").value = addr;
-                     document.getElementById("address2").focus();
-                 }
-             }).open();
-            }
-    </script>
-
-    <style>
-        body {
-            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-        }
-
-        .nav-pills .nav-link:hover {
-            background-color: #0d6efd;
-            color: #fff;
-        }
-
-        .select2-container {
-            padding: 0px !important;
-
-        }
-
-        .select2-selection {
-           height: 40px !important;
-        }
-
-        #select2-select_place-container {
-            margin-top: 5px;
-        }
-
-        .select2-container--default .select2-selection--single {
-            border: 1px solid lightgray;
-            align-content: space-evenly;
-        }
-    </style>
 </head>
-<body class="bg-light">
+<body>
+<header class="main-header">
+    <div class="header-content">
+        <div class="logo-container">
+            <img src="/images/dongah.gif" alt="로고" class="logo">
+            <span class="header-title">부동산 임차관리 플랫폼</span>
+        </div>
+        <div class="user-info">
+            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
+            <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
+            <a href="/" class="btn btn-back me-2">
+                <i class="bi bi-arrow-left"></i> 메인
+            </a>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-action">로그아웃</button>
+            </form>
+        </div>
+    </div>
+</header>
+<style>
+    html {
+     height: 1%;
+    }
 
-<div class="container">
-    <header class="d-flex flex-wrap justify-content-between py-3 mb-2 mt-3 border-bottom">
-        <ul class="nav nav-pills">
-            <img class="d-block mx-auto mb-2" src="/images/dongah.gif" alt="" width="52" height="37">
-        </ul>
-        <ul class="nav nav-pills">
-            <li class="nav-item"><a href="/list" class="nav-link">내가 등록한 리스트</a></li>
-            <li class="nav-item"><a href="#" class="nav-link" data-bs-toggle="modal" data-bs-target="#logoutModal">Logout</a></li>
-        </ul>
-    </header>
-</div>
+    .amount-input, .area-input, .personnel-input {
+        text-align: right;
+    }
 
-<div class="container">
+    .styled-number {
+        display: inline-block;
+        background: linear-gradient(45deg, #007bff, #0056b3);
+        color: white;
+        padding: 2px 8px;
+        border-radius: 12px;
+        font-size: 0.7rem;
+        font-weight: bold;
+        margin-right: 8px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+        min-width: 24px;
+        text-align: center;
+    }
+
+    .title-design {
+        color: #2c3e50;
+        font-weight: 700;
+        font-size: 2.2rem;
+        margin-bottom: 0;
+        padding-bottom: 15px;
+        border-bottom: 3px solid #3498db;
+        display: inline-block;
+        position: relative;
+    }
+
+    .title-design::after {
+        content: '';
+        position: absolute;
+        bottom: -3px;
+        left: 0;
+        width: 60px;
+        height: 3px;
+        background: linear-gradient(90deg, #e74c3c, #f39c12);
+    }
+
+    .title-design i {
+        color: #3498db;
+        font-size: 2rem;
+    }
+
+    .title-container {
+        position: relative;
+        padding: 10px 0;
+    }
+
+    .title-design-2 {
+        color: #1a1a1a;
+        font-weight: 800;
+        font-size: 1.8rem;
+        margin: 0;
+        position: relative;
+    }
+
+    .title-design-2::before {
+        content: '';
+        position: absolute;
+        left: -15px;
+        top: 0;
+        bottom: 0;
+        width: 3px;
+        background: linear-gradient(180deg, #667eea 0%, #764ba2 100%);
+        border-radius: 2px;
+    }
+</style>
+
+    <!-- 메인 컨텐츠 -->
     <main>
-        <div class="py-5 text-center">
-           <h3>부동산 물건 사전조사서</h3>
+
+    <div class="container">
+                <div>
+            <div class="title-container">
+                <h2 class="title-design-2">
+                    부동산 물건 사전조사서 작성
+                </h2>
+            </div>
         </div>
 
-        <div class="row g-5">
-            <div class="col-md-7 col-lg-8">
-                <h4 class="mb-3 text-primary">1. 주소 입력</h4>
-                <form class="needs-validation" id="requestForm" novalidate="">
-                    <div class="row g-3">
-                        <div class="col-9">
-                            <label for="address" class="form-label">주소</label>
-                            <input type="text" class="form-control" id="address" placeholder="주소를 입력하세요" required
-                                   th:value="${contract != null ? contract.address : ''}" >
-                            <div class="invalid-feedback">
-                                Please enter your shipping address.
-                            </div>
-                        </div>
-                        <div class="col-3 mt-5">
-                            <input type="button" class="btn btn-primary" onclick="sample6_execDaumPostcode()" value="주소검색" required>
-                        </div>
-                        <div class="col-12">
-                            <label for="address2" class="form-label">상세주소</label>
-                            <input type="text" class="form-control" id="address2" placeholder="상세주소를 입력하세요(ex.동/번지)" required
-                                   th:value="${contract != null ? contract.address_d : ''}" >
-                        </div>
+        <div class="row g-4 mt-5">
+            <div class="col-lg-6">
+                <h4 class="section-title">1. 물건정보</h4>
+                <div class="checklist-section">
+                    <form class="needs-validation" id="requestForm" novalidate="">
+                        <div class="info-section mt-3">
 
-                        <div class="col-12">
-                            <label for="con" class="form-label">현장명</label>
-                            <select class="form-select select2" id="con" required>
-                                <option>현장</option>
-                            </select>
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="c_date" class="form-label">계약(예정)일자</label>
-                            <input type="date" class="form-control" id="c_date" required
-                                   th:value="${contract != null ? contract.cont_date : ''}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="l_date" class="form-label">입주(예정)일자</label>
-                            <input type="date" class="form-control" id="l_date" required
-                                   th:value="${contract != null ? contract.move_date : ''}">
-                        </div>
-                        <div class="col-md-3">
-                            <label for="select" class="form-label">거래방식</label>
-                            <select class="form-select" id="select" required>
-                                <option value="전월세" th:selected="${contract != null and contract.trans_type=='전월세'}">전월세</option>
-                                <option value="전세" th:selected="${contract != null and contract.trans_type=='전세'}">전세</option>
-                                <option value="월세" th:selected="${contract != null and contract.trans_type=='월세'}">월세</option>
-                            </select>
-                        </div>
-                        <div class="col-md-3">
-                            <label for="rate" class="form-label">계약금</label>
-                           <input type="text" id="rate" class="form-control" placeholder="계약금" required
-                                  th:value="${contract != null and contract.contAmt != 0 ? contract.cont_amt : ''}" >
-                        </div>
-                        <div class="col-md-3">
-                            <label for="rate2" class="form-label">보증금</label>
-                            <input type="text" id="rate2" class="form-control" placeholder="보증금" required
-                                   th:value="${contract != null and contract.depositAmt != 0 ? contract.deposit_amt : ''}" >
-                        </div>
-                        <div class="col-md-3">
-                            <label for="rate3" class="form-label">월세</label>
-                            <input type="text" id="rate3" class="form-control" placeholder="월세" required
-                                   th:value="${contract != null and contract.rentAmt != 0 ? contract.rent_amt : ''}">
-                        </div>
-
-                        <div class="col-md-3">
-                            <label for="state" class="form-label">주택유형</label>
-                            <select class="form-select" id="state" required>
-                                <option value="아파트" th:selected="${contract != null and contract.res_type=='아파트'}">아파트</option>
-                                <option value="공동주택" th:selected="${contract != null and contract.res_type=='공동주택'}">공동주택</option>
-                                <option value="원룸" th:selected="${contract != null and contract.res_type=='원룸'}">원룸</option>
-                            </select>
-                            <div class="invalid-feedback">
-                                Please provide a valid state.
+                            <div class="row g-2">
+                                <div class="col-md-12">
+                                    <div class="form-row">
+                                        <label for="address" class="form-label">부동산소재지</label>
+                                        <div class="input-group">
+                                            <input type="text" class="form-control" id="address" placeholder="주소를 입력하세요" required readonly
+                                                   th:value="${temp != null ? temp.address : (contract != null ? contract.address : '')}"
+                                                   onclick="sample6_execDaumPostcode()">
+                                            <button type="button" class="btn btn-action" onclick="sample6_execDaumPostcode()">주소검색</button>
+                                            <input type="hidden" id="postCode" name="postCode" th:value="${temp != null ? temp.post_code : (contract != null ? contract.post_code : '')}">
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-row">
+                                        <label for="address2" class="form-label">상세주소(필수기재)</label>
+                                        <input type="text" class="form-control" id="address2" placeholder="상세주소를 입력하세요" required
+                                               th:value="${temp != null ? temp.address_d : (contract != null ? contract.address_d : '')}">
+                                    </div>
+                                </div>
                             </div>
                         </div>
 
-                        <div class="col-md-3">
-                            <label for="zip" class="form-label">면적(m2)</label>
-                            <input type="text" class="form-control" id="zip" placeholder="면적" required
-                                   th:value="${contract != null and contract.area != 0 ? contract.area : ''}" >
-                            <div class="invalid-feedback">
-                                Zip code required.
+                        <div class="info-section mt-2">
+
+                            <div class="row g-2">
+                                <div class="col-md-12">
+                                    <div class="form-row">
+                                        <label for="con" class="form-label">사용현장</label>
+                                        <select class="form-select select2" id="con" required>
+                                            <option>현장</option>
+                                        </select>
+                                    </div>
+                                </div>
+
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="source" class="form-label">부동산정보</label>
-                            <input type="text" class="form-control" id="source" placeholder="부동산명" required
-                                   th:value="${contract != null ? contract.source : ''}"
-                                   >
-                            <div class="invalid-feedback">
-                                Zip code required.
+
+                        <div class="info-section mt-2">
+                            <div class="row g-2">
+                                <div class="col-md-4">
+                                    <div class="form-row">
+                                        <label for="c_date" class="form-label">계약(예정)일자</label>
+                                        <input type="date" class="form-control" id="c_date" required
+                                               th:value="${temp != null ? temp.cont_date : (contract != null ? contract.cont_date : '')}">
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-row">
+                                        <label for="contract_period" class="form-label">계약기간</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control" id="contract_period" placeholder="계약기간" min="1" required
+                                                   th:value="${temp != null ? temp.cont_period : (contract != null ? contract.cont_period : '')}">
+                                            <span class="input-group-text">개월</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="form-row">
+                                        <label for="l_date" class="form-label">입주(예정)일자</label>
+                                        <input type="date" class="form-control" id="l_date" required
+                                               th:value="${temp != null ? temp.move_date : (contract != null ? contract.move_date : '')}">
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="col-md-3">
-                            <label for="accu" class="form-label">사용(예상)인원</label>
-                            <input type="text" class="form-control" id="accu" placeholder="면적" required
-                                   th:value="${contract != null and contract.accu != 0 ? contract.accu : ''}">
-                            <div class="invalid-feedback">
-                                Zip code required.
+
+                        <div class="info-section mt-2">
+                            <div class="row g-2">
+                        <div class="col-md-4">
+                            <div class="form-row">
+                                <label for="state" class="form-label">주택유형</label>
+                                <select class="form-select" id="state" required>
+                                    <option value="아파트" th:selected="${temp != null and temp.res_type=='아파트' or contract != null and contract.res_type=='아파트'}">아파트</option>
+                                    <option value="공동주택" th:selected="${temp != null and temp.res_type=='공동주택' or contract != null and contract.res_type=='공동주택'}">공동주택</option>
+                                    <option value="오피스텔" th:selected="${temp != null and temp.res_type=='오피스텔' or contract != null and contract.res_type=='오피스텔'}">오피스텔</option>
+                                    <option value="원룸" th:selected="${temp != null and temp.res_type=='원룸' or contract != null and contract.res_type=='원룸'}">원룸</option>
+                                </select>
                             </div>
                         </div>
-                    </div>
-                    <input type="hidden" id="seq" name="seq"  th:value="${contract != null and contract.seq != 0 ? contract.seq : ''}">
-                </form>
+                        <div class="col-md-4">
+                            <div class="form-row">
+                                <label for="select" class="form-label">거래방식</label>
+                                <select class="form-select" id="select" required>
+                                    <option value="전월세" th:selected="${temp != null and temp.trans_type=='전월세' or contract != null and contract.trans_type=='전월세'}">전월세</option>
+                                    <option value="전세" th:selected="${temp != null and temp.trans_type=='전세' or contract != null and contract.trans_type=='전세'}">전세</option>
+                                    <option value="월세" th:selected="${temp != null and temp.trans_type=='월세' or contract != null and contract.trans_type=='월세'}">월세</option>
+                                </select>
+                            </div>
+                        </div>
+                                <div class="col-md-4">
+                                    <div class="form-row">
+                                        <label for="zip" class="form-label">전용면적(m²)</label>
+                                        <div class="input-group">
+                                            <input type="number" class="form-control area-input" id="zip" placeholder="면적" required min="1" step="1"
+                                                   th:value="${temp != null and temp.area != 0 ? temp.area : (contract != null and contract.area != 0 ? contract.area : '')}">
+                                            <span class="input-group-text">
+                                                <i class="bi bi-question-circle"
+                                                   data-bs-toggle="tooltip"
+                                                   data-bs-placement="right"
+                                                   title="전용면적은 실제 거주자가 사용할 수 있는 공간의 면적을 의미합니다. 공용면적(복도, 계단 등)은 제외됩니다."></i>
+                                            </span>
+                                        </div>
+                                        <small class="form-text text-muted">*소수점 없이 입력</small><br>
+                                        <small class="form-text text-muted pyeong-value"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="info-section mt-2">
+
+                            <div class="row g-2">
+                                <div class="col-md-3">
+                                    <div class="form-row">
+                                        <label for="rate2" class="form-label">보증금
+                                            <small class="text-muted ">(단위: 만원)</small>
+                                        </label>
+                                        <input type="text" class="form-control amount-input" id="rate2" placeholder="보증금" required
+                                               th:value="${temp != null and temp.deposit_amt != 0 ? temp.deposit_amt : (contract != null and contract.deposit_amt != 0 ? contract.deposit_amt : '')}"
+                                               oninput="formatNumber(this, 99999)">
+                                    </div>
+                                </div>
+                                <div class="col-md-3">
+                                    <div class="form-row">
+                                        <label for="rate3" class="form-label">월세
+                                            <small class="text-muted">(단위: 만원)</small>
+                                        </label>
+                                        <input type="text" class="form-control amount-input" id="rate3" placeholder="월세" required
+                                               th:value="${temp != null and temp.rent_amt != 0 ? temp.rent_amt : (contract != null and contract.rent_amt != 0 ? contract.rent_amt : '')}"
+                                               oninput="formatNumber(this, 99999)">
+                                    </div>
+                                </div>
+
+                                <div class="col-md-6">
+                                    <div class="form-row">
+                                        <label for="accu" class="form-label">사용(예상)인원</label>
+                                        <div class="input-group">
+                                            <select class="form-select" id="personnel_type" style="max-width: 120px;">
+                                                <option value="임원" th:selected="${temp != null and temp.accu_type=='임원' or contract != null and contract.accu_type=='임원'}">임원</option>
+                                                <option value="관리직" th:selected="${temp != null and temp.accu_type=='관리직' or contract != null and contract.accu_type=='관리직'}">관리직</option>
+                                                <option value="기능직" th:selected="${temp != null and temp.accu_type=='기능직' or contract != null and contract.accu_type=='기능직'}">기능직</option>
+                                                <option value="비정규직" th:selected="${temp != null and temp.accu_type=='비정규직' or contract != null and contract.accu_type=='비정규직'}">비정규직</option>
+                                            </select>
+                                            <input type="number" class="form-control personnel-input" id="accu" placeholder="인원" required min="1"
+                                                   th:value="${temp != null and temp.accu != 0 ? temp.accu : (contract != null and contract.accu != 0 ? contract.accu : '')}">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <input type="hidden" id="seq" name="seq" th:value="${temp != null and temp.seq != 0 ? temp.seq : (contract != null and contract.seq != 0 ? contract.seq : '')}">
+                    </form>
+                </div>
             </div>
-            <div class="col-md-5 col-lg-4 order-md-last">
-                <h4 class="d-flex justify-content-between align-items-center mb-3">
-                    <span class="text-primary">2. 사전 체크리스트</span>
-                </h4>
-                <ul class="list-group mb-3">
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div style="flex: 0 1 55%;">
-                            <h6 class="my-0">실행예산</h6>
-                            <small class="text-muted">실행예산에 반영되어 있는가</small>
-                        </div>
-                        <div class="align-content-center">
-                            <small>YES</small>
-                            <input type="checkbox"
-                                   class="form-check-input mx-1 yes-check"
-                                   name="yes_1"
-                                   data-target="no_1"
-                                   th:checked="${contract != null and contract.chk_1 == 'Y'}">
-                            <small>NO</small>
-                            <input type="checkbox"
-                                   class="form-check-input no-check"
-                                   id="no_1"
-                                   name="no_1"
-                                   data-target="reason_li_1"
-                                   th:checked="${contract != null and contract.chk_1 == 'N'}">
-                        </div>
-                    </li>
-                    <li class="list-group-item "
-                        id="reason_li_1"
-                        th:classappend="${contract != null and contract.chk_1 == 'N'} ? '' : 'd-none'">
-                        <label for="reason_1" class="form-label">사유</label>
-                        <textarea class="form-control"
-                                  id="reason_1"
-                                  name="reason_1"
-                                  rows="3"
-                                  placeholder="사유를 입력하세요"
-                                  th:text="${contract != null ? contract.chk_reason_1 : ''}"></textarea>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div style="flex: 0 1 55%;">
-                            <h6 class="my-0">법인명의</h6>
-                            <small class="text-muted">㈜동아지질 법인명의로 계약하는가</small>
-                        </div>
-                        <div class="align-content-center">
-                            <small>YES</small>
-                            <input type="checkbox"
-                                   class="form-check-input mx-1 yes-check"
-                                   name="yes_2"
-                                   data-target="no_2"
-                                   th:checked="${contract != null and contract.chk_2 == 'Y'}">
-                            <small>NO</small>
-                            <input type="checkbox"
-                                   class="form-check-input no-check"
-                                   id="no_2"
-                                   name="no_2"
-                                   data-target="reason_li_2"
-                                   th:checked="${contract != null and contract.chk_2 == 'N'}">
-                        </div>
-                    </li>
+            <div class="col-lg-6">
+                <h4 class="section-title">2. 사전 체크리스트</h4>
+                <div class="checklist-section">
+                    <ul class="list-group mb-3">
+                        <li class="list-group-item d-flex justify-content-between lh-sm">
+                            <div style="flex: 0 1 75%;">
+                                <span class="styled-number">01</span><small class="text-muted">실행예산에 반영되어 있는가</small>
+                            </div>
+                            <div class="d-flex gap-3">
+                            <div class="align-content-center">
+                                <small>YES</small>
+                                <input type="checkbox"
+                                       class="form-check-input mx-1 yes-check"
+                                       name="yes_1"
+                                       data-target="reason_li_1"
+                                       th:checked="${temp != null and temp.chk_1 == 'Y' or contract != null and contract.chk_1 == 'Y'}">
+                                <small>NO</small>
+                                <input type="checkbox"
+                                       class="form-check-input no-check"
+                                       id="no_1"
+                                       name="no_1"
+                                       data-target="reason_li_1"
+                                       th:checked="${temp != null and temp.chk_1 == 'N' or contract != null and contract.chk_1 == 'N'}">
+                            </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item "
+                            id="reason_li_1"
+                            th:classappend="${temp != null and temp.chk_1 == 'N' or contract != null and contract.chk_1 == 'N'} ? '' : 'd-none'">
+                            <label for="reason_1" class="form-label">사유 및 후속조치</label>
+                            <textarea class="form-control"
+                                      id="reason_1"
+                                      name="reason_1"
+                                      rows="3"
+                                      placeholder="사유 및 후속조치를 입력하세요"
+                                      th:text="${temp != null ? temp.chk_reason_1 : (contract != null ? contract.chk_reason_1 : '')}"></textarea>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between lh-sm">
+                            <div style="flex: 0 1 75%;">
+                                <span class="styled-number">02</span><small class="text-muted">㈜동아지질 법인명의로 계약하는가</small>
+                            </div>
+                            <div class="d-flex gap-3">
+                            <div class="align-content-center">
+                                <small>YES</small>
+                                <input type="checkbox"
+                                       class="form-check-input mx-1 yes-check"
+                                       name="yes_2"
+                                       data-target="reason_li_2"
+                                       th:checked="${temp != null and temp.chk_2 == 'Y' or contract != null and contract.chk_2 == 'Y'}">
+                                <small>NO</small>
+                                <input type="checkbox"
+                                       class="form-check-input no-check"
+                                       id="no_2"
+                                       name="no_2"
+                                       data-target="reason_li_2"
+                                       th:checked="${temp != null and temp.chk_2 == 'N' or contract != null and contract.chk_2 == 'N'}">
+                            </div>
+                            </div>
+                        </li>
 
-                    <li class="list-group-item "
-                        id="reason_li_2"
-                        th:classappend="${contract != null and contract.chk_2 == 'N'} ? '' : 'd-none'">
-                        <label for="reason_2" class="form-label">사유</label>
-                        <textarea class="form-control"
-                                  id="reason_2"
-                                  name="reason_2"
-                                  rows="3"
-                                  placeholder="사유를 입력하세요"
-                                  th:text="${contract != null ? contract.chk_reason_2 : ''}"></textarea></li>
-                    <li class="list-group-item d-flex justify-content-between lh-sm">
-                        <div style="flex: 0 1 55%;">
-                            <h6 class="my-0">전세권설정</h6>
-                            <small class="text-muted">전세권설정이 가능한가</small>
-                        </div>
-                        <div class="align-content-center">
-                            <small>YES</small>
-                            <input type="checkbox"
-                                   class="form-check-input mx-1 yes-check"
-                                   name="yes_3"
-                                   data-target="no_3"
-                                   th:checked="${contract != null and contract.chk_3 == 'Y'}">
-                            <small>NO</small>
-                            <input type="checkbox"
-                                   class="form-check-input no-check"
-                                   id="no_3"
-                                   name="no_3"
-                                   data-target="reason_li_3"
-                                   th:checked="${contract != null and contract.chk_3 == 'N'}">
-                        </div>
-                    </li>
-                    <li class="list-group-item "
-                        id="reason_li_3"
-                        th:classappend="${contract != null and contract.chk_3 == 'N'} ? '' : 'd-none'">
-                        <label for="reason_3" class="form-label">사유</label>
-                        <textarea class="form-control"
-                                  id="reason_3"
-                                  name="reason_3"
-                                  rows="3"
-                                  placeholder="사유를 입력하세요"
-                                  th:text="${contract != null ? contract.chk_reason_3 : ''}"></textarea>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <div style="flex: 0 1 55%;">
-                            <h6 class="my-0">부동산</h6>
-                            <small class="text-muted">부동산 공인중개사무소를 통하여 거래하는가</small>
-                        </div>
-                        <div class="align-content-center">
-                            <small>YES</small>
-                            <input type="checkbox"
-                                   class="form-check-input mx-1 yes-check"
-                                   name="yes_4"
-                                   data-target="no_4"
-                                   th:checked="${contract != null and contract.chk_4 == 'Y'}">
-                            <small>NO</small>
-                            <input type="checkbox"
-                                   class="form-check-input no-check"
-                                   id="no_4"
-                                   name="no_4"
-                                   data-target="reason_li_4"
-                                   th:checked="${contract != null and contract.chk_4 == 'N'}">
-                        </div>
-                    </li>
-                    <li class="list-group-item "
-                        id="reason_li_4"
-                        th:classappend="${contract != null and contract.chk_4 == 'N'} ? '' : 'd-none'">
-                        <label for="reason_4" class="form-label">사유</label>
-                        <textarea class="form-control"
-                                    id="reason_4"
-                                    name="reason_4"
-                                    rows="3"
-                                    placeholder="사유를 입력하세요"
-                                    th:text="${contract != null ? contract.chk_reason_4 : ''}"></textarea>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between">
-                        <div style="flex: 0 1 55%;">
-                            <h6 class="my-0">보증금</h6>
-                            <small class="text-muted">등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</small>
-                        </div>
-                        <div class="align-content-center">
-                            <small>YES</small>
-                            <input type="checkbox"
-                                   class="form-check-input mx-1 yes-check"
-                                   name="yes_5"
-                                   data-target="no_5"
-                                   th:checked="${contract != null and contract.chk_5 == 'Y'}">
-                            <small>NO</small>
-                            <input type="checkbox"
-                                   class="form-check-input no-check"
-                                   id="no_5"
-                                   name="no_5"
-                                   data-target="reason_li_5"
-                                   th:checked="${contract != null and contract.chk_5 == 'N'}">
-                        </div>
-                    </li>
-                    <li class="list-group-item "
-                        id="reason_li_5"
-                        th:classappend="${contract != null and contract.chk_5 == 'N'} ? '' : 'd-none'">
-                        <label for="reason_5" class="form-label">사유</label>
-                        <textarea class="form-control"
-                                  id="reason_5"
-                                  name="reason_5"
-                                  rows="3"
-                                  placeholder="사유를 입력하세요"
-                                  th:text="${contract != null ? contract.chk_reason_5 : ''}"></textarea>
-                    </li>
-                </ul>
-                <small class="text-muted p-1">해당 물건이 위 체크리스트에 적합하지 않은 경우 반드시 사유를 작성하여야합니다. </small>
-                <div>
-                <button type="button" id="submitBtn" class="btn btn-primary p-2 mt-2 col-12">저장</button>
+                        <li class="list-group-item "
+                            id="reason_li_2"
+                            th:classappend="${temp != null and temp.chk_2 == 'N' or contract != null and contract.chk_2 == 'N'} ? '' : 'd-none'">
+                            <label for="reason_2" class="form-label">사유
+                                <small class="text-muted">( 법인명의로 진행되지 않는 경우 계약이 불가능합니다. )</small>
+                            </label>
+                            <textarea class="form-control"
+                                      id="reason_2"
+                                      name="reason_2"
+                                      rows="3"
+                                      placeholder="사유를 입력하세요"
+                                      th:text="${temp != null ? temp.chk_reason_2 : (contract != null ? contract.chk_reason_2 : '')}"></textarea></li>
+
+                        <li class="list-group-item d-flex justify-content-between lh-sm">
+                            <div style="flex: 0 1 75%;">
+                                <span class="styled-number">03</span><small class="text-muted">전세권을 설정하는가</small>
+                            </div>
+                            <div class="d-flex gap-3">
+                            <div class="align-content-center">
+                                <small>YES</small>
+                                <input type="checkbox"
+                                       class="form-check-input mx-1 yes-check"
+                                       name="yes_3"
+                                       data-target="reason_li_3"
+                                       th:checked="${temp != null and temp.chk_3 == 'Y' or contract != null and contract.chk_3 == 'Y'}">
+                                <small>NO</small>
+                                <input type="checkbox"
+                                       class="form-check-input no-check"
+                                       id="no_3"
+                                       name="no_3"
+                                       data-target="reason_li_3"
+                                       th:checked="${temp != null and temp.chk_3 == 'N' or contract != null and contract.chk_3 == 'N'}">
+                            </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item "
+                            id="reason_li_3"
+                            th:classappend="${temp != null and temp.chk_3 == 'N' or contract != null and contract.chk_3 == 'N'} ? '' : 'd-none'">
+                            <label for="reason_3" class="form-label">사유</label>
+                            <textarea class="form-control"
+                                      id="reason_3"
+                                      name="reason_3"
+                                      rows="3"
+                                      placeholder="사유를 입력하세요"
+                                      th:text="${temp != null ? temp.chk_reason_3 : (contract != null ? contract.chk_reason_3 : '')}"></textarea>
+                        </li>
+
+                        <li class="list-group-item d-flex justify-content-between lh-sm">
+                            <div style="flex: 0 1 75%;">
+                                <span class="styled-number">04</span> <small class="text-muted">부동산 공인중개사무소를 통하여 거래하는가</small>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <div class="align-content-center">
+                                    <small>YES</small>
+                                    <input type="checkbox"
+                                           class="form-check-input mx-1 yes-check"
+                                           name="yes_4"
+                                           data-target="reason_li_4"
+                                           data-file-section="file-section-4"
+                                           th:checked="${temp != null and temp.chk_4 == 'Y' or contract != null and contract.chk_4 == 'Y'}">
+                                    <small>NO</small>
+                                    <input type="checkbox"
+                                           class="form-check-input no-check"
+                                           id="no_4"
+                                           name="no_4"
+                                           data-target="reason_li_4"
+                                           data-file-section="file-section-4"
+                                           th:checked="${temp != null and temp.chk_4 == 'N' or contract != null and contract.chk_4 == 'N'}">
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item "
+                            id="reason_li_4"
+                            th:classappend="${temp != null and temp.chk_4 == 'N' or contract != null and contract.chk_4 == 'N'} ? '' : 'd-none'">
+                            <label for="reason_4" class="form-label"> 사유</label>
+                            <textarea class="form-control"
+                                      id="reason_4"
+                                      name="reason_4"
+                                      rows="3"
+                                      placeholder="사유를 입력하세요"
+                                      th:text="${temp != null ? temp.chk_reason_4 : (contract != null ? contract.chk_reason_4 : '')}"></textarea>
+                        </li>
+                        <li class="file-section" id="file-section-4">
+                            <h6 class="mb-2">부동산명함 및 정보 첨부(필수)</h6>
+                            <div class="file-upload-container">
+                                <div class="input-group">
+                                    <input type="file" class="form-control file-upload-4" multiple>
+                                    <button class="btn btn-outline-primary upload-btn-4" type="button">
+                                        <i class="bi bi-upload"></i> 업로드
+                                    </button>
+                                </div>
+                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.</div>
+                                <div class="file-list">
+                                    <div class="list-group file-list-4">
+                                        <!-- 업로드된 파일 목록이 여기에 표시됩니다 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex justify-content-between lh-sm">
+                            <div style="flex: 0 1 75%;">
+                                <span class="styled-number">05</span><small class="text-muted">등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</small>
+                            </div>
+                            <div class="d-flex gap-3">
+                                <div class="align-content-center">
+                                    <small>YES</small>
+                                    <input type="checkbox"
+                                           class="form-check-input mx-1 yes-check"
+                                           name="yes_5"
+                                           data-target="reason_li_5"
+                                           data-file-section="file-section-5"
+                                           th:checked="${temp != null and temp.chk_5 == 'Y' or contract != null and contract.chk_5 == 'Y'}">
+                                    <small>NO</small>
+                                    <input type="checkbox"
+                                           class="form-check-input no-check"
+                                           id="no_5"
+                                           name="no_5"
+                                           data-target="reason_li_5"
+                                           data-file-section="file-section-5"
+                                           th:checked="${temp != null and temp.chk_5 == 'N' or contract != null and contract.chk_5 == 'N'}">
+                                </div>
+                            </div>
+                        </li>
+                        <li class="list-group-item "
+                            id="reason_li_5"
+                            th:classappend="${temp != null and temp.chk_5 == 'N' or contract != null and contract.chk_5 == 'N'} ? '' : 'd-none'">
+                            <label for="reason_5" class="form-label">사유</label>
+                            <textarea class="form-control"
+                                      id="reason_5"
+                                      name="reason_5"
+                                      rows="3"
+                                      placeholder="사유를 입력하세요"
+                                      th:text="${temp != null ? temp.chk_reason_5 : (contract != null ? contract.chk_reason_5 : '')}"></textarea>
+                        </li>
+                        <li class="file-section" id="file-section-5">
+                            <h6 class="mb-2">등기부등본 첨부(필수)</h6>
+                            <div class="file-upload-container">
+                                <div class="input-group">
+                                    <input type="file" class="form-control file-upload-5" multiple>
+                                    <button class="btn btn-outline-primary upload-btn-5" type="button">
+                                        <i class="bi bi-upload"></i> 업로드
+                                    </button>
+                                </div>
+                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.</div>
+                                <div class="file-list">
+                                    <div class="list-group file-list-5">
+                                        <!-- 업로드된 파일 목록이 여기에 표시됩니다 -->
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                    <small class="text-muted d-block mb-3">해당 물건이 위 체크리스트에 적합하지 않은 경우 반드시 사유를 작성하여야합니다.</small>
                 </div>
             </div>
         </div>
-    </main>
-    <hr class="my-4 mt-5">
+        <div class="submit-section col-4">
+            <div class="row align-items-center">
+                <div class="col-4">
+                    <div id="tempSaveStatus" class="text-muted small" style="display: none;">
+                        <span class="status-text"></span>
+                    </div>
+                </div>
+                <div class="col-4">
+                    <button type="button" id="tempSaveBtn" class="btn btn-outline-secondary w-100">임시저장</button>
+                </div>
+                <div class="col-4">
+                    <button type="button" id="submitBtn" class="btn btn-primary w-100">저장</button>
+                </div>
+            </div>
+        </div>
+        </div>
+
     <footer class="my-5 pt-5 text-muted text-center text-small">
         <small class="mb-1">©2025. Dong-Ah Geological Engineering Company Ltd. All Rights Reserved.</small>
     </footer>
@@ -429,286 +559,1033 @@
                 <p>작성리스트에서 결재를 진행해주세요.</p>
             </div>
             <div class="modal-footer">
-                <button type="button" class="btn btn-primary" id="newRequestBtn">추가 작성</button>
-                <button type="button" class="btn btn-danger" id="viewRequestBtn">작성리스트로 이동</button>
+                <button type="button" class="btn btn-primary" id="newRequestBtn">동일 소재지 추가 작성</button>
+                <button type="button" class="btn btn-danger" id="viewRequestBtn">리스트로 이동</button>
             </div>
         </div>
     </div>
 </div>
 
+    </main>
 
-<input type="hidden" id="con_model" th:value="${contract != null and contract.proj_code != 0 ? contract.proj_code: ''}" >
+    <!-- 저장 확인 모달 -->
+    <div class="modal fade" id="saveConfirmModal" tabindex="-1" aria-labelledby="saveConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="saveConfirmModalLabel">저장 확인</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    저장하시겠습니까?
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                    <button type="button" class="btn btn-primary" id="confirmSave">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 임시저장 확인 모달 -->
+    <div class="modal fade" id="tempSaveConfirmModal" tabindex="-1" aria-labelledby="tempSaveConfirmModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="tempSaveConfirmModalLabel">임시저장 파일 확인</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info mb-3">
+                        <i class="bi bi-info-circle"></i>
+                        임시저장된 데이터가 있습니다.
+                    </div>
+                    <p>이전에 작성하던 내용을 불러와서 이어서 작성하시겠습니까?</p>
+                    <small class="text-muted">
+                        • 확인: 임시저장 데이터를 불러와서 이어서 작성<br>
+                        • 임시저장파일 삭제: 기존 데이터를 삭제하고 새로 작성
+                    </small>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-danger" id="deleteTempSave">임시저장파일 삭제</button>
+                    <button type="button" class="btn btn-primary" id="loadTempSave">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
-<script>
-    $(document).ready(function () {
+    <script th:inline="javascript">
+        // 파일 업로드 관련 변수
+        let uploadedFiles = [];
+        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        const MAX_FILES = 5;
 
-      $('#con').select2({
-          placeholder: "현장을 선택하세요",
-          allowClear: true,
-          width: '100%'
-      });
+        function sample6_execDaumPostcode() {
+            new daum.Postcode({
+                oncomplete: function(data) {
+                    var addr = ''; // 주소 변수
+                    var extraAddr = ''; // 참고항목 변수
 
-      $.ajax({
-            url: '/api/projects',
-            type: 'GET',
-            success: function(response) {
-                var selectedCode = $('#con_model').val();
-                $('#con').empty();
-                $('#con').append('<option value="0" selected>현장을 선택하세요</option>');
+                    if (data.userSelectedType === 'R') {
+                        addr = data.roadAddress;
+                    } else { // 사용자가 지번 주소를 선택했을 경우(J)
+                        addr = data.jibunAddress;
+                    }
 
-                for (var i = 0; i < response.length; i++) {
-                    var option = $('<option></option>')
-                         .val(response[i].projCode)
-                        .text("["+response[i].projCode+"]"+response[i].projName);
-
-                     if(selectedCode != null){
-                        if(response[i].projCode === selectedCode){
-                             option.prop('selected', true);
+                    if(data.userSelectedType === 'R'){
+                        // 법정동명이 있을 경우 추가한다. (법정리는 제외)
+                        // 법정동의 경우 마지막 문자가 "동/로/가"로 끝난다.
+                        if(data.bname !== '' && /[동|로|가]$/g.test(data.bname)){
+                            extraAddr += data.bname;
                         }
-                     }
+                        // 건물명이 있고, 공동주택일 경우 추가한다.
+                        if(data.buildingName !== '' && data.apartment === 'Y'){
+                            extraAddr += (extraAddr !== '' ? ', ' + data.buildingName : data.buildingName);
+                        }
+                        // 표시할 참고항목이 있을 경우, 괄호까지 추가한 최종 문자열을 만든다.
+                        if(extraAddr !== ''){
+                            extraAddr = ' (' + extraAddr + ')';
+                        }
+                        // 조합된 참고항목을 해당 필드에 넣는다.
+                        document.getElementById("address").value = extraAddr;
+                    } else {
+                        document.getElementById("address").value = '';
+                    }
 
-                    $('#con').append(option);
+                    // 우편번호를 hidden 필드에 저장
+                    document.getElementById("postCode").value = data.zonecode;
+                    
+                    document.getElementById("address").value = addr;
+                    document.getElementById("address2").focus();
                 }
+            }).open();
+        }
 
-                if (selectedCode) {
-                     $('#con').val(selectedCode).trigger('change');
+        function getProj(){
+            var user_no = [[${#authentication.principal.userNo}]];
+            $.ajax({
+                url: '/api/code/proj/'+user_no,
+                type: 'GET',
+                success: function(response) {
+                    var selectedCode = [[${temp != null ? temp.proj_code : (contract != null ? contract.projCode : '')}]];
+                    $('#con').empty();
+                    $('#con').append('<option selected=""></option>');
+
+                    response.forEach(function(item) {
+                        const option = $('<option>')
+                            .val(item.id)
+                            .text(`${item.text}`)
+                            .attr('data-projname', item.text);
+
+                        if (selectedCode && item.id === selectedCode) {
+                            option.prop('selected', true);
+                        }
+
+                        $('#con').append(option);
+                    });
+
+                    $('#con').select2({
+                        allowClear: true,
+                        placeholder: "현장을 선택하세요"
+                    });
+
+                    if (selectedCode) {
+                        $('#con').val(selectedCode).trigger('change');
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error("버튼 클릭 오류: " + error);
                 }
-            },
-            error: function(xhr, status, error) {
-                console.error("버튼 클릭 오류: " + error);
+            });
+        }
+
+        // 파일 크기 포맷팅
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+        }
+
+        // 숫자 포맷팅 함수 (콤마 포함, 최대값 제한)
+        function formatNumber(input, maxValue) {
+            let value = input.value;
+            
+            // 숫자가 아닌 문자 제거
+            value = value.replace(/[^0-9]/g, '');
+            
+            // 최대값 제한
+            if (value && parseInt(value) > maxValue) {
+                value = maxValue.toString();
             }
-     });
+            
+            // 콤마 포맷팅 적용
+            if (value) {
+                value = parseInt(value).toLocaleString();
+            }
+            
+            input.value = value;
+        }
 
+        // 파일 목록에 파일 추가
+        function addFileToList(file, fileList) {
+            const fileItem = `
+                <div class="list-group-item" data-file-id="${file.id}" data-section="${file.section}">
+                    <div class="d-flex align-items-center justify-content-between">
+                        <div class="file-info">
+                            <i class="bi bi-file-earmark-text file-icon"></i>
+                            <span class="file-name">${file.originalName}</span>
+                        </div>
+                        <div class="file-actions">
+                            <a href="/api/download-file/${file.id}" 
+                               class="btn btn-sm btn-outline-primary"
+                               download="${file.originalName}"
+                               target="_blank">
+                                <i class="bi bi-download"></i> 다운로드
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                                    data-file-id="${file.id}"
+                                    data-section="${file.section}">
+                                <i class="bi bi-trash"></i> 삭제
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            fileList.append(fileItem);
+        }
 
+        function loadExistingFiles() {
+            try {
+                // 부동산정보 섹션 파일 로드
+                const realEstateFiles = /*[[${temp != null ? temp.real_estate_files : (contract != null ? contract.realEstateFiles : '[]')}]]*/ [];
+                console.log('Real Estate Files type:', typeof realEstateFiles);
+                console.log('Real Estate Files:', realEstateFiles);
+                const realEstateFileList = $('.file-list-4');
+                realEstateFileList.empty();
+                
+                if (realEstateFiles && realEstateFiles !== '[]' && realEstateFiles !== '') {
+                    // 콤마 또는 세미콜론으로 구분된 파일명들을 배열로 분리 (기존 데이터 호환성)
+                    let fileNames;
+                    if (realEstateFiles.includes(';')) {
+                        fileNames = realEstateFiles.split(';');
+                    } else if (realEstateFiles.includes(',')) {
+                        fileNames = realEstateFiles.split(',');
+                    } else {
+                        // 단일 파일인 경우
+                        fileNames = [realEstateFiles];
+                    }
+                    
+                    fileNames.forEach(fileName => {
+                        if (fileName.trim()) {
+                            const fileInfo = {
+                                id: fileName.trim(),  // 파일명을 ID로 사용
+                                originalName: fileName.trim(),
+                                section: '부동산정보'
+                            };
+                            console.log('Processing real estate file:', fileInfo);
+                            uploadedFiles.push(fileInfo);
+                            addFileToList(fileInfo, realEstateFileList);
+                        }
+                    });
+                }
 
-     $(".no-check").on("change", function () {
-         const targetId = $(this).data("target");
-         const reasonLi = $("#" + targetId);
-         const yesCheckbox = $(this).closest("li").find(".yes-check");
-         const parentLi = $(this).closest("li");
+                // 채권순위 섹션 파일 로드
+                const creditFiles = /*[[${temp != null ? temp.credit_files : (contract != null ? contract.creditFiles : '[]')}]]*/ [];
+                console.log('Credit Files type:', typeof creditFiles);
+                console.log('Credit Files:', creditFiles);
+                const creditFileList = $('.file-list-5');
+                creditFileList.empty();
+                
+                if (creditFiles && creditFiles !== '[]' && creditFiles !== '') {
+                    // 콤마 또는 세미콜론으로 구분된 파일명들을 배열로 분리 (기존 데이터 호환성)
+                    let fileNames;
+                    if (creditFiles.includes(';')) {
+                        fileNames = creditFiles.split(';');
+                    } else if (creditFiles.includes(',')) {
+                        fileNames = creditFiles.split(',');
+                    } else {
+                        // 단일 파일인 경우
+                        fileNames = [creditFiles];
+                    }
+                    
+                    fileNames.forEach(fileName => {
+                        if (fileName.trim()) {
+                            const fileInfo = {
+                                id: fileName.trim(),  // 파일명을 ID로 사용
+                                originalName: fileName.trim(),
+                                section: '채권순위'
+                            };
+                            console.log('Processing credit file:', fileInfo);
+                            uploadedFiles.push(fileInfo);
+                            addFileToList(fileInfo, creditFileList);
+                        }
+                    });
+                }
+            } catch (error) {
+                console.error('Error loading files:', error);
+            }
+        }
 
-         if ($(this).is(":checked")) {
-             reasonLi.removeClass("d-none");
-             if (yesCheckbox.length) yesCheckbox.prop("checked", false);
-             parentLi.removeClass("d-none");
-         } else {
-             reasonLi.addClass("d-none");
-             reasonLi.find("textarea").val("");
-         }
-     });
+        $(document).ready(function () {
+            // 체크박스 변경 이벤트
+            $(".yes-check, .no-check").on("change", function () {
+                const isYes = $(this).hasClass("yes-check");
+                const checkboxGroup = $(this).closest('.d-flex.gap-3');
+                const yesCheckbox = checkboxGroup.find(".yes-check");
+                const noCheckbox = checkboxGroup.find(".no-check");
+                const reasonLi = $("#" + $(this).data("target"));
+                const fileSection = $("#" + $(this).data("file-section"));
+                const isRealEstate = $(this).closest("li").find("small").text().includes("부동산");
+                const isCreditCheck = $(this).closest("li").find("small").text().includes("등기부");
 
-     $(".yes-check").on("change", function () {
-         const parentLi = $(this).closest("li");
-         const noCheckbox = parentLi.find(".no-check");
-         const reasonLi = parentLi.next(".list-group-item");
+                // 체크박스 그룹에서 다른 체크박스 해제
+                if (isYes) {
+                    noCheckbox.prop("checked", false);
+                } else {
+                    yesCheckbox.prop("checked", false);
+                }
 
-         if ($(this).is(":checked")) {
-             noCheckbox.prop("checked", false);
-             if (reasonLi.length) {
-                 reasonLi.addClass("d-none");
-                 reasonLi.find("textarea").val("");
-             }
-         }
-     });
+                if ($(this).is(":checked")) {
+                    if (isYes) {
+                        // YES 체크 시
+                        reasonLi.addClass("d-none");
+                        reasonLi.find("textarea").val("");
+                        
+                        // 부동산정보는 YES일 때만 파일 섹션 표시
+                        if (isRealEstate) {
+                            fileSection.addClass("show");
+                        }
+                        // 채권순위는 YES/NO 모두 파일 섹션 표시
+                        if (isCreditCheck) {
+                            fileSection.addClass("show");
+                        }
+                    } else {
+                        // NO 체크 시
+                        reasonLi.removeClass("d-none");
+                        
+                        // 부동산정보는 NO일 때 파일 섹션 숨김
+                        if (isRealEstate) {
+                            fileSection.removeClass("show");
+                        }
+                        // 채권순위는 YES/NO 모두 파일 섹션 표시
+                        if (isCreditCheck) {
+                            fileSection.addClass("show");
+                        }
+                    }
+                } else {
+                    // 체크 해제 시
+                    reasonLi.addClass("d-none");
+                    reasonLi.find("textarea").val("");
+                    
+                    if (isRealEstate) {
+                        fileSection.removeClass("show");
+                    }
+                    if (isCreditCheck && !yesCheckbox.is(":checked") && !noCheckbox.is(":checked")) {
+                        fileSection.removeClass("show");
+                    }
+                }
+            });
 
-     // 승인요청 버튼 클릭
-     $('#submitBtn').on('click', function() {
-         // 필수 입력 필드 검사
-         const requiredFields = {
-             address: '주소',
-             address2: '상세주소',
-             con: '현장명',
-             c_date: '계약(예정)일',
-             l_date: '입주(예정)일',
-             select: '거래유형',
-             rate: '계약금',
-             rate2: '보증금',
-             rate3: '월세',
-             state: '주택유형',
-             zip: '면적',
-             source: '부동산정보',
-             accu:'사용인원'
-         };
+            // 페이지 로드 시 초기 상태 설정
+            $(".yes-check, .no-check").each(function() {
+                if ($(this).is(":checked")) {
+                    const isRealEstate = $(this).closest("li").find("h6").text().includes("부동산정보");
+                    const isCreditCheck = $(this).closest("li").find("h6").text().includes("채권순위");
+                    const fileSection = $("#" + $(this).data("file-section"));
+                    const reasonLi = $("#" + $(this).data("target"));
+                    
+                    if (isCreditCheck) {
+                        fileSection.addClass("show");
+                    } else if (isRealEstate && $(this).hasClass("yes-check")) {
+                        fileSection.addClass("show");
+                    }
+                    
+                    if ($(this).hasClass("no-check")) {
+                        reasonLi.removeClass("d-none");
+                    }
+                }
+            });
 
-         let isValid = true;
-         let missingFields = [];
+            // 기존 파일 목록 로드
+            loadExistingFiles();
 
-         // 필수 입력 필드 검사
-         for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
-             const value = $(`#${fieldId}`).val();
-             if (!value) {
-                 isValid = false;
-                 missingFields.push(fieldName);
-             }
-         }
+            // 파일 업로드 버튼 클릭 이벤트
+            $(document).on('click', '.upload-btn-4, .upload-btn-5', function() {
+                const sectionId = $(this).attr('class').split(' ').find(cls => cls.startsWith('upload-btn-')).split('-')[2];
+                const fileInput = $(`.file-upload-${sectionId}`)[0];
+                const files = fileInput.files;
+                const fileList = $(`.file-list-${sectionId}`);
+                const section = sectionId === '4' ? '부동산정보' : '채권순위';
 
-         // 확인서류 검사
-         let hasUncheckedItems = false;
-         let uncheckedReasons = [];
-         let missingReasons = [];
+                if (files.length === 0) {
+                    alert('파일을 선택해주세요.');
+                    return;
+                }
 
-         // 체크박스가 있는 항목만 검사
-         $('.list-group-item').each(function() {
-             const yesCheck = $(this).find('.yes-check');
-             const noCheck = $(this).find('.no-check');
-             
-             // 체크박스가 있는 항목인 경우에만 검사
-             if (yesCheck.length > 0 || noCheck.length > 0) {
-                 const itemName = $(this).find('h6').text();
-                 
-                 // 체크박스가 하나도 선택되지 않은 경우
-                 if (!yesCheck.is(':checked') && !noCheck.is(':checked')) {
-                     hasUncheckedItems = true;
-                     uncheckedReasons.push(itemName);
-                 }
-                 
-                 // NO가 체크되었는데 사유가 비어있는 경우
-                 if (noCheck.is(':checked')) {
-                     const reasonId = noCheck.data("target");
-                     const reasonValue = $("#" + reasonId).find('textarea').val()?.trim();
-                     if (!reasonValue) {
-                         missingReasons.push(itemName);
-                     }
-                 }
-             }
-         });
+                if (uploadedFiles.length + files.length > MAX_FILES) {
+                    alert(`최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
+                    return;
+                }
 
-         if (!isValid) {
-             alert('입력되지 않은 항목이 있습니다. \n 필수 입력 문항:\n' + missingFields.join('\n'));
-             return;
-         }
+                // 파일 크기 체크
+                for (let file of files) {
+                    if (file.size > MAX_FILE_SIZE) {
+                        alert(`파일 크기는 최대 10MB까지 가능합니다.\n문제 파일: ${file.name}`);
+                        return;
+                    }
+                }
 
-         if (hasUncheckedItems) {
-             alert('체크되지 않은 항목이 있습니다:\n' + uncheckedReasons.join('\n'));
-             return;
-         }
+                // FormData 생성
+                const formData = new FormData();
+                for (let file of files) {
+                    formData.append('files', file);
+                }
+                formData.append('section', section);
 
-         if (missingReasons.length > 0) {
-             alert('NO로 체크된 항목의 사유를 입력해주세요:\n' + missingReasons.join('\n'));
-             return;
-         }
+                // 업로드 진행
+                $.ajax({
+                    url: '/api/upload-files',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: function(xhr) {
+                        const token = $("meta[name='_csrf']").attr("content");
+                        const header = $("meta[name='_csrf_header']").attr("content");
+                        if (token && header) {
+                            xhr.setRequestHeader(header, token);
+                        }
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // 업로드된 파일 목록에 추가
+                            response.files.forEach(file => {
+                                // 섹션별로 파일 목록 관리
+                                const sectionFiles = uploadedFiles.filter(f => f.section === section);
+                                if (sectionFiles.length >= MAX_FILES) {
+                                    alert(`해당 섹션에는 최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
+                                    return;
+                                }
+                                uploadedFiles.push(file);
+                                addFileToList(file, fileList);
+                            });
+                            
+                            // DB 저장용 파일명 문자열 로그 출력
+                            if (response.dbFileNames) {
+                                console.log('DB 저장용 파일명 문자열:', response.dbFileNames);
+                            }
+                            
+                            // 파일 입력 초기화
+                            fileInput.value = '';
+                        } else {
+                            alert('파일 업로드 실패: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        console.error('Upload error:', error);
+                        console.error('Status:', status);
+                        console.error('Response:', xhr.responseText);
+                        
+                        let errorMessage = '파일 업로드 중 오류가 발생했습니다.';
+                        try {
+                            const response = JSON.parse(xhr.responseText);
+                            if (response.message) {
+                                errorMessage = response.message;
+                            }
+                        } catch (e) {
+                            console.error('Error parsing response:', e);
+                        }
+                        
+                        alert(errorMessage);
+                    }
+                });
+            });
 
+            // 파일 다운로드
+            $(document).on('click', '.download-btn', function() {
+                const fileId = $(this).data('file-id');
+                const fileName = $(this).data('file-name');
+                window.location.href = `/api/download-file/${fileId}?fileName=${encodeURIComponent(fileName)}`;
+            });
 
+            // 파일 삭제
+            $(document).on('click', '.delete-btn', function() {
+                const fileId = $(this).data('file-id');
+                const fileItem = $(this).closest('.list-group-item');
+                const section = $(this).data('section');
 
-         // 데이터 객체 생성
-         const formData = {
-            seq: $('#seq').val() || '',
-            address: $('#address').val() || '',
-            addressD: $('#address2').val() || '',
-            contDate: $('#c_date').val() || '',
-            moveDate: $('#l_date').val() || '',
-            transType: $('#select').val() || '',
-            contAmt: $('#rate').val() || '',
-            depositAmt: $('#rate2').val() || '',
-            rentAmt: $('#rate3').val() || '',
-            resType: $('#state').val() || '',
-            area: $('#zip').val() || '',
-            source: $('#source').val() || '',
-            accu: $('#accu').val() || '',
-            checklist: []
-         };
+                if (!fileId) {
+                    alert('파일 ID가 없습니다.');
+                    return;
+                }
 
-          const selectedText = $('#con').next('.select2').find('.select2-selection__rendered').text().trim();
-          const match = selectedText.match(/\[(\d+)\](.+)/);
+                if (confirm('파일을 삭제하시겠습니까?')) {
+                    $.ajax({
+                        url: `/api/delete-file/${fileId}`,
+                        type: 'DELETE',
+                        success: function(response) {
+                            if (response.success) {
+                                // 파일 목록에서 제거
+                                uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
+                                fileItem.remove();
+                                
+                                // 파일이 없는 경우 메시지 표시
+                                const fileList = $(`.file-list-${section}`);
+                                if (fileList.children().length === 0) {
+                                    fileList.append('<div class="text-muted p-3">첨부된 파일이 없습니다.</div>');
+                                }
+                            } else {
+                                alert('파일 삭제 실패: ' + response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            console.error('Delete error:', error);
+                            
+                            // 400 오류인 경우 (파일이 이미 삭제된 경우) UI에서만 제거
+                            if (xhr.status === 400) {
+                                console.log('파일이 이미 삭제되어 있음. UI에서만 제거합니다.');
+                                // 파일 목록에서 제거
+                                uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
+                                fileItem.remove();
+                                
+                                // 파일이 없는 경우 메시지 표시
+                                const fileList = $(`.file-list-${section}`);
+                                if (fileList.children().length === 0) {
+                                    fileList.append('<div class="text-muted p-3">첨부된 파일이 없습니다.</div>');
+                                }
+                            } else {
+                                let errorMessage = '파일 삭제 중 오류가 발생했습니다.';
+                                try {
+                                    const response = JSON.parse(xhr.responseText);
+                                    if (response.message) {
+                                        errorMessage = response.message;
+                                    }
+                                } catch (e) {
+                                    console.error('Error parsing response:', e);
+                                }
+                                alert(errorMessage);
+                            }
+                        }
+                    });
+                }
+            });
 
-          if (match) {
-                const projCode = match[1];
-                const projName = match[2];
+            // 저장 버튼 클릭 이벤트
+            $("#submitBtn").on("click", function(e) {
+                e.preventDefault();
+                
+                // 필수 입력 필드 검사
+                const requiredFields = {
+                    address: '주소',
+                    address2: '상세주소',
+                    con: '현장명',
+                    c_date: '계약(예정)일',
+                    contract_period: '계약기간',
+                    l_date: '입주(예정)일',
+                    select: '거래유형',
+                    rate2: '보증금',
+                    rate3: '월세',
+                    state: '주택유형',
+                    zip: '면적',
+                    accu: '사용인원',
+                    personnel_type: '직급'
+                };
 
-                formData.projCode = projCode;
-                formData.projName = projName;
-          }
+                let isValid = true;
+                let missingFields = [];
 
-         // 확인서류 데이터 객체 생성
-         $('.list-group-item').each(function(index) {
-             const yesCheck = $(this).find('.yes-check');
-             const noCheck = $(this).find('.no-check');
-             
-             // 체크박스가 있는 항목만 추가
-             if (yesCheck.length > 0 || noCheck.length > 0) {
-                 const reasonId = noCheck.data("target");
-                 const reasonValue = reasonId ? $("#" + reasonId).find('textarea').val()?.trim() || '' : '';
-                 const itemName = $(this).find('h6').text() || '';
-                 const isYes = yesCheck.is(':checked');
-                 const isNo = noCheck.is(':checked');
-                 
-                 formData.checklist.push({
-                     item: itemName,
-                     isYes: yesCheck.is(':checked') || false,
-                     isNo: noCheck.is(':checked') || false,
-                     reason: reasonValue
-                 });
+                // 필수 입력 필드 검사
+                for (const [fieldId, fieldName] of Object.entries(requiredFields)) {
+                    const value = $(`#${fieldId}`).val();
+                    if (!value) {
+                        isValid = false;
+                        missingFields.push(fieldName);
+                    }
+                }
 
-             }
-         });
+                // 확인서류 검사
+                let hasUncheckedItems = false;
+                let uncheckedReasons = [];
+                let missingReasons = [];
+                let missingFiles = [];
 
-         // 데이터 검증
-         if (!formData.projCode || formData.projCode === '0') {
-             alert('현장을 선택해주세요.');
-             return;
-         }
+                // 체크박스가 있는 항목만 검사
+                $('.list-group-item').each(function() {
+                    const yesCheck = $(this).find('.yes-check');
+                    const noCheck = $(this).find('.no-check');
 
-         // AJAX 요청
-         $.ajax({
-             url: '/api/submit-request',
-             type: 'POST',
-             contentType: 'application/json',
-             data: JSON.stringify(formData),
-             beforeSend: function(xhr) {
-                 // CSRF 토큰 추가
-                 const token = $("meta[name='_csrf']").attr("content");
-                 const header = $("meta[name='_csrf_header']").attr("content");
-                 if (token && header) {
-                     xhr.setRequestHeader(header, token);
-                 }
-             },
-             success: function(response) {
+                    if (yesCheck.length > 0 || noCheck.length > 0) {
+                        // styled-number를 제거하고 실제 항목명만 추출
+                        const itemName = $(this).find('h6').text().replace(/\d{2}/, '').trim();
 
-                 const requestSeq = response.seq;
-                 if (response.success) {
-                     // 성공 모달 표시
-                     const successModal = new bootstrap.Modal(document.getElementById('successModal'));
-                     successModal.show();
-                     
-                     // 새로운 요청 버튼 이벤트 제거 후 재등록
-                     $('#newRequestBtn').off('click').on('click', function() {
-                         window.location.href = `/request?seq=${requestSeq}`;
-                     });
+                        if (!yesCheck.is(':checked') && !noCheck.is(':checked')) {
+                            hasUncheckedItems = true;
+                            uncheckedReasons.push(itemName);
+                        }
 
-                     // 요청 확인 버튼 이벤트 제거 후 재등록
-                     $('#viewRequestBtn').off('click').on('click', function() {
-                         window.location.href = `/list`;
-                     });
-                 } else {
-                     alert('저장 실패: ' + response.message);
-                 }
-             },
-             error: function(xhr, status, error) {
-                 console.error('Error:', error);
-                 console.error('Status:', status);
-                 console.error('Response:', xhr.responseText);
-                 
-                 let errorMessage = '서버 오류가 발생했습니다.';
-                 try {
-                     const response = JSON.parse(xhr.responseText);
-                     if (response.message) {
-                         errorMessage = response.message;
-                     }
-                 } catch (e) {
-                     console.error('Error parsing response:', e);
-                 }
-                 
-                 alert('저장 실패: ' + errorMessage);
-             }
-         });
-     });
- });
+                        if (noCheck.is(':checked')) {
+                            const reasonId = noCheck.data("target");
+                            const reasonValue = $("#" + reasonId).find('textarea').val()?.trim();
+                            if (!reasonValue) {
+                                missingReasons.push(itemName);
+                            }
+                        }
 
+                        // 파일 업로드 필수 검사 (4번, 5번 항목)
+                        if (yesCheck.is(':checked')) {
+                            const fileSection = $("#" + yesCheck.data("file-section"));
+                            if (fileSection.length > 0) {
+                                const sectionId = yesCheck.data("file-section").split('-')[2];
+                                const fileList = $(`.file-list-${sectionId}`);
+                                const hasFiles = fileList.find('.list-group-item').length > 0;
+                                
+                                if (!hasFiles) {
+                                    if (sectionId === '4') {
+                                        missingFiles.push('부동산정보 첨부파일');
+                                    } else if (sectionId === '5') {
+                                        missingFiles.push('등기부등본 첨부파일');
+                                    }
+                                }
+                            }
+                        }
+                    }
+                });
 
+                if (!isValid) {
+                    alert('입력되지 않은 항목이 있습니다. \n 필수 입력 문항:\n' + missingFields.join('\n'));
+                    return;
+                }
 
+                if (hasUncheckedItems) {
+                    alert('체크되지 않은 항목이 있습니다:\n' + uncheckedReasons.join('\n'));
+                    return;
+                }
 
-</script>
+                if (missingReasons.length > 0) {
+                    alert('NO로 체크된 항목의 사유를 입력해주세요:\n' + missingReasons.join('\n'));
+                    return;
+                }
+
+                if (missingFiles.length > 0) {
+                    alert('필수 첨부파일이 누락되었습니다:\n' + missingFiles.join('\n'));
+                    return;
+                }
+
+                // 저장 확인 모달 표시
+                $('#saveConfirmModal').modal('show');
+            });
+
+            // 확인 버튼 클릭 시 저장 실행
+            $("#confirmSave").on("click", function() {
+                $('#saveConfirmModal').modal('hide');
+                
+                // 선택된 현장 정보 가공
+                const selectedOption = $('#con option:selected');
+                const selectedText = selectedOption.text();
+                let projCode = '';
+                let projName = '';
+                
+                if (selectedText) {
+                    const match = selectedText.match(/\((\d{10})\)(.+)/);
+                    if (match) {
+                        projCode = match[1];
+                        projName = match[2].trim();
+                    }
+                }
+
+                const formData = {
+                    seq: $('#seq').val(),
+                    address: $('#address').val() || '',
+                    addressD: $('#address2').val() || '',
+                    postCode: $('#postCode').val() || '',
+                    contDate: $('#c_date').val() || '',
+                    contPeriod: $('#contract_period').val() || '',
+                    moveDate: $('#l_date').val() || '',
+                    transType: $('#select').val() || '',
+                    depositAmt: $('#rate2').val().replace(/,/g, '') || '0',
+                    rentAmt: $('#rate3').val().replace(/,/g, '') || '0',
+                    resType: $('#state').val() || '',
+                    area: $('#zip').val() || '0',
+                    accu: $('#accu').val() || '0',
+                    accuType: $('#personnel_type').val() || '',
+                    projCode: projCode,
+                    projName: projName,
+                    checklist: [],
+                    attachments: {
+                        realEstate: [],
+                        credit: []
+                    }
+                };
+
+                // 파일 정보 추가
+                uploadedFiles.forEach(file => {
+                    const fileInfo = {
+                        id: file.id,
+                        originalName: file.originalName,
+                        size: file.size,
+                        section: file.section
+                    };
+
+                    if (file.section === '부동산정보') {
+                        formData.attachments.realEstate.push(fileInfo);
+                    } else if (file.section === '채권순위') {
+                        formData.attachments.credit.push(fileInfo);
+                    }
+                });
+
+                // DB 저장용 파일명 문자열 생성 (세미콜론으로 구분)
+                const realEstateFiles = uploadedFiles.filter(f => f.section === '부동산정보');
+                const creditFiles = uploadedFiles.filter(f => f.section === '채권순위');
+                
+                const realEstateFileNames = realEstateFiles.map(f => f.originalName).join(';');
+                const creditFileNames = creditFiles.map(f => f.originalName).join(';');
+                
+                // formData에 DB 저장용 파일명 문자열 추가
+                formData.realEstateFileNames = realEstateFileNames;
+                formData.creditFileNames = creditFileNames;
+                
+                console.log('DB 저장용 부동산정보 파일명:', realEstateFileNames);
+                console.log('DB 저장용 채권순위 파일명:', creditFileNames);
+
+                // 확인서류 데이터 객체 생성
+                $('.list-group-item').each(function(index) {
+                    const yesCheck = $(this).find('.yes-check');
+                    const noCheck = $(this).find('.no-check');
+
+                    if (yesCheck.length > 0 || noCheck.length > 0) {
+                        const reasonId = noCheck.data("target");
+                        const reasonValue = reasonId ? $("#" + reasonId).find('textarea').val()?.trim() || '' : '';
+                        const itemName = $(this).find('h6').text() || '';
+
+                        formData.checklist.push({
+                            item: itemName,
+                            isYes: yesCheck.is(':checked') || false,
+                            isNo: noCheck.is(':checked') || false,
+                            reason: reasonValue
+                        });
+                    }
+                });
+
+                // AJAX 요청
+                console.log('Sending request to /api/submit-request');
+                console.log('Request data:', formData);
+                $.ajax({
+                    url: '/api/submit-request',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify(formData),
+                    beforeSend: function(xhr) {
+                        const token = $("meta[name='_csrf']").attr("content");
+                        const header = $("meta[name='_csrf_header']").attr("content");
+                        if (token && header) {
+                            xhr.setRequestHeader(header, token);
+                        }
+                    },
+                    success: function(response) {
+                        if (response.success) {
+                            // 성공 모달 표시
+                            const successModal = new bootstrap.Modal(document.getElementById('successModal'));
+                            successModal.show();
+
+                            $('#newRequestBtn').off('click').on('click', function() {
+                                window.location.href = `/request?seq=${response.seq}`;
+                            });
+
+                            $('#viewRequestBtn').off('click').on('click', function() {
+                                window.location.href = `/list`;
+                            });
+                        } else {
+                            alert('저장 실패: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('저장 실패: ' + error);
+                    }
+                });
+            });
+
+            // 금액 입력 필드에 이벤트 리스너 추가
+            $('.amount-input').on('input', function() {
+                let value = $(this).val().replace(/,/g, ''); // 기존 콤마 제거
+                if (value) {
+                    value = parseInt(value).toLocaleString(); // 천 단위 콤마 추가
+                    $(this).val(value);
+                }
+            });
+
+            // 금액 입력 필드 포커스 아웃 시 콤마 추가
+            $('.amount-input').on('blur', function() {
+                let value = $(this).val().replace(/,/g, '');
+                if (value) {
+                    value = parseInt(value).toLocaleString();
+                    $(this).val(value);
+                }
+            });
+
+            // 금액 입력 필드 포커스 시 콤마 제거
+            $('.amount-input').on('focus', function() {
+                let value = $(this).val().replace(/,/g, '');
+                $(this).val(value);
+            });
+
+            // 면적 입력 필드 이벤트 처리
+            $('.area-input').on('input', function() {
+                let value = $(this).val();
+                
+                // 소수점 제거
+                value = value.replace(/\./g, '');
+                
+                // 숫자가 아닌 문자 제거
+                value = value.replace(/[^0-9]/g, '');
+                
+                // 입력된 값 업데이트
+                $(this).val(value);
+                
+                if (value) {
+                    const pyeong = (parseFloat(value) / 3.30578).toFixed(2);
+                    $(this).closest('.form-row').find('.pyeong-value').text(`약 ${pyeong}평`);
+                } else {
+                    $(this).closest('.form-row').find('.pyeong-value').text('');
+                }
+            });
+
+            // 면적 입력 필드 키다운 이벤트 (소수점 키 차단)
+            $('.area-input').on('keydown', function(e) {
+                // 소수점 키(190, 110) 차단
+                if (e.keyCode === 190 || e.keyCode === 110) {
+                    e.preventDefault();
+                    return false;
+                }
+            });
+
+            // 초기 로드 시 평수 표시
+            const initialArea = $('.area-input').val();
+            if (initialArea) {
+                const pyeong = (parseFloat(initialArea) / 3.30578).toFixed(2);
+                $('.area-input').closest('.form-row').find('.pyeong-value').text(`약 ${pyeong}평`);
+            }
+
+            // 임시저장 파일 확인
+            const tempSeq = [[${temp != null ? temp.seq : null}]];
+            console.log('tempSeq:', tempSeq);
+            console.log('tempSeq type:', typeof tempSeq);
+            console.log('tempSeq truthy check:', !!tempSeq);
+            
+            if (tempSeq && tempSeq !== 'null' && tempSeq !== '') {
+                console.log('Showing temp save modal');
+                const tempSaveConfirmModal = new bootstrap.Modal(document.getElementById('tempSaveConfirmModal'));
+                tempSaveConfirmModal.show();
+            } else {
+                console.log('No temp save data found');
+            }
+
+            // 임시저장 파일 삭제 버튼 클릭
+            $("#deleteTempSave").on("click", function() {
+                $.ajax({
+                    url: '/api/cont/delete',
+                    type: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({
+                        seqList: [tempSeq]
+                    }),
+                    success: function(response) {
+                        if (response.success) {
+                            window.location.reload();
+                        } else {
+                            alert('임시저장 파일 삭제 실패: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        alert('임시저장 파일 삭제 중 오류가 발생했습니다.');
+                    }
+                });
+            });
+
+            // 임시저장 파일 불러오기 버튼 클릭
+            $("#loadTempSave").on("click", function() {
+                // 임시저장된 데이터 불러오기
+                loadTempData();
+                // 모달 닫기
+                $('#tempSaveConfirmModal').modal('hide');
+            });
+        });
+
+        // 임시저장된 데이터를 불러오는 함수
+        function loadTempData() {
+            // 기존 파일 목록 다시 로드
+            loadExistingFiles();
+            
+            // 체크리스트 상태 재설정 (이미 Thymeleaf로 설정되어 있지만 명시적으로 확인)
+            $(".yes-check, .no-check").each(function() {
+                if ($(this).is(':checked')) {
+                    $(this).trigger('change');
+                }
+            });
+            
+            // 상태 메시지 표시
+            showStatusMessage('임시저장 데이터를 불러왔습니다.');
+        }
+
+        // 초기화
+        getProj();
+
+        // 툴팁 초기화
+        var tooltipTriggerList = [].slice.call(document.querySelectorAll('[data-bs-toggle="tooltip"]'))
+        var tooltipList = tooltipTriggerList.map(function (tooltipTriggerEl) {
+            return new bootstrap.Tooltip(tooltipTriggerEl)
+        })
+
+        // 임시저장 함수
+        function saveTemp() {
+            // 선택된 현장 정보 가공
+            const selectedOption = $('#con option:selected');
+            const selectedText = selectedOption.text();
+            let projCode = '';
+            let projName = '';
+            
+            if (selectedText) {
+                const match = selectedText.match(/\((\d{10})\)(.+)/);
+                if (match) {
+                    projCode = match[1];
+                    projName = match[2].trim();
+                }
+            }
+
+            const formData = {
+                seq: $('#seq').val(),
+                address: $('#address').val() || '',
+                addressD: $('#address2').val() || '',
+                postCode: $('#postCode').val() || '',
+                contDate: $('#c_date').val() || '',
+                contPeriod: $('#contract_period').val() || '',
+                moveDate: $('#l_date').val() || '',
+                transType: $('#select').val() || '',
+                depositAmt: $('#rate2').val().replace(/,/g, '') || '0',
+                rentAmt: $('#rate3').val().replace(/,/g, '') || '0',
+                resType: $('#state').val() || '',
+                area: $('#zip').val() || '0',
+                accu: $('#accu').val() || '0',
+                accuType: $('#personnel_type').val() || '',
+                projCode: projCode,
+                projName: projName,
+                checklist: [],
+                attachments: {
+                    realEstate: [],
+                    credit: []
+                }
+            };
+
+            // 파일 정보 추가
+            uploadedFiles.forEach(file => {
+                const fileInfo = {
+                    id: file.id,
+                    originalName: file.originalName,
+                    size: file.size,
+                    section: file.section
+                };
+
+                if (file.section === '부동산정보') {
+                    formData.attachments.realEstate.push(fileInfo);
+                } else if (file.section === '채권순위') {
+                    formData.attachments.credit.push(fileInfo);
+                }
+            });
+
+            // DB 저장용 파일명 문자열 생성 (세미콜론으로 구분)
+            const realEstateFiles = uploadedFiles.filter(f => f.section === '부동산정보');
+            const creditFiles = uploadedFiles.filter(f => f.section === '채권순위');
+            
+            const realEstateFileNames = realEstateFiles.map(f => f.originalName).join(';');
+            const creditFileNames = creditFiles.map(f => f.originalName).join(';');
+            
+            // formData에 DB 저장용 파일명 문자열 추가
+            formData.realEstateFileNames = realEstateFileNames;
+            formData.creditFileNames = creditFileNames;
+            
+            console.log('DB 저장용 부동산정보 파일명:', realEstateFileNames);
+            console.log('DB 저장용 채권순위 파일명:', creditFileNames);
+
+            // 확인서류 데이터 객체 생성
+            $('.list-group-item').each(function(index) {
+                const yesCheck = $(this).find('.yes-check');
+                const noCheck = $(this).find('.no-check');
+
+                if (yesCheck.length > 0 || noCheck.length > 0) {
+                    const reasonId = noCheck.data("target");
+                    const reasonValue = reasonId ? $("#" + reasonId).find('textarea').val()?.trim() || '' : '';
+                    const itemName = $(this).find('h6').text() || '';
+
+                    formData.checklist.push({
+                        item: itemName,
+                        isYes: yesCheck.is(':checked') || false,
+                        isNo: noCheck.is(':checked') || false,
+                        reason: reasonValue
+                    });
+                }
+            });
+
+            // AJAX 요청
+            $.ajax({
+                url: '/api/temp',
+                type: 'POST',
+                contentType: 'application/json',
+                data: JSON.stringify(formData),
+                success: function(response) {
+                    if (response.success) {
+                        const now = new Date();
+                        const timeStr = now.toLocaleTimeString();
+                        const statusText = `임시저장 완료\n(${timeStr})`;
+                        showStatusMessage(statusText);
+                    } else {
+                        showStatusMessage('임시저장 실패: ' + response.message, true);
+                    }
+                },
+                error: function(xhr, status, error) {
+                    showStatusMessage('임시저장 실패: ' + error, true);
+                }
+            });
+        }
+
+        // 상태 메시지 표시 함수
+        function showStatusMessage(message, isError = false) {
+            const statusDiv = $('#tempSaveStatus');
+            const statusText = statusDiv.find('.status-text');
+            
+            statusText.text(message);
+            if (isError) {
+                statusText.addClass('text-danger');
+            } else {
+                statusText.removeClass('text-danger');
+            }
+            
+            statusDiv.fadeIn();
+            
+            // 3초 후 메시지 숨기기
+            setTimeout(() => {
+                statusDiv.fadeOut();
+            }, 3000);
+        }
+
+        // 임시저장 버튼 클릭 이벤트
+        $("#tempSaveBtn").on("click", function() {
+            saveTemp();
+        });
+
+        // 1분마다 자동 임시저장
+        setInterval(saveTemp, 1 * 60 * 1000);
+
+        // 페이지 언로드 시 임시저장
+       //$(window).on('beforeunload', function() {
+       //    saveTemp();
+       //});
+    </script>
 
 
 </body>

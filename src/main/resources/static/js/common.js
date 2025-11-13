@@ -11,7 +11,7 @@
                    <div class="modal-content square-modal">
                        <div class="modal-body d-flex flex-column justify-content-center align-items-center">
                            <div class="spinner-border text-primary" role="status">
-                               <span class="sr-only"></span>
+
                            </div>
                            <p class="mt-3">Please wait...</p>
                        </div>
@@ -113,6 +113,39 @@
                     theme: "bootstrap-5",
                     placeholder: vPlaceH,
                     data: data,
+                    //dropdownParent: $(element).closest('.modal')
+                });
+                $(element).val(vChangeVal).trigger('change');
+            }
+        });
+        $(element).on('select2:select', function (e) {
+            if(onSelect){
+                onSelect(e.params.data);
+            }
+        }).on("change",function(){
+            var id = $(this).val();
+            if(onChange){
+                onChange(id);
+            }
+        });
+
+    }
+
+
+    function ufn_select2_getData_modal(vUrl,element,vPlaceH,vChangeVal,onSelect,onChange){
+        $(element).empty();
+        $.ajax({
+            url: vUrl,
+            dataType: "json",
+            contentType: "application/json; UTF-8;",
+            success: function(data) {
+                //data = JSON.parse(data);
+                $(element).prepend('<option selected=""></option>').select2({
+                    allowClear: true,
+                    theme: "bootstrap-5",
+                    placeholder: vPlaceH,
+                    data: data,
+                    dropdownParent: $(element).closest('.modal')
                 });
                 $(element).val(vChangeVal).trigger('change');
             }
@@ -203,24 +236,30 @@
             label.appendChild(customInput);
 
             hiddenInput.type = 'checkbox';
-            label.addEventListener('click', (ev) => {
-              ev.preventDefault();
+            
+            // 체크박스 상태 변경 이벤트 처리 개선
+            const handleCheck = (ev) => {
+                ev.preventDefault();
+                ev.stopPropagation();
 
-              if (hiddenInput.disabled) {
-                  console.log("disabled");
-                  return; // 비활성화된 체크박스는 클릭 이벤트를 처리하지 않음
-              }
+                if (hiddenInput.disabled) {
+                    return;
+                }
 
-              if (ev.shiftKey) {
-                grid[!hiddenInput.checked ? 'checkBetween' : 'uncheckBetween'](rowKey);
-                return;
-              }
+                const newCheckedState = !hiddenInput.checked;
+                hiddenInput.checked = newCheckedState;
 
-              grid[!hiddenInput.checked ? 'check' : 'uncheck'](rowKey);
-            });
+                if (ev.shiftKey) {
+                    grid[newCheckedState ? 'checkBetween' : 'uncheckBetween'](rowKey);
+                } else {
+                    grid[newCheckedState ? 'check' : 'uncheck'](rowKey);
+                }
+            };
+
+            label.addEventListener('click', handleCheck);
+            hiddenInput.addEventListener('change', handleCheck);
 
             this.el = label;
-
             this.render(props);
         }
 
@@ -231,7 +270,6 @@
         render(props) {
             const hiddenInput = this.el.querySelector('.hidden-input');
             const checked = Boolean(props.value);
-
             hiddenInput.checked = checked;
         }
     }

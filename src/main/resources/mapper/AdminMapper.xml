@@ -1,0 +1,10 @@
+<insert id="insertAdmin" parameterType="com.dage.rent.DTO.EmpUserDTO">
+    INSERT INTO admin (emp_no, name, email, email_chk)
+    VALUES (#{emp_no}, #{name}, #{email}, #{email_chk})
+</insert>
+
+<update id="updateMailReceive">
+    UPDATE admin
+    SET email_chk = #{mailReceive}
+    WHERE emp_no = #{empNo}
+</update> 

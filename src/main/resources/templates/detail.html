@@ -7,219 +7,112 @@
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <link rel="stylesheet" th:href="@{/css/detail.css}">
     <title>계약서 상세</title>
+
     <style>
-        @charset "UTF-8";
-        body {
-            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            margin: 0;
+        input[type='date']{
+           text-align:center;
         }
-        .detail-container {
-            max-width: 800px;
-            margin: 0 auto;
+        .dt{
+            font-size: 0.8em;
         }
-        .detail-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-        .detail-header {
-            border-bottom: 2px solid #eee;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-            position: relative;
-        }
-        .detail-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        .detail-info {
-            color: #666;
-            font-size: 0.95rem;
+        .checklist-container {
             display: flex;
-            align-items: center;
-            gap: 15px;
+            flex-direction: column;
+            gap: 0.5rem;
         }
-        .detail-info i {
-            color: #3498db;
+
+        .checklist-item {
+            background: #fff;
+            border-radius: 6px;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+            border: 1px solid #e9ecef;
+            transition: all 0.2s ease;
         }
-        .status-badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: white;
+
+        .checklist-item:hover {
+            transform: translateY(-1px);
             box-shadow: 0 2px 4px rgba(0,0,0,0.1);
         }
-        .detail-section {
-            margin-bottom: 30px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
+
+        .checklist-success {
+            border-left: 3px solid #198754;
         }
-        .detail-section-title {
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #2c3e50;
+
+        .checklist-danger {
+            border-left: 3px solid #dc3545;
+        }
+
+        .checklist-header {
             display: flex;
-            align-items: center;
-            gap: 10px;
+            align-items: flex-start;
+            gap: 0.75rem;
         }
-        .detail-section-title i {
-            color: #3498db;
+
+        .checklist-icon {
+            font-size: 1.25rem;
+            line-height: 1;
         }
-        .detail-item {
-            display: flex;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+
+        .checklist-success .checklist-icon i {
+            color: #198754;
         }
-        .detail-label {
-            width: 120px;
-            color: #666;
-            font-weight: 500;
+
+        .checklist-danger .checklist-icon i {
+            color: #dc3545;
         }
-        .detail-value {
+
+        .checklist-title {
             flex: 1;
-            color: #2c3e50;
         }
-        .detail-value.amount {
-            font-weight: bold;
-            color: #e74c3c;
-        }
-        .check-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .check-item i {
-            font-size: 1.2rem;
-        }
-        .check-yes {
-            color: #2ecc71;
-        }
-        .check-no {
-            color: #e74c3c;
-        }
-        .check-reason {
-            color: #666;
+
+        .checklist-title h6 {
+            color: #212529;
+            font-weight: 500;
             font-size: 0.9rem;
-            margin-left: 5px;
+            margin-bottom: 0.1rem;
         }
-        .bg-warning { background-color: #f1c40f; }
-        .bg-success { background-color: #2ecc71; }
-        .bg-danger { background-color: #e74c3c; }
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #eee;
+
+        .checklist-title small {
+            color: #6c757d;
+            font-size: 0.8rem;
         }
-        .action-button {
-            flex: 1;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 500;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
+
+        .checklist-body {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .checklist-reason {
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 8px;
+            gap: 0.4rem;
+            color: #dc3545;
+            font-size: 0.8rem;
         }
-        .approve-button {
-            background-color: #2ecc71;
-            color: white;
+
+        .checklist-reason i {
+            font-size: 0.9rem;
         }
-        .approve-button:hover {
-            background-color: #27ae60;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(46, 204, 113, 0.2);
-        }
-        .reject-button {
-            background-color: #e74c3c;
-            color: white;
-        }
-        .reject-button:hover {
-            background-color: #c0392b;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(231, 76, 60, 0.2);
-        }
-        .action-button i {
-            font-size: 1.2rem;
-        }
-        .rejection-modal .modal-content {
-            border-radius: 15px;
-            border: none;
-        }
-        .rejection-modal .modal-header {
-            border-bottom: 2px solid #eee;
-            padding: 20px;
-        }
-        .rejection-modal .modal-body {
-            padding: 20px;
-        }
-        .rejection-modal .modal-footer {
-            border-top: 2px solid #eee;
-            padding: 20px;
-        }
-        .rejection-reason {
-            width: 100%;
-            padding: 12px;
-            border: 2px solid #eee;
-            border-radius: 10px;
-            margin-top: 10px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        .rejection-reason:focus {
-            border-color: #3498db;
-            outline: none;
-        }
-        .rejection-reason-display {
-            margin-top: 15px;
-            padding: 15px;
-            background-color: #fff3f3;
-            border-radius: 10px;
-            color: #e74c3c;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            font-size: 0.95rem;
-        }
-        .rejection-reason-display i {
-            font-size: 1.2rem;
+
+        .reason-label {
+            font-weight: 600;
+            color: #dc3545;
         }
     </style>
 </head>
 <body>
-
-
     <div class="detail-container" th:each="detail : ${contract}">
-        <!--글쓴이만 수정 가능(관리자는 수정버튼 안뜸, 결재올린 후에는 수정 못함)-->
         <div class="d-flex justify-content-end mb-2"
              th:if="${#authentication.principal.userNo.toString() == detail.emp_no
-                     and #authentication.principal.deptCode != '0105'
-                     and detail.appr_no != null
+                      and detail.appr_no == null and flag == 'Y'
              }">
-            <button class="btn btn-primary rounded-pill px-4 py-2"
+            <button class="btn edit-button"
                     th:attr="data-seq=${detail.seq}" onclick="edit(this.getAttribute('data-seq'))">
-                <i class="bi bi-pencil-square me-2"></i>
+                <i class="bi bi-pencil-square me-1"></i>
                 수정하기
             </button>
         </div>
@@ -230,135 +123,322 @@
                     <span><i class="bi bi-person"></i> <span th:text="${detail.user_nm}">작성자</span></span>
                     <span><i class="bi bi-calendar"></i> <span th:text="${detail.crtdate}">작성일</span></span>
                 </div>
-
             </div>
 
-            <div class="detail-section">
-                <h3 class="detail-section-title"><i class="bi bi-info-circle"></i> 기본 정보</h3>
-                <div class="detail-item">
-                    <div class="detail-label">주소</div>
-                    <div class="detail-value" th:text="${detail.address}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">상세주소</div>
-                    <div class="detail-value" th:text="${detail.address_d}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">계약일</div>
-                    <div class="detail-value" th:text="${detail.cont_date}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">이사일</div>
-                    <div class="detail-value" th:text="${detail.move_date}">-</div>
-                </div>
-            </div>
+            <div class="detail-content">
+                <!-- 상단 좌우 레이아웃 -->
+                <div class="row g-3 mb-3">
+                    <!-- 왼쪽: 기본정보 -->
+                    <div class="col-md-6">
+                        <div class="detail-section h-100">
+                            <h3 class="detail-section-title"><i class="bi bi-info-circle"></i> 물건정보</h3>
+                            <div class="row g-2">
+                                <div class="col-12">
+                                    <div class="detail-item">
+                                        <div class="detail-label">주소</div>
+                                        <div class="detail-value" th:text="${detail.address}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="detail-item">
+                                        <div class="detail-label">상세주소</div>
+                                        <div class="detail-value" th:text="${detail.address_d}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">계약일</div>
+                                        <div class="detail-value" th:text="${detail.cont_date}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" th:if="${detail.cont_period != null and detail.cont_period != ''}">
+                                    <div class="detail-item">
+                                        <div class="detail-label">계약기간</div>
+                                        <div class="detail-value" th:text="${detail.cont_period + '개월'}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">이사일</div>
+                                        <div class="detail-value" th:text="${detail.move_date}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">보증금</div>
+                                        <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.deposit_amt, 3, 'COMMA') + '만원'}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">월세</div>
+                                        <div class="detail-value amount" th:text="${detail.rent_amt + '만원'}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">주거유형</div>
+                                        <div class="detail-value" th:text="${detail.res_type}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">거래유형</div>
+                                        <div class="detail-value" th:text="${detail.trans_type}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">면적</div>
+                                        <div class="detail-value" th:text="${detail.area + '㎡ (' + areaInPyeong + '평)'}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="detail-item">
+                                        <div class="detail-label">사용인원</div>
+                                        <div class="detail-value" th:text="${detail.accu}">-</div>
+                                    </div>
+                                </div>
+                                <div class="col-md-6" th:if="${detail.accu_type != null and detail.accu_type != ''}">
+                                    <div class="detail-item">
+                                        <div class="detail-label">인원유형</div>
+                                        <div class="detail-value" th:text="${detail.accu_type}">-</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="detail-section">
-                <h3 class="detail-section-title"><i class="bi bi-cash-stack"></i> 계약 정보</h3>
-                <div class="detail-item">
-                    <div class="detail-label">계약금</div>
-                    <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.cont_amt, 3, 'COMMA') + '원'}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">보증금</div>
-                    <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.deposit_amt, 3, 'COMMA') + '원'}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">월세</div>
-                    <div class="detail-value amount" th:text="${#numbers.formatInteger(detail.rent_amt, 3, 'COMMA') + '원'}">-</div>
-                </div>
-            </div>
+                    <!-- 오른쪽: 체크리스트
+                    <div class="col-md-6">
+                        <div class="detail-section h-100">
+                            <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
+                            <div class="detail-item">
+                                <div class="detail-label">실행예산</div>
+                                <div class="detail-value">
+                                    <div class="check-item">
+                                        <i th:classappend="${detail.chk_1 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                                        <span th:text="${detail.chk_1 == 'Y' ? '예' : '아니오'}">-</span>
+                                        <span th:if="${detail.chk_1 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_1} + ')'">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">법인명의</div>
+                                <div class="detail-value">
+                                    <div class="check-item">
+                                        <i th:classappend="${detail.chk_2 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                                        <span th:text="${detail.chk_2 == 'Y' ? '예' : '아니오'}">-</span>
+                                        <span th:if="${detail.chk_2 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_2} + ')'">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">전세권설정</div>
+                                <div class="detail-value">
+                                    <div class="check-item">
+                                        <i th:classappend="${detail.chk_3 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                                        <span th:text="${detail.chk_3 == 'Y' ? '예' : '아니오'}">-</span>
+                                        <span th:if="${detail.chk_3 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_3} + ')'">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">부동산</div>
+                                <div class="detail-value">
+                                    <div class="check-item">
+                                        <i th:classappend="${detail.chk_4 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                                        <span th:text="${detail.chk_4 == 'Y' ? '예' : '아니오'}">-</span>
+                                        <span th:if="${detail.chk_4 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_4} + ')'">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="detail-item">
+                                <div class="detail-label">채권순위</div>
+                                <div class="detail-value">
+                                    <div class="check-item">
+                                        <i th:classappend="${detail.chk_5 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
+                                        <span th:text="${detail.chk_5 == 'Y' ? '예' : '아니오'}">-</span>
+                                        <span th:if="${detail.chk_5 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_5} + ')'">-</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div> -->
 
-            <div class="detail-section">
-                <h3 class="detail-section-title"><i class="bi bi-building"></i> 추가 정보</h3>
-                <div class="detail-item">
-                    <div class="detail-label">주거유형</div>
-                    <div class="detail-value" th:text="${detail.res_type}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">거래유형</div>
-                    <div class="detail-value" th:text="${detail.trans_type}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">면적</div>
-                    <div class="detail-value" th:text="${detail.area + '㎡'}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">사용인원</div>
-                    <div class="detail-value" th:text="${detail.accu}">-</div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">부동산정보</div>
-                    <div class="detail-value" th:text="${detail.source}">-</div>
-                </div>
-            </div>
+                    <!-- 오른쪽: 체크리스트 -->
+                    <div class="col-md-6">
+                        <div class="detail-section h-100">
+                            <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
+                            <div class="checklist-container">
+                                <div class="checklist-item" th:classappend="${detail.chk_1 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                    <div class="checklist-header">
+                                        <div class="checklist-icon">
+                                            <i th:classappend="${detail.chk_1 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                        </div>
+                                        <div class="checklist-title">
+                                            <h6 class="mb-0">실행예산에 반영되어 있는가</h6>
+                                        </div>
+                                    </div>
+                                    <div class="checklist-body" th:if="${detail.chk_1 == 'N'}">
+                                        <div class="checklist-reason">
+                                            <i class="bi bi-info-circle"></i>
+                                            <span class="reason-label">사유 및 후속조치:</span>
+                                            <span th:text="${detail.chk_reason_1}">-</span>
+                                        </div>
+                                    </div>
+                                </div>
 
-            <div class="detail-section">
-                <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
-                <div class="detail-item">
-                    <div class="detail-label">실행예산</div>
-                    <div class="detail-value">
-                        <div class="check-item">
-                            <i th:classappend="${detail.chk_1 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
-                            <span th:text="${detail.chk_1 == 'Y' ? '예' : '아니오'}">-</span>
-                            <span th:if="${detail.chk_1 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_1} + ')'">-</span>
+                                <div class="checklist-item" th:classappend="${detail.chk_2 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                    <div class="checklist-header">
+                                        <div class="checklist-icon">
+                                            <i th:classappend="${detail.chk_2 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                        </div>
+                                        <div class="checklist-title">
+                                            <h6 class="mb-0">㈜동아지질 법인명의로 계약하는가</h6>
+                                        </div>
+                                    </div>
+                                    <div class="checklist-body" th:if="${detail.chk_2 == 'N'}">
+                                        <div class="checklist-reason">
+                                            <i class="bi bi-info-circle"></i>
+                                            <span class="reason-label">사유:</span>
+                                            <span th:text="${detail.chk_reason_2}">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="checklist-item" th:classappend="${detail.chk_3 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                    <div class="checklist-header">
+                                        <div class="checklist-icon">
+                                            <i th:classappend="${detail.chk_3 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                        </div>
+                                        <div class="checklist-title">
+                                            <h6 class="mb-0">전세권을 설정하는가</h6>
+                                        </div>
+                                    </div>
+                                    <div class="checklist-body" th:if="${detail.chk_3 == 'N'}">
+                                        <div class="checklist-reason">
+                                            <i class="bi bi-info-circle"></i>
+                                            <span class="reason-label">사유:</span>
+                                            <span th:text="${detail.chk_reason_3}">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="checklist-item" th:classappend="${detail.chk_4 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                    <div class="checklist-header">
+                                        <div class="checklist-icon">
+                                            <i th:classappend="${detail.chk_4 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                        </div>
+                                        <div class="checklist-title">
+                                            <h6 class="mb-0">부동산 공인중개사무소를 통하여 거래하는가</h6>
+                                        </div>
+                                    </div>
+                                    <div class="checklist-body" th:if="${detail.chk_4 == 'N'}">
+                                        <div class="checklist-reason">
+                                            <i class="bi bi-info-circle"></i>
+                                            <span class="reason-label">사유:</span>
+                                            <span th:text="${detail.chk_reason_4}">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="checklist-item" th:classappend="${detail.chk_5 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
+                                    <div class="checklist-header">
+                                        <div class="checklist-icon">
+                                            <i th:classappend="${detail.chk_5 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
+                                        </div>
+                                        <div class="checklist-title">
+                                            <h6 class="mb-0">등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</h6>
+                                        </div>
+                                    </div>
+                                    <div class="checklist-body" th:if="${detail.chk_5 == 'N'}">
+                                        <div class="checklist-reason">
+                                            <i class="bi bi-info-circle"></i>
+                                            <span class="reason-label">사유:</span>
+                                            <span th:text="${detail.chk_reason_5}">-</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-                <div class="detail-item">
-                    <div class="detail-label">법인명의</div>
-                    <div class="detail-value">
-                        <div class="check-item">
-                            <i th:classappend="${detail.chk_2 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
-                            <span th:text="${detail.chk_2 == 'Y' ? '예' : '아니오'}">-</span>
-                            <span th:if="${detail.chk_2 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_2} + ')'">-</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">전세권설정</div>
-                    <div class="detail-value">
-                        <div class="check-item">
-                            <i th:classappend="${detail.chk_3 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
-                            <span th:text="${detail.chk_3 == 'Y' ? '예' : '아니오'}">-</span>
-                            <span th:if="${detail.chk_3 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_3} + ')'">-</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">부동산</div>
-                    <div class="detail-value">
-                        <div class="check-item">
-                            <i th:classappend="${detail.chk_4 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
-                            <span th:text="${detail.chk_4 == 'Y' ? '예' : '아니오'}">-</span>
-                            <span th:if="${detail.chk_4 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_4} + ')'">-</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="detail-item">
-                    <div class="detail-label">보증금</div>
-                    <div class="detail-value">
-                        <div class="check-item">
-                            <i th:classappend="${detail.chk_5 == 'Y' ? 'bi-check-circle-fill check-yes' : 'bi-x-circle-fill check-no'}"></i>
-                            <span th:text="${detail.chk_5 == 'Y' ? '예' : '아니오'}">-</span>
-                            <span th:if="${detail.chk_5 == 'N'}" class="check-reason" th:text="'(' + ${detail.chk_reason_5} + ')'">-</span>
+
+
+                <!-- 하단: 첨부파일 -->
+                <div class="row g-3">
+                    <div class="col-12">
+                        <div class="detail-section">
+                            <h3 class="detail-section-title"><i class="bi bi-paperclip"></i> 첨부파일</h3>
+                            <div class="row g-3">
+                                <!-- 부동산정보 파일 섹션 -->
+                                <div class="col-md-6">
+                                    <div class="file-section h-100">
+                                        <h6 class="file-section-title mb-2">
+                                            <i class="bi bi-building"></i> 공인중개 관련
+                                            <small class="text-muted ms-2">(부동산명함 및 정보)</small>
+                                        </h6>
+                                        <div class="file-list" th:if="${detail.real_estate_files != null and detail.real_estate_files != ''}">
+                                            <div class="list-group">
+                                                <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.real_estate_files, ';')}">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div class="file-info">
+                                                            <i class="bi bi-file-earmark-text file-icon"></i>
+                                                            <span class="file-name" th:text="${fileId}">파일명</span>
+                                                        </div>
+                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" 
+                                                           class="btn btn-sm btn-outline-primary"
+                                                           th:download="${fileId}"
+                                                           target="_blank">
+                                                            <i class="bi bi-download"></i> 다운로드
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="no-files text-muted" th:unless="${detail.real_estate_files != null and detail.real_estate_files != ''}">
+                                            첨부된 파일이 없습니다.
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- 등기부등본 파일 섹션 -->
+                                <div class="col-md-6">
+                                    <div class="file-section h-100">
+                                        <h6 class="file-section-title mb-2">
+                                            <i class="bi bi-file-earmark-text"></i> 등기부등본
+                                            <small class="text-muted ms-2">(채권순위 확인)</small>
+                                        </h6>
+                                        <div class="file-list" th:if="${detail.credit_files != null and detail.credit_files != ''}">
+                                            <div class="list-group">
+                                                <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.credit_files, ';')}">
+                                                    <div class="d-flex align-items-center justify-content-between">
+                                                        <div class="file-info">
+                                                            <i class="bi bi-file-earmark-text file-icon"></i>
+                                                            <span class="file-name" th:text="${fileId}">파일명</span>
+                                                        </div>
+                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" 
+                                                           class="btn btn-sm btn-outline-primary"
+                                                           th:download="${fileId}"
+                                                           target="_blank">
+                                                            <i class="bi bi-download"></i> 다운로드
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="no-files text-muted" th:unless="${detail.credit_files != null and detail.credit_files != ''}">
+                                            첨부된 파일이 없습니다.
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
-
-            <!-- 관리자용 승인/반려 버튼 -->
-<!--      <div th:if="${#authorization.expression('hasRole(''ROLE_ADMIN'')')}" class="action-buttons">
-            <div class="action-buttons">
-                <button class="action-button approve-button" onclick="approvecontract()">
-                    <i class="bi bi-check-circle"></i>
-                    승인
-                </button>
-                <button class="action-button reject-button" onclick="showRejectionModal()">
-                    <i class="bi bi-x-circle"></i>
-                    반려
-                </button>
-            </div> -->
         </div>
     </div>
 

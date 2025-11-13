@@ -6,6 +6,11 @@
         SELECT COALESCE(MAX(seq), 0) + 1 FROM contract_m
     </select>
 
+    <select id="getMaxDseq" parameterType="int" resultType="int">
+        SELECT MAX(d_seq) as d_seq FROM approval_d
+        where appr_no = #{appr_no}
+    </select>
+
     <insert id="insertContractM" parameterType="com.dage.rent.DTO.ContractMDTO">
         INSERT INTO contract_m (
         SEQ,
@@ -13,6 +18,7 @@
         USER_NM,
         PROJ_CODE,
         PROJ_NAME,
+        TEMP_FLAG,
         CRTDATE
         ) VALUES (
         #{seq},
@@ -20,6 +26,7 @@
         #{userNm},
         #{projCode},
         #{projName},
+        #{temp_flag},
         NOW()
         )
     </insert>
@@ -28,23 +35,28 @@
         INSERT INTO contract_d (
         SEQ,
         CONT_DATE,
+        CONT_PERIOD,
         MOVE_DATE,
         CONT_AMT,
         DEPOSIT_AMT,
         RENT_AMT,
         ADDRESS,
         ADDRESS_D,
+        POST_CODE,
         RES_TYPE,
         TRANS_TYPE,
         AREA,
         CRTDATE,
         ACCU,
+        ACCU_TYPE,
         SOURCE,
         CHK_1,
         CHK_2,
         CHK_3,
         CHK_4,
-        CHK_5
+        CHK_5,
+        REAL_ESTATE_FILES,
+        CREDIT_FILES
         <if test="chkReason1 != null">, CHK_REASON_1</if>
         <if test="chkReason2 != null">, CHK_REASON_2</if>
         <if test="chkReason3 != null">, CHK_REASON_3</if>
@@ -53,23 +65,28 @@
         ) VALUES (
         #{seq},
         #{contDate},
+        #{cont_period},
         #{moveDate},
         #{contAmt},
         #{depositAmt},
         #{rentAmt},
         #{address},
         #{addressD},
+        #{post_code},
         #{resType},
         #{transType},
         #{area},
         NOW(),
         #{accu},
+        #{accu_type},
         #{source},
         #{chk1},
         #{chk2},
         #{chk3},
         #{chk4},
-        #{chk5}
+        #{chk5},
+        #{realEstateFiles},
+        #{creditFiles}
         <if test="chkReason1 != null">, #{chkReason1}</if>
         <if test="chkReason2 != null">, #{chkReason2}</if>
         <if test="chkReason3 != null">, #{chkReason3}</if>
@@ -86,18 +103,22 @@
         m.proj_code,
         m.proj_name,
         m.appr_no,
+        m.rewrite,
         d.cont_date,
+        d.cont_period,
         d.move_date,
         d.cont_amt,
         d.deposit_amt,
         d.rent_amt,
         d.address,
         d.address_d,
+        d.post_code,
         d.res_type,
         d.trans_type,
         d.area,
         d.crtdate,
         d.accu,
+        d.accu_type,
         d.source,
         d.chk_1,
         d.chk_2,
@@ -108,11 +129,57 @@
         d.chk_reason_2,
         d.chk_reason_3,
         d.chk_reason_4,
-        d.chk_reason_5
+        d.chk_reason_5,
+        d.real_estate_files,
+        d.credit_files
         FROM contract_m m
         , contract_d d
         WHERE m.seq = d.seq
         and m.seq = #{seq}
+    </select>
+
+    <select id="getContractDetailForTemp" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT
+        m.seq,
+        m.emp_no,
+        m.user_nm,
+        m.proj_code,
+        m.proj_name,
+        m.appr_no,
+        d.cont_date,
+        d.cont_period,
+        d.move_date,
+        d.cont_amt,
+        d.deposit_amt,
+        d.rent_amt,
+        d.address,
+        d.address_d,
+        d.post_code,
+        d.res_type,
+        d.trans_type,
+        d.area,
+        d.crtdate,
+        d.accu,
+        d.accu_type,
+        d.chk_1,
+        d.chk_2,
+        d.chk_3,
+        d.chk_4,
+        d.chk_5,
+        d.chk_reason_1,
+        d.chk_reason_2,
+        d.chk_reason_3,
+        d.chk_reason_4,
+        d.chk_reason_5,
+        d.real_estate_files,
+        d.credit_files
+        FROM contract_m m
+        , contract_d d
+        WHERE m.seq = d.seq
+        and m.temp_flag = 'Y'
+        and m.emp_no = #{user_no}
+        ORDER BY d.crtdate DESC
+        LIMIT 1
     </select>
 
     <select id="getContractDetailForAdmin" resultType="com.dage.rent.DTO.ContractDTO">
@@ -124,17 +191,20 @@
         m.proj_name,
         m.appr_no,
         d.cont_date,
+        d.cont_period,
         d.move_date,
         d.cont_amt,
         d.deposit_amt,
         d.rent_amt,
         d.address,
         d.address_d,
+        d.post_code,
         d.res_type,
         d.trans_type,
         d.area,
         d.crtdate,
         d.accu,
+        d.accu_type,
         d.source,
         d.chk_1,
         d.chk_2,
@@ -145,7 +215,9 @@
         d.chk_reason_2,
         d.chk_reason_3,
         d.chk_reason_4,
-        d.chk_reason_5
+        d.chk_reason_5,
+        d.real_estate_files,
+        d.credit_files
         FROM contract_m m
         , contract_d d
         , approval_m am
@@ -156,6 +228,159 @@
         )
         AND am.appr_no = m.appr_no
         AND d.seq = m.seq
+    </select>
+
+    <select id="getContractDetailForList" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT
+        m.seq,
+        m.emp_no,
+        m.user_nm,
+        CAST(m.proj_code AS CHAR) as proj_code,
+        m.proj_name,
+        m.appr_no,
+        d.cont_date,
+        d.cont_period,
+        d.move_date,
+        d.cont_amt,
+        d.deposit_amt,
+        d.rent_amt,
+        d.address,
+        d.address_d,
+        d.post_code,
+        d.res_type,
+        d.trans_type,
+        d.area,
+        d.crtdate,
+        d.accu,
+        d.accu_type,
+        d.source,
+        d.chk_1,
+        d.chk_2,
+        d.chk_3,
+        d.chk_4,
+        d.chk_5,
+        d.chk_reason_1,
+        d.chk_reason_2,
+        d.chk_reason_3,
+        d.chk_reason_4,
+        d.chk_reason_5,
+        d.real_estate_files,
+        d.credit_files,
+        dcd.lessor,
+        dcd.lessor_name as lessorName,
+        dcd.lessor_account as lessorAccount,
+        dcd.lessor_bank as lessorBank,
+        NULL as existingCustCode,
+        dcd.cust_code as custCode,
+        dcd.payment_date as paymentDate
+        FROM contract_m m
+        , contract_d d
+        , approval_m am
+        LEFT JOIN draft_contract_detail dcd ON dcd.appr_no = am.appr_no
+        WHERE m.appr_no = #{appr_no}
+        AND am.appr_no = m.appr_no
+        AND d.seq = m.seq
+    </select>
+
+    <select id="getContractDetailForReceipt" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT
+        a.appr_no -- 결재번호
+        ,a.emp_no -- 작성자
+        ,a.user_nm -- 작성자
+        ,a.proj_code -- 사용현장
+        ,a.proj_name -- 사용현장
+        ,a.address -- 주소
+        ,d.d_seq -- 결재상세SEQ
+        ,d.appr_num -- 결재라인번호
+        ,d.appr_emp_no -- 결재자
+        ,d.appr_emp_nm -- 결재자
+        ,d.appr_position -- 결재자 직급
+        ,d.first_appr_emp_nm -- 최초결재
+        ,d.first_appr_date -- 최초결재일자
+        ,d.next_appr_emp_nm -- 다음결재자
+        ,d.last_appr_emp_nm -- 최종결재자
+        ,d.last_appr_date -- 최종결재일자
+        ,d.appr_stat -- 결재상태
+        FROM
+        (
+        SELECT
+        a.appr_no,
+        MAX(a.emp_no) AS emp_no
+        , MAX(a.user_nm) AS user_nm
+        , MAX(a.proj_code) AS proj_code
+        , MAX(a.proj_name) AS proj_name
+        , MAX(a.crtdate) AS crtdate
+        , CONCAT(MAX(CONCAT(b.address,' ',b.address_d)),(CASE WHEN COUNT(*) > 1 THEN CONCAT(' 외 ',COUNT(*)-1,'건') ELSE '' END)) AS address
+        FROM contract_m a
+        JOIN contract_d b
+        ON a.seq=b.seq
+        AND a.appr_no IS NOT NULL
+        GROUP BY a.appr_no
+        ) a
+        JOIN
+        (
+        SELECT
+        c.appr_no
+        ,c.appr_stat
+        ,c.appr_admin
+        ,c.d_seq
+        ,c.appr_num
+        ,c.appr_emp_no
+        ,c.appr_emp_nm
+        ,c.appr_remarks
+        ,c.appr_date
+        ,c.appr_position
+        ,c.last_tag
+        ,c.appr_tg
+        ,c.appr_group
+        ,c.first_appr_emp_nm
+        ,c.first_appr_date
+        ,c.last_appr_emp_nm
+        ,c.last_appr_date
+        ,c.next_appr_emp_nm
+        FROM
+        (
+        SELECT
+        b.rnum
+        ,b.appr_no
+        ,b.appr_stat
+        ,b.appr_admin
+        ,b.d_seq
+        ,b.appr_num
+        ,b.appr_emp_no
+        ,b.appr_emp_nm
+        ,b.appr_remarks
+        ,b.appr_date
+        ,b.appr_position
+        ,b.last_tag
+        ,b.appr_tg
+        ,b.appr_group
+        ,b.first_appr_emp_nm
+        ,b.first_appr_date
+        ,MAX(CASE WHEN appr_num = last_appr_c_num AND appr_tg = 'T' THEN appr_emp_nm ELSE '' END)OVER( PARTITION BY appr_no) AS last_appr_emp_nm
+        ,MAX(CASE WHEN appr_num = last_appr_c_num AND appr_tg = 'T' THEN appr_date ELSE NULL END)OVER( PARTITION BY appr_no) AS last_appr_date
+        ,(CASE WHEN appr_group = 'A' AND next_appr_emp_nm = '' THEN '업무지원팀' ELSE next_appr_emp_nm END) next_appr_emp_nm
+        FROM
+        (
+        SELECT
+        a1.appr_no, a1.appr_stat, a1.appr_admin
+        , a2.d_seq, a2.appr_num, a2.appr_emp_no, a2.appr_emp_nm, a2.appr_remarks
+        , (CASE WHEN appr_tg = 'T' THEN a2.appr_date ELSE NULL END) AS appr_date , a2.appr_position, a2.last_tag, IFNULL(a2.appr_tg,'N') AS appr_tg
+        , a2.appr_group
+        , LAG(a2.appr_emp_nm,1,'')OVER(PARTITION BY a1.appr_no ORDER BY a2.appr_num DESC) AS next_appr_emp_nm
+        , MAX(CASE WHEN a2.appr_num = 0 THEN a2.appr_emp_nm ELSE '' END )OVER(PARTITION BY a1.appr_no) AS first_appr_emp_nm
+        , MAX(CASE WHEN a2.appr_num = 0 THEN a2.appr_date ELSE NULL END )OVER(PARTITION BY a1.appr_no) AS first_appr_date
+        , MAX(a2.appr_num)OVER(PARTITION BY a1.appr_no) AS last_appr_num
+        , ROW_NUMBER()OVER(PARTITION BY a1.appr_no ORDER BY a2.appr_num DESC) AS rnum
+        , MAX(CASE WHEN a2.appr_tg = 'T' THEN a2.appr_num ELSE 0 END )OVER(PARTITION BY a1.appr_no) AS last_appr_c_num
+        FROM approval_m a1
+        JOIN approval_d a2
+        ON a1.appr_no = a2.appr_no
+        ) b
+        ) c
+        WHERE c.rnum = 1
+        ) d ON a.appr_no = d.appr_no
+        AND d.appr_admin = 'T'
     </select>
 
     <select id="getContracts" resultType="com.dage.rent.DTO.ContractMDTO">
@@ -183,7 +408,6 @@
     </select>
 
     <select id="getContractList" resultType="com.dage.rent.DTO.ContractDTO">
-
         SELECT
         m.seq
         ,m.emp_no
@@ -191,7 +415,9 @@
         ,m.proj_code
         ,m.proj_name
         ,m.appr_no
+        ,m.rewrite
         ,d.cont_date
+        ,d.cont_period
         ,d.move_date
         ,d.cont_amt
         ,d.deposit_amt
@@ -203,6 +429,7 @@
         ,d.area
         ,d.crtdate
         ,d.accu
+        ,d.accu_type
         ,d.source
         ,d.chk_1
         ,d.chk_2
@@ -214,11 +441,33 @@
         ,d.chk_reason_3
         ,d.chk_reason_4
         ,d.chk_reason_5
+        ,d.real_estate_files
+        ,d.credit_files
+        ,ifnull(a.appr_stat,'999') as appr_stat
+        ,a.reject
         FROM contract_m m
-        , contract_d d
-        WHERE m.seq = d.seq
+        JOIN contract_d d
+        ON m.seq = d.seq
+        <if test="proj_code != null">
         AND m.proj_code = #{proj_code}
+        </if>
+        AND m.temp_flag = 'N'
+        LEFT OUTER JOIN approval_m a
+        ON m.appr_no = a.appr_no
+        WHERE m.EMP_NO = #{user_no}
 
+        <choose>
+            <when test="conf_tag == 999">
+                AND a.appr_stat IS NULL
+            </when>
+            <when test="conf_tag == 2">
+                AND a.appr_stat IN ('0','1', '2')
+            </when>
+            <when test="conf_tag != null">
+                AND a.appr_stat = #{conf_tag}
+            </when>
+        </choose>
+        order by d.crtdate desc
     </select>
 
     <select id="countContracts" resultType="long">
@@ -237,54 +486,66 @@
         </where>
     </select>
 
-    <select id="getContractAddress" resultType="com.dage.rent.DTO.ContractDDTO">
+    <select id="getContractAddress" resultType="com.dage.rent.DTO.ContractDTO">
         SELECT
-        ADDRESS as address,
-        ADDRESS_D as addressD
-        FROM contract_d
+        d.ADDRESS,
+        d.ADDRESS_D,
+        d.POST_CODE,
+        m.TEMP_FLAG
+        FROM contract_d d, contract_m m
+        where m.seq = d.seq
     </select>
 
     <select id="getContractListForAppr" resultType="com.dage.rent.DTO.ContractDTO">
         SELECT *
         FROM (
         SELECT
-        m.seq,
-        m.emp_no,
-        m.user_nm,
-        m.proj_code,
-        m.proj_name,
-        m.appr_no,
-        d.cont_date,
-        d.move_date,
-        d.cont_amt,
-        d.deposit_amt,
-        d.rent_amt,
-        d.address,
-        d.address_d,
-        d.res_type,
-        d.trans_type,
-        d.area,
-        d.crtdate,
-        d.accu,
-        d.source,
-        d.chk_1,
-        d.chk_2,
-        d.chk_3,
-        d.chk_4,
-        d.chk_5,
-        d.chk_reason_1,
-        d.chk_reason_2,
-        d.chk_reason_3,
-        d.chk_reason_4,
-        d.chk_reason_5,
-        ROW_NUMBER() OVER (PARTITION BY m.appr_no ORDER BY m.seq) AS rn
+            m.seq,
+            m.emp_no,
+            m.user_nm,
+            m.proj_code,
+            m.proj_name,
+            m.appr_no,
+            d.cont_date,
+            d.cont_period,
+            d.move_date,
+            d.cont_amt,
+            d.deposit_amt,
+            d.rent_amt,
+            d.address,
+            d.address_d,
+            d.post_code,
+            d.res_type,
+            d.trans_type,
+            d.area,
+            d.crtdate,
+            d.accu,
+            d.accu_type,
+            d.source,
+            d.chk_1,
+            d.chk_2,
+            d.chk_3,
+            d.chk_4,
+            d.chk_5,
+            d.chk_reason_1,
+            d.chk_reason_2,
+            d.chk_reason_3,
+            d.chk_reason_4,
+            d.chk_reason_5,
+            a1.appr_stat,
+            a1.appr_date,
+            ROW_NUMBER() OVER (PARTITION BY m.appr_no ORDER BY m.seq) AS rn
         FROM contract_m m
-        , contract_d d
-        , approval_m a1
+            , contract_d d
+            , approval_m a1
         where m.seq = d.seq
         AND m.appr_no = a1.appr_no
+        <if test="proj_code != null">
+            AND m.proj_code = #{proj_code}
+        </if>
         ) sub
         WHERE rn = 1
+        ORDER BY sub.crtdate desc
     </select>
 
     <select id="getApprAllM" resultType="com.dage.rent.DTO.ApprovalDTO">
@@ -310,31 +571,80 @@
 
     <update id="updateContract">
         UPDATE contract_d
-        SET
-        cont_date = #{cont_date},
-        move_date = #{move_date},
-        cont_amt = #{cont_amt},
-        deposit_amt = #{deposit_amt},
-        rent_amt = #{rent_amt},
-        address = #{address},
-        address_d = #{address_d},
-        res_type = #{res_type},
-        trans_type = #{trans_type},
-        area = #{area},
-        crtdate = #{crtdate},
-        accu = #{accu},
-        source = #{source},
-        chk_1 = #{chk_1},
-        chk_2 = #{chk_2},
-        chk_3 = #{chk_3},
-        chk_4 = #{chk_4},
-        chk_5 = #{chk_5},
-        <if test="chk_reason_1 != null">chk_reason_1 = #{chk_reason_1},</if>
-        <if test="chk_reason_2 != null">chk_reason_2 = #{chk_reason_2},</if>
-        <if test="chk_reason_3 != null">chk_reason_3 = #{chk_reason_3},</if>
-        <if test="chk_reason_4 != null">chk_reason_4 = #{chk_reason_4},</if>
-        <if test="chk_reason_5 != null">chk_reason_5 = #{chk_reason_5}</if>
-        WHERE seq = #{seq};
+        <set>
+            <if test="cont_date != null">cont_date = #{cont_date},</if>
+            <if test="cont_period != null">cont_period = #{cont_period},</if>
+            <if test="move_date != null">move_date = #{move_date},</if>
+            <if test="cont_amt != null">cont_amt = #{cont_amt},</if>
+            <if test="deposit_amt != null">deposit_amt = #{deposit_amt},</if>
+            <if test="rent_amt != null">rent_amt = #{rent_amt},</if>
+            <if test="address != null">address = #{address},</if>
+            <if test="address_d != null">address_d = #{address_d},</if>
+            <if test="post_code != null">post_code = #{post_code},</if>
+            <if test="res_type != null">res_type = #{res_type},</if>
+            <if test="trans_type != null">trans_type = #{trans_type},</if>
+            <if test="area != null">area = #{area},</if>
+            <if test="crtdate != null">crtdate = #{crtdate},</if>
+            <if test="accu != null">accu = #{accu},</if>
+            <if test="accu_type != null">accu_type = #{accu_type},</if>
+            <if test="chk_1 != null">chk_1 = #{chk_1},</if>
+            <if test="chk_2 != null">chk_2 = #{chk_2},</if>
+            <if test="chk_3 != null">chk_3 = #{chk_3},</if>
+            <if test="chk_4 != null">chk_4 = #{chk_4},</if>
+            <if test="chk_5 != null">chk_5 = #{chk_5},</if>
+            real_estate_files = #{real_estate_files},
+            credit_files = #{credit_files},
+            <if test="chk_reason_1 != null">chk_reason_1 = #{chk_reason_1},</if>
+            <if test="chk_reason_2 != null">chk_reason_2 = #{chk_reason_2},</if>
+            <if test="chk_reason_3 != null">chk_reason_3 = #{chk_reason_3},</if>
+            <if test="chk_reason_4 != null">chk_reason_4 = #{chk_reason_4},</if>
+            <if test="chk_reason_5 != null">chk_reason_5 = #{chk_reason_5},</if>
+        </set>
+        WHERE seq = #{seq}
     </update>
+    <update id="updateContractForM">
+        UPDATE contract_m
+        <set>
+            <if test="proj_code != null">proj_code = #{proj_code},</if>
+            <if test="proj_name != null">proj_name = #{proj_name},</if>
+            <if test="temp_flag != null">temp_flag = #{temp_flag}</if>
+        </set>
+        WHERE seq = #{seq}
+    </update>
+
+    <update id="updateContractMasterApprNo">
+        update contract_m
+        set
+        appr_no = #{appr_no}
+        where seq in
+        <foreach item="item" index="index" collection="seqList"
+                 open="(" separator="," close=")">
+            #{item}
+        </foreach>
+    </update>
+
+    <update id="updateContractRewrite">
+        UPDATE contract_m
+        set rewrite = 'Y'
+        WHERE seq = #{seq}
+    </update>
+
+    <delete id="deleteContractDetails">
+        DELETE FROM contract_d
+        WHERE seq IN
+        <foreach collection="seqList" item="seq" open="(" separator="," close=")">
+            #{seq}
+        </foreach>
+    </delete>
+
+    <delete id="deleteContractMasters">
+        DELETE FROM contract_m
+        WHERE seq IN
+        <foreach collection="seqList" item="seq" open="(" separator="," close=")">
+            #{seq}
+        </foreach>
+    </delete>
+
+
 
 </mapper> 

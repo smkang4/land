@@ -1,0 +1,1187 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/checkbox.css}">
+    <link rel="stylesheet" th:href="@{/css/grid.css}">
+
+    <!-- Select2   -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+    <!-- Toast Grid-->
+    <link rel="stylesheet" href="https://uicdn.Toast.com/tui.pagination/latest/tui-pagination.css" />
+    <link rel="stylesheet" href="https://uicdn.Toast.com/grid/latest/tui-grid.css" />
+    <style>
+        @charset "UTF-8";
+        .container-fluid {
+          height: 92%;
+        }
+
+                 /* 포커스 상태일 때 생기는 테두리 제거 */
+         .tui-grid-cell.tui-grid-cell-has-focus {
+           outline: none !important;
+           box-shadow: none !important;
+           border: none !important;
+         }
+
+         /* 혹시 생길 수 있는 내부 엘리먼트 포커스도 제거 */
+         .tui-grid-cell-content:focus {
+           outline: none !important;
+           box-shadow: none !important;
+           border: none !important;
+         }
+
+         /* 탭 컨테 있너 */
+         .tab-container {
+             background: #fff;
+             border-radius: 16px;
+             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+             overflow: hidden;
+             border: 1px solid #e9ecef;
+         }
+
+         /* 탭 네비게이션 */
+         .tab-navigation {
+             display: flex;
+             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+             position: relative;
+         }
+
+         .tab-btn {
+             flex: 1;
+             display: flex;
+             align-items: center;
+             justify-content: center;
+             gap: 10px;
+             padding: 16px 24px;
+             border: none;
+             background: transparent;
+             font-weight: 600;
+             font-size: 15px;
+             color: #6c757d;
+             cursor: pointer;
+             transition: all 0.3s ease;
+             border-bottom: 3px solid transparent;
+         }
+
+         .tab-btn:hover {
+             background: rgba(0,123,255,0.05);
+             color: #495057;
+         }
+
+         .tab-btn.active {
+             background: #fff;
+             color: #007bff;
+             border-bottom-color: #007bff;
+         }
+
+         .tab-btn.active {
+             background: #fff;
+             color: #007bff;
+             border-bottom-color: #007bff;
+         }
+
+         /* 탭 콘텐츠 */
+         .tab-content-wrapper {
+             padding: 2rem;
+             min-height: calc(100vh - 200px);
+             background: #fff;
+         }
+
+         .tab-pane {
+             display: none;
+         }
+
+         .tab-pane.active {
+             display: block;
+         }
+
+         /* 그리드 컨테이너 */
+         .grid-container {
+             height: 100%;
+             display: flex;
+             flex-direction: column;
+         }
+
+         /* 버튼 스타일 개선 */
+         .btn {
+             transition: all 0.2s ease;
+         }
+
+         .btn:disabled {
+             opacity: 0.6;
+             cursor: not-allowed;
+         }
+
+         /* 선택 카운터 스타일 */
+         .text-muted.small {
+             font-size: 0.875rem;
+         }
+
+         /* 반응형 디자인 */
+         @media (max-width: 768px) {
+             .tab-btn {
+                 padding: 12px 16px;
+                 font-size: 14px;
+             }
+             
+             .tab-content-wrapper {
+                 padding: 1rem;
+             }
+         }
+
+         /* 로딩 스피너 */
+         .spinner-border-sm {
+             width: 1rem;
+             height: 1rem;
+         }
+
+         /* 성공/오류 메시지 */
+         .alert {
+             border-radius: 8px;
+             border: none;
+         }
+
+         /* 그리드 헤더 스타일 */
+         .tui-grid-header {
+             background: #f8f9fa;
+             border-bottom: 2px solid #dee2e6;
+         }
+
+         /* 커스텀 스크롤바 */
+         ::-webkit-scrollbar {
+             width: 8px;
+         }
+
+         ::-webkit-scrollbar-track {
+             background: #f1f1f1;
+             border-radius: 4px;
+         }
+
+         ::-webkit-scrollbar-thumb {
+             background: #c1c1c1;
+             border-radius: 4px;
+         }
+
+         ::-webkit-scrollbar-thumb:hover {
+             background: #a8a8a8;
+         }
+    </style>
+</head>
+<body>
+    <div class="container-fluid h-100">
+        <div class="row h-100">
+            <div class="col-12">
+                <div class="d-flex flex-column gap-3">
+                    <!-- 헤더 섹션 -->
+                    <div class="page-header">
+                        <h3 class="text-primary mb-2"><i class="bi bi-file-earmark-text"></i> 기안서 관리</h3>
+                        <span>결재 완료된 요청서를 선택하여 기안서를 작성하거나, 작성된 기안서를 확인할 수 있습니다.</span>
+                    </div>
+
+                          <!-- 탭 컨테이너 -->
+         <div class="tab-container">
+             <!-- 탭 네비게이션 -->
+             <div class="tab-navigation">
+                 <button class="tab-btn active" id="pending-tab" type="button">
+                     <i class="bi bi-clock-fill"></i>
+                     <span>기안 미작성</span>
+                 </button>
+                 <button class="tab-btn" id="incomplete-tab" type="button">
+                     <i class="bi bi-hourglass-split"></i>
+                     <span>기안 미완료</span>
+                 </button>
+                 <button class="tab-btn" id="completed-tab" type="button">
+                     <i class="bi bi-check-circle-fill"></i>
+                     <span>기안완료</span>
+                 </button>
+             </div>
+
+             <!-- 탭 콘텐츠 -->
+             <div class="tab-content-wrapper">
+                 <!-- 기안 미작성 탭 -->
+                 <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                     <!-- 기안서 작성 버튼과 다중선택 기능 -->
+                     <div class="row mb-3">
+                         <div class="col-12">
+                             <div class="d-flex flex-column">
+                                 <div class="mb-2">
+                                     <button type="button" class="btn btn-primary" id="createDraftBtn" disabled>
+                                         <i class="bi bi-file-earmark-plus"></i> 기안서 작성
+                                     </button>
+                                     <span class="ms-2 text-muted small">선택된 항목: <span id="selectedCount">0</span>개</span>
+                                 </div>
+                                 <div>
+                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="selectAllBtn">
+                                         <i class="bi bi-check-all"></i> 전체선택
+                                     </button>
+                                     <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="deselectAllBtn">
+                                         <i class='bi bi-x-circle'></i> 전체해제
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <div class="row" style="height: calc(100vh - 500px);">
+                         <div class="col col-12" id="pendingGrid" style="height: 100%;"></div>
+                     </div>
+                 </div>
+                 
+                 <!-- 기안 미완료 탭 -->
+                 <div class="tab-pane fade" id="incomplete" role="tabpanel" aria-labelledby="incomplete-tab">
+                     <!-- 기안 미완료 탭: 프로세저 실행 및 결재문서 처리 -->
+                     <div class="row mb-3">
+                         <div class="col-12">
+                             <div class="d-flex flex-column">
+                                 <div class="mb-2">
+                                     <button type="button" class="btn btn-primary" id="uploadDraftBtn" disabled>
+                                         <i class="bi bi-cloud-upload"></i> 기안 업로드
+                                     </button>
+                                     <span class="ms-2 text-muted small">선택된 항목: <span id="selectedIncompleteCount">0</span>개</span>
+                                 </div>
+                                 <div>
+                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="selectAllIncompleteBtn">
+                                         <i class="bi bi-check-all"></i> 전체선택
+                                     </button>
+                                     <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="deselectAllIncompleteBtn">
+                                         <i class="bi bi-x-circle"></i> 전체해제
+                                     </button>
+                                 </div>
+                             </div>
+                         </div>
+                     </div>
+                     
+                     <div class="row" style="height: calc(100vh - 500px);">
+                         <div class="col col-12" id="incompleteGrid" style="height: 100%;"></div>
+                     </div>
+                 </div>
+                 
+                 <!-- 기안완료 탭 -->
+                 <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                     <div class="row" style="height: calc(100vh - 500px);">
+                         <div class="col col-12" id="completedGrid" style="height: 100%;"></div>
+                     </div>
+                 </div>
+             </div>
+         </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 부트스트랩 JS 번들 -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <!-- Select2 -->
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+    <!-- Toast Grid -->
+    <script src="https://uicdn.Toast.com/grid/latest/tui-grid.js">    </script>
+    
+    <!-- Approver Integration -->
+    <script th:src="@{/js/approval-integration.js}"></script>
+
+<script>
+    // 전역 변수
+    const user_no = "[[${#authentication.principal.userNo}]]"
+    
+        // 다중선택 관련 변수
+        let selectedRows = new Set();
+    
+    // 그리드 인스턴스
+    let pendingGrid = null;
+    let incompleteGrid = null;
+    let completedGrid = null;
+
+         // 기본 컬럼 정의 (확인 컬럼 제외)
+     const baseColumns = [
+         { header: '계약seq', name: 'd_seq', width: 70, align: 'center', sortable: true, hidden: true },
+         { header: '결재순번', name: 'appr_num', width: 70, align: 'center', sortable: true, hidden: true },
+         { header: '결재번호', name: 'appr_no', width: 70, align: 'center', sortable: true, hidden: true },
+         { header: '결재자', name: 'appr_emp_no', width: 70, align: 'center', sortable: true, hidden: true },
+         { header: '현장코드', name: 'proj_code', sortable: true, filter: 'text', hidden: true },
+         { header: '현장명', name: 'proj_name', width: 500, sortable: true, filter: { type: 'text' } },
+         { header: 'mst_seq', name: 'mst_seq', width: 100, align: 'center', sortable: true, hidden: true },
+         { 
+             header: '주소', 
+             name: 'address', 
+             width: 800, 
+             sortable: true, 
+             filter: { type: 'text' },
+             formatter: function(e) {
+                 return '<a href="#">' + e.value + '</a>';
+             }
+         },
+     ];
+
+        // 그리드 생성 함수
+    function createGrid(containerId, showCheckbox = false) {
+        // 그리드 타입에 따라 컬럼 설정
+        let columns = [...baseColumns];
+        
+        if (containerId === 'pendingGrid') {
+            // 기안 미작성 탭: 기안서 작성 버튼만 추가
+            const confirmColumn = {
+                header: '확인', 
+                name: 'confirm', 
+                width: 70, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    if (e.row.appr_stat == '999' || e.row.appr_stat == '4') {
+                        return '';
+                    } else {
+                        return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>';
+                    }
+                }
+            };
+            columns.push(confirmColumn);
+        } else {
+            // 기안완료 탭: 확인 버튼과 재기안 버튼 추가
+            
+            // 확인 버튼 컬럼
+            const confirmColumn = {
+                header: '확인', 
+                name: 'confirm', 
+                width: 70, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    console.log('기안완료 formatter - e.row:', e.row);
+                    console.log('기안완료 formatter - mst_seq:', e.row.mst_seq);
+                    if (e.row.mst_seq) {
+                        return '<button class="btn btn-sm btn-primary"><i class="bi bi-file-text"></i></button>';
+                    } else {
+                        return '';
+                    }
+                }
+            }; 
+            
+           // 재기안 버튼 컬럼
+           const redraftColumn = {
+               header: '재기안', 
+               name: 'redraft', 
+               width: 80, 
+               align: 'center', 
+               sortable: false, 
+               hidden: false,
+               formatter: function(e) {
+                   if (e.row.mst_seq) {
+                       return '<button class="btn btn-sm btn-warning"><i class="bi bi-arrow-clockwise"></i></button>';
+                   } else {
+                       return '';
+                   }
+               }
+           };
+            
+             // 확인 버튼과 재기안 버튼을 마지막에 추가
+             columns.push(confirmColumn);
+             columns.push(redraftColumn);
+         }
+         
+         const gridOptions = {
+             el: document.getElementById(containerId),
+             bodyHeight: 'fitToParent',
+             rowHeight: 50,
+             selection: {
+                 type: 'row',
+                 showCheckbox: showCheckbox,
+                 enableCellSelection: false
+             },
+             focus: false,
+             rowHeaders: showCheckbox ? [
+                 { type: 'checkbox', width: 50, align: 'center', valign: 'middle' },
+                 { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
+             ] : [
+                 { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
+             ],
+             header: { height: 50 },
+             hideLoadingBar: false,
+             pageOptions: {
+                 useClient: true,
+                 type: 'scroll',
+                 perPage: -1
+             },
+             sortingOptions: {
+                 useClient: true,
+                 initialState: { columnName: 'seq', ascending: false }
+             },
+             columns: columns,
+             columnOptions: { resizable: true }
+         };
+
+        try {
+            const grid = new Grid(gridOptions);
+            
+            // 클릭 이벤트 등록
+            grid.on('click', handleGridClick);
+            
+            return grid;
+        } catch (error) {
+            console.error('그리드 생성 오류:', error);
+            return null;
+        }
+    }
+
+                                                                                                                                                                                                                                                                                                                                               // 그리드 클릭 이벤트 핸들러
+          const handleGridClick = (ev) => {
+              console.log('클릭 이벤트 객체:', ev);
+              console.log('ev.instance:', ev.instance);
+              
+              // ev.instance가 그리드 인스턴스인지 확인
+              let gridInstance = null;
+              if (ev.instance && typeof ev.instance.getData === 'function') {
+                  gridInstance = ev.instance;
+              } else if (ev && typeof ev.getData === 'function') {
+                  gridInstance = ev;
+              } else if (ev.target && typeof ev.target.getData === 'function') {
+                  gridInstance = ev.target;
+              } else if (ev.grid && typeof ev.grid.getData === 'function') {
+                  gridInstance = ev.grid;
+              } else {
+                  console.error('그리드 인스턴스를 찾을 수 없습니다');
+                  return;
+              }
+              
+              if (ev.targetType === 'cell' && ev.columnName === 'address') {
+                  const rowIndex = ev.rowKey;
+                   const row = gridInstance.getData()[rowIndex];
+                  openMap(row.address);
+              }
+
+              if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
+                  const rowIndex = ev.rowKey;
+                   const row = gridInstance.getData()[rowIndex];
+                  
+                   // 현재 그리드의 ID를 확인
+                   const gridId = gridInstance.el ? gridInstance.el.id : '';
+                   console.log('그리드 ID:', gridId);
+                   
+                   // 기안 미작성 탭에서는 기존 로직 사용
+                   if (gridId === 'pendingGrid') {
+                  openApproval(row.appr_no);
+                   } else {
+                       // 기안완료 탭에서는 mst_seq를 사용해서 기안서 보기
+                       if (row.mst_seq) {
+                           openDraftDocument(row.mst_seq);
+                       }
+                   }
+               }
+               
+               // 재기안 버튼 클릭 처리
+               if (ev.targetType === 'cell' && ev.columnName === 'redraft') {
+                   const rowIndex = ev.rowKey;
+                   const row = gridInstance.getData()[rowIndex];
+                   
+                   if (row.mst_seq) {
+                       // 재기안 안내 메시지 팝업 표시
+                       showRedraftMessage(row.mst_seq);
+                   }
+               }
+           };
+
+    // 기타 함수들
+    function openMap(searchTxt) {
+        var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+        window.open("https://map.naver.com/p/search/" + searchTxt, 'docu', options);
+    }
+
+         function openApproval(appr_no) {
+         var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+         window.open("/appr/reg/" + appr_no, "approval", options);
+     }
+
+    // mst_seq를 사용해서 기안서 문서 열기
+    function openDraftDocument(mstSeq) {
+        $.ajax({
+            url: '/api/approval/generate-document-by-mstseq',
+            method: 'GET',
+            data: { 
+                mstSeq: mstSeq 
+            },
+            success: function(response) {
+                if (response.success && response.html) {
+                    // 새 새에서 HTML 문서 열기
+                    var options = "toolbar=no,scrollbars=yes,resizable=yes,status=no,menubar=no,width=1200,height=900,top=10,left=100";
+                    var newWindow = window.open("", "draftDocument", options);
+                    
+                    if (newWindow) {
+                        newWindow.document.write(response.html);
+                        newWindow.document.close();
+                    } else {
+                        alert('팝업이 차단되었습니다. 팝업 차단을 해제해주세요.');
+                    }
+                } else {
+                    alert('기안서 문서를 불러올 수 없습니다.');
+                }
+            },
+            error: function(xhr, status, error) {
+                console.error('기안서 문서 로드 오류:', error);
+                alert('기안서 문서를 불러오는 중 오류가 발생했습니다.');
+            }
+        });
+    }
+    
+    // 재기안 메시지 팝업 표시 함수
+    function showRedraftMessage(mstSeq) {
+        // 커스텀 메시지 팝업 생성
+        const messageHtml = `
+            <div class="modal fade" id="redraftMessageModal" tabindex="-1" aria-labelledby="redraftMessageModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <h5 class="modal-title" id="redraftMessageModalLabel">
+                                <i class="bi bi-exclamation-triangle text-warning"></i> 재기안 안내
+                            </h5>
+                            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                        </div>
+                        <div class="modal-body text-center">
+                            재기안의 경우 기존 기안서를 그룹웨어에서 삭제해주시기 바랍니다.<br>
+                            ( 반려의 경우 미해당 )
+                       </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
+                            <button type="button" class="btn btn-primary" onclick="proceedWithRedraft('${mstSeq}')">재기안 진행</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+                 
+         // 기존 모달이 있다면 제거
+         const existingModal = document.getElementById('redraftMessageModal');
+         if (existingModal) {
+             existingModal.remove();
+         }
+         
+         // 새 모달을 body에 추가
+         document.body.insertAdjacentHTML('beforeend', messageHtml);
+         
+         // 모달 표시
+         const modal = new bootstrap.Modal(document.getElementById('redraftMessageModal'));
+         modal.show();
+     }
+     
+     // 재기안 진행 함수
+     function proceedWithRedraft(mstSeq) {
+         // 모달 닫기
+         const modal = bootstrap.Modal.getInstance(document.getElementById('redraftMessageModal'));
+         if (modal) {
+             modal.hide();
+         }
+         
+         // 재기안 처리 진행
+         openRedraft(mstSeq);
+     }
+     
+    // 재기안 처리 함수
+    function openRedraft(mstSeq) {
+        // mstSeq를 URL 파라미터로 전달하여 재기안 페이지로 이동
+        window.location.href = "/draft?redraft=true&mstSeq=" + mstSeq;
+    }
+
+    // 선택된 항목 개수 업데이트
+    function updateSelectedCount() {
+        document.getElementById('selectedCount').textContent = selectedRows.size;
+    }
+
+    // 기안서 작성 버튼 활성화/비활성화
+    function updateCreateDraftButton() {
+        const createDraftBtn = document.getElementById('createDraftBtn');
+        const isDisabled = selectedRows.size === 0;
+        createDraftBtn.disabled = isDisabled;
+    }
+
+    // 전체선택 버튼 스타일 업데이트
+    function updateSelectAllButtonStyle() {
+        const selectAllBtn = document.getElementById('selectAllBtn');
+        const allRows = pendingGrid ? pendingGrid.getData() : [];
+        const checkedRows = pendingGrid ? pendingGrid.getCheckedRows() : [];
+        
+        const selectableRows = allRows.filter(row => row.draft_exists !== 'Y');
+        const isAllSelected = selectableRows.length > 0 && checkedRows.length === selectableRows.length;
+        
+        if (isAllSelected) {
+            selectAllBtn.className = 'btn btn-outline-primary btn-sm';
+        } else {
+            selectAllBtn.className = 'btn btn-outline-secondary btn-sm';
+        }
+    }
+
+    // 전체선택
+    function selectAll() {
+        if (!pendingGrid) return;
+        
+        console.log('전체선택 실행');
+        const allRows = pendingGrid.getData();
+        console.log('전체 행 수:', allRows.length);
+        
+        allRows.forEach((row, index) => {
+            if (row.draft_exists !== 'Y') {
+                console.log('체크할 행:', index, row);
+                pendingGrid.check(index);
+            }
+        });
+        
+        // 체크 완료 후 상태 업데이트
+        setTimeout(() => {
+            updateSelectionFromGrid();
+        }, 100);
+    }
+
+    // 전체해제
+    function deselectAll() {
+        if (!pendingGrid) return;
+        
+        console.log('전체해제 실행');
+        pendingGrid.uncheckAll();
+        
+        // 체크 해제 완료 후 상태 업데이트
+        setTimeout(() => {
+            updateSelectionFromGrid();
+        }, 100);
+    }
+
+    // 그리드에서 현재 선택 상태를 가져와서 selectedRows 동기화
+    function updateSelectionFromGrid() {
+        if (!pendingGrid) return;
+        
+        selectedRows.clear();
+        try {
+            const checkedRows = pendingGrid.getCheckedRows();
+            console.log('updateSelectionFromGrid - checkedRows:', checkedRows);
+            
+            if (checkedRows && checkedRows.length > 0) {
+                checkedRows.forEach(row => {
+                    if (row && row.rowKey !== undefined) {
+                        selectedRows.add(row.rowKey);
+                    }
+                });
+            }
+            
+            console.log('updateSelectionFromGrid - selectedRows:', selectedRows);
+            updateSelectedCount();
+            updateCreateDraftButton();
+            updateSelectAllButtonStyle();
+        } catch (error) {
+            console.error('updateSelectionFromGrid 오류:', error);
+        }
+    }
+
+    // 기안 미완료 탭 그리드 생성
+    function createIncompleteGrid(containerId) {
+        let columns = [
+            ...baseColumns,
+            {
+                header: '확인', 
+                name: 'confirm', 
+                width: 70, 
+                align: 'center', 
+                sortable: false, 
+                hidden: false,
+                formatter: function(e) {
+                    if (e.row.mst_seq) {
+                        return '<button class="btn btn-sm btn-primary"><i class="bi bi-file-text"></i></button>';
+                    } else {
+                        return '';
+                    }
+                }
+            }
+        ];
+        
+        const gridOptions = {
+            el: document.getElementById(containerId),
+            bodyHeight: 'fitToParent',
+            rowHeight: 50,
+            selection: {
+                type: 'row',
+                showCheckbox: true,
+                enableCellSelection: false
+            },
+            focus: false,
+            rowHeaders: [
+                { type: 'checkbox', width: 50, align: 'center', valign: 'middle' },
+                { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
+            ],
+            header: { height: 50 },
+            hideLoadingBar: false,
+            pageOptions: {
+                useClient: true,
+                type: 'scroll',
+                perPage: -1
+            },
+            sortingOptions: {
+                useClient: true,
+                initialState: { columnName: 'seq', ascending: false }
+            },
+            columns: columns,
+            columnOptions: { resizable: true }
+        };
+
+        try {
+            const grid = new Grid(gridOptions);
+            
+            // 클릭 이벤트 등록
+            grid.on('click', handleIncompleteGridClick);
+            
+            // 체크박스 이벤트 등록
+            grid.on('check', updateIncompleteSelectionFromGrid);
+            grid.on('uncheck', updateIncompleteSelectionFromGrid);
+            
+            return grid;
+        } catch (error) {
+            console.error('그리드 생성 오류:', error);
+            return null;
+        }
+    }
+
+    // 기안 미완료그리드 클릭 이벤트 핸들러
+    function handleIncompleteGridClick(ev) {
+        console.log('기안 미완료 그리드 클릭 이벤트:', ev);
+        
+        // 그리드 인스턴스 확인
+        let gridInstance = null;
+
+         if (ev.instance && typeof ev.instance.getData === 'function') {
+            gridInstance = ev.instance;
+        } else if (ev && typeof ev.getData === 'function') {
+            gridInstance = ev;
+        } else if (ev.target && typeof ev.target.getData === 'function') {
+            gridInstance = ev.target;
+        } else {
+            console.error('그리드 인스턴스를 찾을 수 없습니다');
+            return;
+        }
+        
+        if (ev.targetType === 'cell' && ev.columnName === 'address') {
+            const rowIndex = ev.rowKey;
+            const row = gridInstance.getData()[rowIndex];
+            openMap(row.address);
+        }
+
+        if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
+            const rowIndex = ev.rowKey;
+            const row = gridInstance.getData()[rowIndex];
+            
+            if (e.row.mst_seq) {
+                openDraftDocument(row.mst_seq);
+            }
+        }
+    }
+
+    // 기안 미완료 선택 상태 업데이트
+    function updateIncompleteSelectionFromGrid() {
+        if (!incompleteGrid) return;
+        
+        setTimeout(() => {
+            updateIncompleteSelectedCount();
+            updateIncompleteButtons();
+        }, 50);
+    }
+
+    // 기안 미완료 선택된 항목 개수 업데이트
+    function updateIncompleteSelectedCount() {
+        const count = incompleteGrid ? incompleteGrid.getCheckedRows().length : 0;
+        document.getElementById('selectedIncompleteCount').textContent = count;
+    }
+
+    // 기안 미완료 버튼 활성화/비활성화
+    function updateIncompleteButtons() {
+        const uploadBtn = document.getElementById('uploadDraftBtn');
+        const count = incompleteGrid ? incompleteGrid.getCheckedRows().length : 0;
+        
+        uploadBtn.disabled = count === 0;
+    }
+
+    // 기안 미완료 전체선택
+    function selectAllIncomplete() {
+        if (!incompleteGrid) return;
+        
+        console.log('기안 미완료 전체선택 실행');
+        incompleteGrid.checkAll();
+        setTimeout(updateIncompleteSelectionFromGrid, 100);
+    }
+
+    // 기안 미완료 전체해제
+    function deselectAllIncomplete() {
+        if (!incompleteGrid) return;
+        
+        console.log('기안 미완료 전체해제 실행');
+        incompleteGrid.uncheckAll();
+        setTimeout(updateIncompleteSelectionFromGrid, 100);
+    }
+
+    // 기안 업로드 (프로세저 실행 + 결재문서 생성)
+    function uploadDrafts() {
+        const checkedRows = incompleteGrid ? incompleteGrid.getCheckedRows() : [];
+        
+        if (checkedRows.length === 0) {
+            alert('선택된 항목이 없습니다.');
+            return;
+        }
+
+        const draftIds = checkedRows.map(row => row.draft_id || row.id).filter(id => id);
+        
+        if (confirm(`선택된 ${checkedRows.length}개의 기안서를 업로드하시겠습니까?\n프로세저 실행과 결재문서 생성이 순차적으로 진행됩니다.`)) {
+            // 업로드 버튼 비활성화
+            const uploadBtn = document.getElementById('uploadDraftBtn');
+            const originalText = uploadBtn.innerHTML;
+            uploadBtn.disabled = true;
+            
+            // 진행 상태 표시
+            uploadBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> 업로드 중...';
+            
+            // 1단계: 프로세저 실행
+            $.ajax({
+                url: '/api/draft/process',
+                method: \"POST\",
+                contentType: \"application/json\",
+                data: JSON.stringify({ draftIds: draftIds }),
+                success: function(response) {
+                    if (response.success) {
+                        console.log('프로세저 실행 성공:', response);
+                        
+                        // 진행 상태 업데이트
+                        uploadBtn.innerHTML = '<i class=\"bi bi-file-earmark-check\"></i> 결재문서 생성 중...';
+                        
+                        // 2단계: 결재문서 생성
+                        // 각 draftId별로 결재문서 생성 실행
+                        let generateCount = 0;
+                        let totalGenerates = draftIds.length;
+                        
+                        draftIds.forEach((draftId, index) => {
+                            setTimeout(() => {
+                                generateApprovalDocumentAfterSave(draftId);
+                                
+                                generateCount++;
+                                if (generateCount === totalGenerates) {
+                                    // 모든 결재문서 생성 완료
+                                    alert(`기안 업로드가 완료되었습니다!\n프로세저 실행: ${response.processedCount}개\n결재문서 생성: ${totalGenerates}개`);
+                                    loadIncompleteData(); // 데이터 새로고침
+                                    
+                                    // 버튼 상태 복원
+                                    uploadBtn.innerHTML = originalText;
+                                    uploadBtn.disabled = false;
+                                }
+                            }, index * 500); // 각 요청을 0.5초 간격으로 실행
+                        });
+                        
+                    } else {
+                        alert('프로세저 실행 중 오류가 발생했습니다: ' + response.message);
+                        
+                        // 버튼 상태 복원
+                        uploadBtn.innerHTML = originalText;
+                        uploadBtn.disabled = false;
+                    }
+                },
+                error: function(xhr, status, error) {
+                    console.error('프로세저 실행 오류:', error);
+                    alert('프로세저 실행 중 오류가 발생했습니다.');
+                    
+                    // 버튼 상태 복원
+                    uploadBtn.innerHTML = originalText;
+                    uploadBtn.disabled = false;
+                }
+            });
+        }
+    }
+
+    // 선택된 항목들로 기안서 작성
+    function createDraftForSelected() {
+        console.log('createDraftForSelected 호출됨');
+        console.log('selectedRows:', selectedRows);
+        console.log('pendingGrid:', pendingGrid);
+        
+        if (!pendingGrid) {
+            alert('그리드가 초기화되지 않았습니다.');
+            return;
+        }
+        
+        // 그리드에서 직접 체크된 행들을 가져오기
+        const checkedRows = pendingGrid.getCheckedRows();
+        console.log('getCheckedRows 결과:', checkedRows);
+        
+        if (!checkedRows || checkedRows.length === 0) {
+            alert('선택된 항목이 없습니다.');
+            return;
+        }
+
+        const selectedApprNos = [];
+        checkedRows.forEach(row => {
+            console.log('체크된 행:', row);
+            if (row && row.appr_no) {
+                selectedApprNos.push(row.appr_no);
+            }
+        });
+        
+        console.log('선택된 appr_no 목록:', selectedApprNos);
+
+        if (selectedApprNos.length > 0) {
+            // 첫 번째 선택된 appr_no를 path variable로, 나머지는 query parameter로 전달
+            const firstApprNo = selectedApprNos[0];
+            const additionalApprNos = selectedApprNos.slice(1); // 첫 번째 제외한 나머지
+            
+            let url = `/appr/draft/${firstApprNo}`;
+            
+            // 추가 appr_no가 있으면 query parameter로 추가
+            if (additionalApprNos.length > 0) {
+                const queryParams = additionalApprNos.map(no => `additional_appr_nos=${no}`).join('&');
+                url += `?${queryParams}`;
+            }
+            
+            console.log('이동할 URL:', url);
+            window.location.href = url;
+        } else {
+            alert('유효한 결재번호를 찾을 수 없습니다.');
+        }
+    }
+
+    // 탭 전환 함수
+    function switchTab(tabName) {
+        // 모든 탭 비활성화
+        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+        
+        if (tabName === 'pending') {
+            // 기안 미작성 탭
+            loadPendingData();
+            
+            // 탭 활성화
+            document.getElementById('pending-tab').classList.add('active');
+            document.getElementById('pending').classList.add('show', 'active');
+            
+            // 선택 상태 초기화
+            selectedRows.clear();
+            updateSelectedCount();
+            updateCreateDraftButton();
+            updateSelectAllButtonStyle();
+        } else if (tabName === 'incomplete') {
+            // 기안 미완료 탭
+            loadIncompleteData();
+            
+            // 탭 활성화
+            document.getElementById('incomplete-tab').classList.add('active');
+            document.getElementById('incomplete').classList.add('show', 'active');
+            
+            // 선택 상태 초기화
+            updateIncompleteSelectedCount();
+            updateIncompleteButtons();
+        } else if (tabName === 'completed') {
+            // 기안완료 탭
+            loadCompletedData();
+            
+            // 탭 활성화
+            document.getElementById('completed-tab').classList.add('active');
+            document.getElementById('completed').classList.add('show', 'active');
+        }
+    }
+
+    // 기안 미작성 데이터 로드
+    function loadPendingData() {
+        $.ajax({
+            url: '/appr/list/draft',
+            method: 'GET',
+            data: { user_no: user_no },
+            success: function(response) {
+                console.log('기안 미작성 데이터 로드 성공:', response);
+                
+                if (!pendingGrid) {
+                    pendingGrid = createGrid('pendingGrid', true);
+                    
+                    if (!pendingGrid) {
+                        console.error('pendingGrid 생성 실패');
+                        return;
+                    }
+                    
+                    // 체크박스 이벤트 등록
+                    pendingGrid.on('check', () => {
+                        setTimeout(updateSelectionFromGrid, 50);
+                    });
+                    pendingGrid.on('uncheck', () => {
+                        setTimeout(updateSelectionFromGrid, 50);
+                    });
+                }
+                
+                // Toast Grid는 resetData 메서드를 사용 (필터링 제거)
+                pendingGrid.resetData(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('기 안 미작성 데이터 로드 오류:', error);
+            }
+        });
+    }
+
+    // 기안 미완료 데이터 로드
+    function loadIncompleteData() {
+        $.ajax({
+            url: '/appr/list/draft/incomplete',
+            method: 'GET',
+            data: { user_no: user_no },
+            success: function(response) {
+                console.log('기안 미완료 데이터 로드 성공:', response);
+                
+                if (!incompleteGrid) {
+                    incompleteGrid = createIncompleteGrid('incompleteGrid');
+                    
+                    if (!incompleteGrid) {
+                        console.error('incompleteGrid 생성 실패');
+                        return;
+                    }
+                }
+                
+                // Toast Grid는 resetData 메서드를 사용
+                incompleteGrid.resetData(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('기안 미완료 데이터 로드 오류:', error);
+            }
+        });
+    }
+
+    // 기안완료 데이터 로드
+    function loadCompletedData() {
+        $.ajax({
+            url: '/appr/list/draft/completed',
+            method: 'GET',
+            data: { user_no: user_no },
+            success: function(response) {
+                console.log('기안완료 데이터 로드 성공:', response);
+                
+                if (!completedGrid) {
+                    completedGrid = createGrid('completedGrid', false);
+                    
+                    if (!completedGrid) {
+                        console.error('completedGrid 생성 실패');
+                        return;
+                    }
+                }
+                
+                // Toast Grid는 resetData 메서드를 사용
+                completedGrid.resetData(response);
+            },
+            error: function(xhr, status, error) {
+                console.error('기안완료 데이터 로드 오류:', error);
+            }
+        });
+    }
+
+    // 페이지 로드 시 초기화
+    document.addEventListener('DOMContentLoaded', function() {
+        // 탭 이벤트 리스너 등록
+        document.getElementById('pending-tab').addEventListener('click', function() {
+            switchTab('pending');
+        });
+        
+        document.getElementById('incomplete-tab').addEventListener('click', function() {
+            switchTab('incomplete');
+        });
+        
+        document.getElementById('completed-tab').addEventListener('click', function() {
+            switchTab('completed');
+        });
+        
+        // 버튼 이벤트 리스너 등록 (기안 미작성 탭)
+        document.getElementById('selectAllBtn').addEventListener('click', selectAll);
+        
+        document.getElementById('deselectAllBtn').addEventListener('click', deselectAll);
+        document.getElementById('createDraftBtn').addEventListener('click', createDraftForSelected);
+        
+        // 버튼 이벤트 리스너 등록 (기안 미완료 탭)
+        document.getElementById('selectAllIncompleteBtn').addEventListener('click', selectAllIncomplete);
+        document.getElementById('deselectAllIncompleteBtn').addEventListener('click', deselectAllIncomplete);
+        document.getElementById('uploadDraftBtn').addEventListener('click', uploadDrafts);
+        
+        // 초기 탭 설정 (기안 미작성)
+        switchTab('pending')
+    });
+
+    // 결재문서 생성 함수 (draft.html에서 이동)
+    function generateApprovalDocumentAfterSave(draftId) {
+        if (!draftId) {
+            alert('기안서 ID를 찾을 수 없습니다.');
+            return;
+        }
+
+        // draftId를 사용해서 draft 정보 조회
+        $.ajax({
+            url: '/api/draft/get-by-id',
+            method: 'GET',
+            data: { draftId: draftId },
+            success: function(response) {
+                if (!response.success || !response.draft) {
+                    alert('기안서 정보를 가져올 수 없습니다.');
+                    return;
+                }
+
+                const draft = response.draft;
+                
+                // 결재문서 생성 및 그룹웨어/ERP 전송 (approval-intergration.js 사용)
+                const generator = new ApprovalDocumentGenerator();
+                
+                generator.generateAndSendToBothSystems({
+                    draftId: draftId,
+                    eaId: "312",
+                    userId: user_no,
+                    projName: draft.proj_name,
+                    gwCode: draft.gw_code,
+                    mstSeq: draft.mst_seq,
+                    empNo: draft.emp_no,
+                    userNo: user_no,
+                    userName: draft.user_nm,
+                    projCode: draft.proj_code,
+                    custCode: draft.custCode || \"\", // MySQL에 저장된 cust_code
+                    existingCustCode: draft.existingCustCode || \"\", // 기존 거래처 코드
+                    custName: draft.custName || \"\", // 거래처명
+                    bizNo: draft.bizNo || \"\", // 사업자등록번호
+                    bossName: draft.custName || \"\", // 대표자명
+                    tradeCls: draft.tradeCls || \"\", // 거래구분
+                    bizCond: draft.bizCond || \"\", // 업종
+                    bizKnd: draft.bizKnd || \"\", // 업태
+                    zipCode: draft.zipCode || \"\", // 우편번호
+                    rsrcCode: draft.rsrcCode || \"\", // 자원 코드
+                    addr1: draft.addr1 || \"\", // 주소1
+                    addr2: draft.addr2 || \"\", // 주소2
+                    telNo: draft.telNo || \"\", // 전화번호
+                    headFax: draft.headFax || \"\", // 팩스번호
+                    bankMainCode: draft.bankMainCode || \"\", // 은행코드
+                    bankCode: draft.bankCode || \"\", // 은행코드
+                    custAccNo: draft.custAccNo || \"\", // 계좌번호
+                    elctTag: draft.elctTag || \"\", // 전자세금계산서 여부
+                    cOwner: draft.custName || \"\", // 소유자
+                    remark: draft.remark || \"\", // 비고
+                    taxCls: draft.taxCls || \"\", // 세금구분
+                    representCustCode: draft.representCustCode || \"\", // 대표거래처코드
+                    sBankNo: draft.sBankNo || \"\", // 은행번호
+                    regCls: draft.regCls || \"\", // 등록구분
+                    onSuccess: function(message) {
+                        // alert 제거, 결재문서 팝업만 표시
+                        if (message && message.trim() !== '') {
+                            console.log('결재문서 생성 완료:', message);
+                        }
+                        
+                        console.log('기안 업로드 완료');
+                    },
+                    onError: function(error) {
+                        alert('결재문서 생성 및 전송 중 오류가 발생했습니다: ' + error);
+                    }
+                });
+            },
+            error: function(xhr, status, error) {
+                console.error('기안서 정보 조회 오류:', error);
+                alert('기안서 정보 조회 중 오류가 발생했습니다.');
+            }
+        });
+    }
+</script>
+</body>
+</html>

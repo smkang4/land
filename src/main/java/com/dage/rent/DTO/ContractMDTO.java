@@ -11,5 +11,6 @@ public class ContractMDTO {
     private int projCode;
     private String projName;
     private LocalDateTime crtdate;
+    private String temp_flag;
 
 } 

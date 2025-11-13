@@ -8,6 +8,7 @@ import java.time.LocalDateTime;
 public class ContractDDTO {
     private int seq;
     private LocalDate contDate;
+    private String cont_period; // DB와 통일
     private LocalDate moveDate;
     private int contAmt;
     private int depositAmt;
@@ -19,6 +20,7 @@ public class ContractDDTO {
     private int area;
     private LocalDateTime crtdate;
     private int accu;
+    private String accu_type; // DB와 통일
     private String source;
     private String chkReason1;
     private String chkReason2;
@@ -30,4 +32,7 @@ public class ContractDDTO {
     private String chk3;
     private String chk4;
     private String chk5;
+    private String realEstateFiles;
+    private String creditFiles;
+    private String post_code;
 } 

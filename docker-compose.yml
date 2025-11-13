@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  rent-app:
+    build: .
+    container_name: rent-app
+    ports:
+      - "8080:8080"
+    # 메모리 제한 설정 (최소 512MB 이상 권장)
+    mem_limit: 512m
+    mem_reservation: 256m
+    # ulimit 설정 (스레드 및 파일 디스크립터 제한)
+    ulimits:
+      nofile:
+        soft: 65536
+        hard: 65536
+      stack:
+        soft: 1024
+        hard: 1024
+    # 환경 변수
+    environment:
+      - TZ=Asia/Seoul
+    # 재시작 정책
+    restart: unless-stopped
+

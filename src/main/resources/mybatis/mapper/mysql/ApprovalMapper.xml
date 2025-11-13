@@ -1,0 +1,633 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.dage.rent.DAO.mysql.ApprovalDAO">
+
+    <select id="getApprovalMaster" resultType="com.dage.rent.DTO.ApprovalDDTO">
+        SELECT
+            appr_no
+            , appr_emp_no
+            ,  appr_emp_nm
+            ,  appr_date
+            ,  appr_stat
+            ,  reject
+        FROM approval_m
+        where appr_no = #{appr_no}
+    </select>
+
+    <select id="getApprovalDetail" resultType="com.dage.rent.DTO.ApprovalDDTO">
+        SELECT
+            d_seq
+            ,appr_no
+            ,appr_num
+            ,appr_group
+            ,appr_emp_no
+            ,appr_emp_nm
+            ,appr_remarks
+            ,DATE_FORMAT(appr_date, '%Y-%m-%d') as appr_date
+            ,appr_position
+            ,appr_position_seq
+            ,last_tag
+            ,IFNULL(appr_tg,'N') as appr_tg
+            ,(CASE
+            WHEN appr_num = 0 THEN '기안'
+            WHEN IFNULL(appr_tg,'N') = 'N' THEN '확인대기'
+            WHEN IFNULL(appr_tg,'N') = 'T' THEN '확인완료'
+            ELSE '반려'
+            END ) as appr_tg_nm
+        FROM approval_d
+        where appr_no = #{appr_no}
+    </select>
+
+    <select id="getApprovalDetailOne" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+            z.d_seq
+            ,z.appr_no
+            ,z.appr_num
+            ,z.appr_group
+            ,z.appr_emp_no
+            ,z.appr_emp_nm
+            ,z.appr_remarks
+            ,DATE_FORMAT(z.appr_date, '%Y-%m-%d') AS appr_date
+            ,z.appr_position
+            ,z.appr_position_seq
+            ,z.last_tag
+            ,IFNULL(z.appr_tg,'N') AS appr_tg
+            ,z.first_appr_emp_no
+            ,z.first_appr_date
+            ,(CASE
+                WHEN z.appr_group = 'A' AND z.last_tag = 'T' THEN '0107'
+                WHEN z.appr_group = 'B' AND z.last_tag = 'T' THEN emp_no
+                ELSE next_emp_no
+            END
+            ) AS next_emp_no
+            ,(CASE
+                WHEN z.appr_group = 'A' AND z.last_tag = 'T' THEN 'B'
+                WHEN z.appr_group = 'B' AND z.last_tag = 'T' THEN 'C'
+                ELSE 'A'
+            END
+            ) AS next_send_type
+            ,concat(z1.text_1,' ',z1.text_2) as context
+            ,z1.proj_code
+            ,z1.proj_name
+        FROM
+        (
+            SELECT
+                b.d_seq
+                ,b.appr_no
+                ,a.appr_emp_no AS emp_no
+                ,a.appr_emp_nm AS emp_nm
+                ,b.appr_num
+                ,b.appr_group
+                ,b.appr_emp_no
+                ,b.appr_emp_nm
+                ,b.appr_remarks
+                ,DATE_FORMAT(b.appr_date, '%Y-%m-%d') AS appr_date
+                ,b.appr_position
+                ,b.appr_position_seq
+                ,b.last_tag
+                ,b.appr_tg
+                , MAX(CASE WHEN b.appr_num = 0 THEN b.appr_emp_no ELSE '' END )OVER(PARTITION BY a.appr_no) AS first_appr_emp_no
+                , MAX(CASE WHEN b.appr_num = 0 THEN b.appr_date ELSE NULL END )OVER(PARTITION BY a.appr_no) AS first_appr_date
+                , LAG(b.appr_emp_no)OVER(PARTITION BY b.appr_no ORDER BY b.appr_num DESC) AS next_emp_no
+            FROM approval_m a
+            , approval_d b
+            WHERE a.appr_no = b.appr_no
+        ) z,(
+            SELECT
+                a1.appr_no
+                , max(a1.proj_code) as proj_code
+                , max(a1.proj_name) as proj_name
+                , MAX(CONCAT(ADDRESS,' ',ADDRESS_D)) AS TEXT_1
+                , (CASE WHEN COUNT(*) > 1 THEN CONCAT('외 ',COUNT(*),'건') ELSE '' END) AS TEXT_2
+            FROM contract_m a1
+                , contract_d b1
+            WHERE a1.seq = b1.seq
+            AND a1.appr_no IS NOT NULL
+            GROUP BY a1.appr_no
+        )z1
+        where z.d_seq = #{d_seq}
+        AND z.appr_no = z1.appr_no
+    </select>
+
+    <insert id="insertApprovalMaster" parameterType="com.dage.rent.DTO.ApprovalMDTO"
+            useGeneratedKeys="true"  keyProperty="appr_no" keyColumn="appr_no">
+        insert into approval_m
+        (
+            appr_emp_no
+            ,  appr_emp_nm
+            ,  appr_date
+            ,  appr_stat
+            ,  reject
+            )
+            values
+            (
+            #{appr_emp_no}
+            ,  #{appr_emp_nm}
+            ,  now()
+            ,  #{appr_stat}
+            ,  ''
+        )
+    </insert>
+
+    <update id="updateApprovalMaster" parameterType="com.dage.rent.DTO.ApprovalMDTO">
+        update approval_m
+        set appr_stat = #{appr_stat}
+            ,reject = #{reject}
+            ,appr_admin = #{appr_admin}
+        where appr_no = #{appr_no}
+    </update>
+
+    <!-- 관리부서접수 구분Tag  -->
+    <update id="updateAdminTag">
+        update approval_m
+        set appr_admin = #{appr_admin}
+        where appr_no = #{appr_no}
+    </update>
+
+    <insert id="insertApprovalDetail" parameterType="com.dage.rent.DTO.ApprovalDDTO"
+            useGeneratedKeys="true"  keyProperty="d_seq" keyColumn="d_seq">
+        insert into approval_d
+        (
+           appr_no
+            ,appr_num
+            ,appr_group
+            ,appr_emp_no
+            ,appr_emp_nm
+            ,appr_remarks
+            ,appr_date
+            ,appr_position
+            ,appr_position_seq
+            ,last_tag
+            ,appr_tg
+        )
+        values
+        (
+            #{appr_no}
+            ,#{appr_num}
+            ,#{appr_group}
+            ,#{appr_emp_no}
+            ,#{appr_emp_nm}
+            ,#{appr_remarks}
+            ,now()
+            ,#{appr_position}
+            ,#{appr_position_seq}
+            ,#{last_tag}
+            ,#{appr_tg}
+        )
+    </insert>
+
+    <update id="updateApprovalDetail" parameterType="com.dage.rent.DTO.ApprovalDDTO">
+        update approval_d
+        set appr_tg = #{appr_tg}
+            ,appr_date = now()
+            ,appr_remarks = #{appr_remarks}
+        where appr_no = #{appr_no}
+        and appr_num = #{appr_num}
+        and d_seq = #{d_seq}
+    </update>
+
+    <select id="getApprovalTag" resultType="java.lang.String">
+        select
+            IFNULL(MAX(APPR_TG),'N') as appr_tg
+        from approval_d
+        where appr_no = #{appr_no}
+        AND appr_group = 'B'
+        AND last_tag = 'T'
+    </select>
+
+    <select id="getApprovalList" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+        a.appr_no
+        ,a.emp_no
+        ,a.user_nm
+        ,a.proj_code
+        ,a.proj_name
+        ,a.address
+        ,d.d_seq
+        ,d.appr_num
+        ,d.appr_emp_no
+        ,d.appr_emp_nm
+        ,d.appr_position
+        ,d.first_appr_emp_nm
+        ,d.first_appr_date
+        ,d.next_appr_emp_nm
+        ,d.next_appr_emp_no
+        ,d.last_appr_emp_no
+        ,d.last_appr_emp_nm
+        ,d.last_appr_date
+        ,d.appr_stat
+        ,d.all_appr_emp_nos
+        FROM
+        (
+        SELECT
+        a.appr_no,
+        MAX(a.emp_no) AS emp_no
+        , MAX(a.user_nm) AS user_nm
+        , MAX(a.proj_code) AS proj_code
+        , MAX(a.proj_name) AS proj_name
+        , MAX(a.crtdate) AS crtdate
+        , CONCAT(MAX(CONCAT(b.address,' ',b.address_d)),(CASE WHEN COUNT(*) > 1 THEN CONCAT(' 외 ',COUNT(*)-1,'건') ELSE '' END)) AS address
+        FROM contract_m a
+        JOIN contract_d b
+        ON a.seq=b.seq
+        AND a.appr_no IS NOT NULL
+        GROUP BY a.appr_no
+        ) a
+        JOIN
+        (
+        SELECT
+        c.appr_no
+        ,c.appr_stat
+        ,c.appr_admin
+        ,c.d_seq
+        ,c.appr_num
+        ,c.appr_emp_no
+        ,c.appr_emp_nm
+        ,c.appr_remarks
+        ,c.appr_date
+        ,c.appr_position
+        ,c.last_tag
+        ,c.appr_tg
+        ,c.appr_group
+        ,c.first_appr_emp_nm
+        ,c.first_appr_date
+        ,c.last_appr_emp_no
+        ,c.last_appr_emp_nm
+        ,c.last_appr_date
+        ,c.next_appr_emp_nm
+        ,c.next_appr_emp_no
+        ,c.all_appr_emp_nos
+        FROM
+        (
+        SELECT
+        b.rnum
+        ,b.appr_no
+        ,b.appr_stat
+        ,b.appr_admin
+        ,b.d_seq
+        ,b.appr_num
+        ,b.appr_emp_no
+        ,b.appr_emp_nm
+        ,b.appr_remarks
+        ,b.appr_date
+        ,b.appr_position
+        ,b.last_tag
+        ,b.appr_tg
+        ,b.appr_group
+        ,b.first_appr_emp_nm
+        ,b.first_appr_date
+        ,MAX(CASE WHEN appr_num = last_appr_c_num AND appr_tg = 'T' THEN appr_emp_no ELSE '' END)OVER( PARTITION BY appr_no) AS last_appr_emp_no
+        ,MAX(CASE WHEN appr_num = last_appr_c_num AND appr_tg = 'T' THEN appr_emp_nm ELSE '' END)OVER( PARTITION BY appr_no) AS last_appr_emp_nm
+        ,MAX(CASE WHEN appr_num = last_appr_c_num AND appr_tg = 'T' THEN appr_date ELSE NULL END)OVER( PARTITION BY appr_no) AS last_appr_date
+        ,(CASE WHEN appr_group = 'A' AND next_appr_emp_nm = '' THEN '업무지원팀' ELSE next_appr_emp_nm END) next_appr_emp_nm
+        ,b.next_appr_emp_no
+        ,emp_list.all_appr_emp_nos
+        FROM
+        (
+        SELECT
+        a1.appr_no, a1.appr_stat, a1.appr_admin
+        , a2.d_seq, a2.appr_num, a2.appr_emp_no, a2.appr_emp_nm, a2.appr_remarks
+        , (CASE WHEN appr_tg = 'T' THEN a2.appr_date ELSE NULL END) AS appr_date , a2.appr_position, a2.last_tag, IFNULL(a2.appr_tg,'N') AS appr_tg
+        , a2.appr_group
+        , LAG(a2.appr_emp_no,1,'')OVER(PARTITION BY a1.appr_no ORDER BY a2.appr_num DESC) AS next_appr_emp_no
+        , LAG(a2.appr_emp_nm,1,'')OVER(PARTITION BY a1.appr_no ORDER BY a2.appr_num DESC) AS next_appr_emp_nm
+        , MAX(CASE WHEN a2.appr_num = 0 THEN a2.appr_emp_nm ELSE '' END )OVER(PARTITION BY a1.appr_no) AS first_appr_emp_nm
+        , MAX(CASE WHEN a2.appr_num = 0 THEN a2.appr_date ELSE NULL END )OVER(PARTITION BY a1.appr_no) AS first_appr_date
+        , MAX(a2.appr_num)OVER(PARTITION BY a1.appr_no) AS last_appr_num
+        , ROW_NUMBER()OVER(PARTITION BY a1.appr_no ORDER BY (case when appr_tg = 'T' then 999 ELSE a2.appr_num END) ASC ) AS rnum
+        , MAX(CASE WHEN a2.appr_tg = 'T' THEN a2.appr_num ELSE 0 END )OVER(PARTITION BY a1.appr_no) AS last_appr_c_num
+        FROM approval_m a1
+        JOIN approval_d a2
+        ON a1.appr_no = a2.appr_no
+        ) b
+        LEFT JOIN (
+        SELECT
+        appr_no,
+        GROUP_CONCAT(appr_emp_no ORDER BY appr_num SEPARATOR ',') AS all_appr_emp_nos
+        FROM approval_d
+        GROUP BY appr_no
+        ) emp_list ON b.appr_no = emp_list.appr_no
+        ) c
+        WHERE c.rnum = 1
+        ) d ON a.appr_no = d.appr_no
+        AND FIND_IN_SET(#{emp_no}, d.all_appr_emp_nos) > 0
+        <if test="proj_code != null">
+            and a.proj_code = #{proj_code}
+        </if>
+        <if test="conf_tag == 2">
+            and d.appr_emp_no = #{emp_no}
+            and d.appr_tg != 'T'
+            and d.appr_stat not in ('3','4')
+        </if>
+        <if test="conf_tag == 5">
+            and d.appr_stat in ('1','2')
+        </if>
+        <if test="conf_tag == 3 or conf_tag == 4">
+            and d.appr_stat = #{conf_tag}
+        </if>
+    </select>
+
+    <select id="getApprovalListForAdmin" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+        a.appr_no
+        ,a.emp_no
+        ,a.user_nm
+        ,a.proj_code
+        ,a.proj_name
+        ,a.address
+        ,d.d_seq
+        ,d.appr_num
+        ,d.appr_emp_no
+        ,d.appr_emp_nm
+        ,d.appr_position
+        ,d.first_appr_emp_nm
+        ,d.first_appr_date
+        ,d.next_appr_emp_nm
+        ,d.last_appr_emp_nm
+        ,d.last_appr_date
+        ,d.appr_stat
+        FROM
+        (
+        SELECT
+        a.appr_no,
+        MAX(a.emp_no) AS emp_no
+        , MAX(a.user_nm) AS user_nm
+        , MAX(a.proj_code) AS proj_code
+        , MAX(a.proj_name) AS proj_name
+        , MAX(a.crtdate) AS crtdate
+        , CONCAT(MAX(CONCAT(b.address,' ',b.address_d)),(CASE WHEN COUNT(*) > 1 THEN CONCAT(' 외 ',COUNT(*)-1,'건') ELSE '' END)) AS address
+        FROM contract_m a
+        JOIN contract_d b
+        ON a.seq=b.seq
+        AND a.appr_no IS NOT NULL
+        GROUP BY a.appr_no
+        ) a
+        JOIN
+        (
+        SELECT
+        c.appr_no
+        ,c.appr_stat
+        ,c.appr_admin
+        ,c.d_seq
+        ,c.appr_num
+        ,c.appr_emp_no
+        ,c.appr_emp_nm
+        ,c.appr_remarks
+        ,c.appr_date
+        ,c.appr_position
+        ,c.last_tag
+        ,c.appr_tg
+        ,c.appr_group
+        ,c.first_appr_emp_nm
+        ,c.first_appr_date
+        ,c.last_appr_emp_nm
+        ,c.last_appr_date
+        ,c.next_appr_emp_nm
+        FROM
+        (
+        SELECT
+        b.rnum
+        ,b.appr_no
+        ,b.appr_stat
+        ,b.appr_admin
+        ,b.d_seq
+        ,b.appr_num
+        ,b.appr_emp_no
+        ,b.appr_emp_nm
+        ,b.appr_remarks
+        ,b.appr_date
+        ,b.appr_position
+        ,b.last_tag
+        ,b.appr_tg
+        ,b.appr_group
+        ,b.first_appr_emp_nm
+        ,b.first_appr_date
+        ,MAX(CASE WHEN appr_num = last_appr_c_num AND appr_tg = 'T' THEN appr_emp_nm ELSE '' END)OVER( PARTITION BY appr_no) AS last_appr_emp_nm
+        ,MAX(CASE WHEN appr_num = last_appr_c_num AND appr_tg = 'T' THEN appr_date ELSE NULL END)OVER( PARTITION BY appr_no) AS last_appr_date
+        ,(CASE WHEN appr_group = 'A' AND next_appr_emp_nm = '' THEN '업무지원팀' ELSE next_appr_emp_nm END) next_appr_emp_nm
+        FROM
+        (
+        SELECT
+        a1.appr_no, a1.appr_stat, a1.appr_admin
+        , a2.d_seq, a2.appr_num, a2.appr_emp_no, a2.appr_emp_nm, a2.appr_remarks
+        , (CASE WHEN appr_tg = 'T' THEN a2.appr_date ELSE NULL END) AS appr_date , a2.appr_position, a2.last_tag, IFNULL(a2.appr_tg,'N') AS appr_tg
+        , a2.appr_group
+        , LAG(a2.appr_emp_nm,1,'')OVER(PARTITION BY a1.appr_no ORDER BY a2.appr_num DESC) AS next_appr_emp_nm
+        , MAX(CASE WHEN a2.appr_num = 0 THEN a2.appr_emp_nm ELSE '' END )OVER(PARTITION BY a1.appr_no) AS first_appr_emp_nm
+        , MAX(CASE WHEN a2.appr_num = 0 THEN a2.appr_date ELSE NULL END )OVER(PARTITION BY a1.appr_no) AS first_appr_date
+        , MAX(a2.appr_num)OVER(PARTITION BY a1.appr_no) AS last_appr_num
+        , ROW_NUMBER()OVER(PARTITION BY a1.appr_no ORDER BY a2.appr_num DESC) AS rnum
+        , MAX(CASE WHEN a2.appr_tg = 'T' THEN a2.appr_num ELSE 0 END )OVER(PARTITION BY a1.appr_no) AS last_appr_c_num
+        FROM approval_m a1
+        JOIN approval_d a2
+        ON a1.appr_no = a2.appr_no
+        ) b
+        ) c
+        WHERE c.rnum = 1
+        ) d ON a.appr_no = d.appr_no
+        AND d.appr_admin = 'T'
+<!--        <if test="proj_code != null or proj_code=''">-->
+<!--            AND a.proj_code = #{proj_code}-->
+<!--        </if>-->
+<!--        <if test="emp_no != null or emp_no = '' " >-->
+<!--            and d.appr_emp_no = #{emp_no}-->
+<!--        </if>-->
+<!--        <if test="conf_tag != null or conf_tag =''">-->
+<!--            AND d.appr_stat = #{conf_tag}-->
+<!--        </if>-->
+    </select>
+
+    <!-- 기안 미작성용 쿼리 -->
+    <select id="getApprovalListForDraft" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+        a.appr_no,
+        a.emp_no,
+        a.proj_name,
+        CONCAT(
+        MAX(CONCAT(b.address, ' ', b.address_d)),
+        <![CDATA[ (CASE WHEN COUNT(*) > 1 THEN CONCAT(' 외 ', COUNT(*)-1, '건') ELSE '' END) ]]>
+        ) AS address,
+        MAX(am.appr_date) as appr_date
+        FROM contract_m a
+        JOIN contract_d b ON a.seq = b.seq
+        JOIN approval_m am ON a.appr_no = am.appr_no
+        WHERE a.appr_no IS NOT NULL
+        AND am.appr_stat = 3
+        AND a.emp_no = #{user_no}
+        AND a.appr_no NOT IN (
+            SELECT DISTINCT dcd.appr_no 
+            FROM draft_contract_detail dcd
+        )
+        GROUP BY a.appr_no,a.proj_name
+        ORDER BY MAX(am.appr_date) DESC
+    </select>
+
+    <!-- 기안 미완료용 쿼리 - draft 테이블에 저장되었지만 프로시저가 실행되지 않은 상태 -->
+    <select id="getIncompleteDraftList" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+        GROUP_CONCAT(DISTINCT dcd.appr_no ORDER BY dcd.appr_no SEPARATOR ',') as appr_no_list,
+        d.emp_no,
+        d.proj_name,
+        d.proj_code,
+        CONCAT(
+        MAX(CONCAT(COALESCE(cd.address, ''), ' ', COALESCE(cd.address_d, ''))),
+        <![CDATA[ (CASE WHEN COUNT(DISTINCT dcd.appr_no) > 1 THEN CONCAT(' 외 ', COUNT(DISTINCT dcd.appr_no)-1, '건') ELSE '' END) ]]>
+        ) AS address,
+        d.mst_seq,
+        d.id as draft_id,
+        d.created_date,
+        d.cust_reg_attempted
+        FROM draft d
+        LEFT JOIN draft_contract_detail dcd ON d.id = dcd.draft_id
+        LEFT JOIN contract_m c ON dcd.appr_no = c.appr_no
+        LEFT JOIN contract_d cd ON c.seq = cd.seq
+        LEFT JOIN approval_m am ON dcd.appr_no = am.appr_no
+        WHERE (am.appr_stat = 3 OR am.appr_stat IS NULL)
+        AND (d.erp_reg IS NULL OR d.erp_reg = 'N')
+        <if test="user_no != null and user_no != ''">
+        AND (c.emp_no = #{user_no} OR c.emp_no IS NULL AND d.emp_no = #{user_no})
+        </if>
+        GROUP BY d.id, d.emp_no, d.proj_code, d.proj_name, d.mst_seq, d.created_date, d.cust_reg_attempted
+        ORDER BY d.created_date DESC
+    </select>
+
+    <!-- 기안완료용 쿼리 - draft 테이블 기반 -->
+    <select id="getCompletedDraftList" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+        GROUP_CONCAT(DISTINCT dcd.appr_no ORDER BY dcd.appr_no SEPARATOR ',') as appr_no_list,
+        d.emp_no,
+        d.proj_name,
+        d.proj_code,
+        CONCAT(
+        MAX(CONCAT(COALESCE(cd.address, ''), ' ', COALESCE(cd.address_d, ''))),
+        <![CDATA[ (CASE WHEN COUNT(DISTINCT dcd.appr_no) > 1 THEN CONCAT(' 외 ', COUNT(DISTINCT dcd.appr_no)-1, '건') ELSE '' END) ]]>
+        ) AS address,
+        d.mst_seq,
+        d.id as draft_id,
+        d.cust_reg_attempted
+        FROM draft d
+        LEFT JOIN draft_contract_detail dcd ON d.id = dcd.draft_id
+        LEFT JOIN contract_m c ON dcd.appr_no = c.appr_no
+        LEFT JOIN contract_d cd ON c.seq = cd.seq
+        LEFT JOIN approval_m am ON dcd.appr_no = am.appr_no
+        WHERE (am.appr_stat = 3 OR am.appr_stat IS NULL)
+        AND d.mst_seq IS NOT NULL
+        AND d.mst_seq != ''
+        <if test="user_no != null and user_no != ''">
+        AND (c.emp_no = #{user_no} OR c.emp_no IS NULL AND d.emp_no = #{user_no})
+        </if>
+        GROUP BY d.id, d.emp_no, d.proj_code, d.proj_name, d.mst_seq, d.cust_reg_attempted
+    </select>
+
+    <!-- 관리자용 기안완료 목록 (ERP 등록용) -->
+    <select id="getCompletedDraftListForAdmin" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+        d.id as draft_id,
+        GROUP_CONCAT(DISTINCT dcd.appr_no ORDER BY dcd.appr_no SEPARATOR ',') as appr_no_list,
+        d.emp_no,
+        d.user_nm,
+        d.proj_name,
+        d.proj_code,
+        GROUP_CONCAT(
+            DISTINCT CONCAT(cd.address, ' ', COALESCE(cd.address_d, ''))
+            ORDER BY dcd.appr_no
+            SEPARATOR ', '
+        ) AS address,
+        COUNT(DISTINCT dcd.appr_no) as contract_count,
+        d.mst_seq,
+        d.created_date,
+        NULL as conf_status,
+        NULL as conf_status_name
+        FROM draft d
+        JOIN draft_contract_detail dcd ON d.id = dcd.draft_id
+        JOIN contract_m c ON dcd.appr_no = c.appr_no
+        JOIN contract_d cd ON c.seq = cd.seq
+        JOIN approval_m am ON dcd.appr_no = am.appr_no
+        WHERE am.appr_stat = 3
+        AND d.mst_seq IS NOT NULL
+        AND d.mst_seq != ''
+        AND (d.erp_reg IS NULL OR d.erp_reg = 'N')
+        GROUP BY d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.mst_seq, d.created_date
+        ORDER BY d.created_date DESC
+    </select>
+
+    <select id="getMaxApprovalNumber" resultType="int">
+        SELECT MAX(appr_num) FROM approval_d WHERE appr_no = #{appr_no}
+    </select>
+
+    <!-- approval_d 상태 업데이트 -->
+    <update id="updateApprovalDetailStatus">
+        UPDATE approval_d 
+        SET appr_tg = #{appr_tg},
+            appr_remarks = #{appr_remarks},
+            last_tag = #{last_tag}
+        WHERE appr_no = #{appr_no} 
+        AND appr_num = #{appr_num}
+    </update>
+
+    <delete id="deleteHigherApprovalNumbers">
+        DELETE FROM approval_d 
+        WHERE appr_no = #{appr_no} 
+        AND appr_num > #{appr_num}
+    </delete>
+
+    <select id="checkHigherApprovalNumbers" resultType="int">
+        SELECT COUNT(*) 
+        FROM approval_d 
+        WHERE appr_no = #{appr_no} 
+        AND appr_num > #{appr_num}
+    </select>
+
+    <delete id="deleteBGroupApproval">
+        DELETE FROM approval_d 
+        WHERE appr_no = #{appr_no} 
+        AND appr_emp_no = #{appr_emp_no} 
+        AND appr_group = 'B'
+    </delete>
+
+    <update id="updateApprovalMasterAdmin">
+        UPDATE approval_m 
+        SET appr_admin = 'T' 
+        WHERE appr_no = #{appr_no}
+    </update>
+
+    <!-- 거래처 등록이 필요한 기안서 목록 조회 -->
+    <select id="getPendingCustomerRegistrations" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
+        SELECT
+        GROUP_CONCAT(DISTINCT dcd.appr_no ORDER BY dcd.appr_no SEPARATOR ',') as appr_no_list,
+        d.emp_no,
+        d.proj_name,
+        d.proj_code,
+        CONCAT(
+        MAX(CONCAT(cd.address, ' ', cd.address_d)),
+        <![CDATA[ (CASE WHEN COUNT(DISTINCT dcd.appr_no) > 1 THEN CONCAT(' 외 ', COUNT(DISTINCT dcd.appr_no)-1, '건') ELSE '' END) ]]>
+        ) AS address,
+        d.mst_seq,
+        d.id as draft_id,
+        d.created_date,
+        d.cust_reg_attempted
+        FROM draft d
+        JOIN draft_contract_detail dcd ON d.id = dcd.draft_id
+        JOIN contract_m c ON dcd.appr_no = c.appr_no
+        JOIN contract_d cd ON c.seq = cd.seq
+        JOIN approval_m am ON dcd.appr_no = am.appr_no
+        WHERE am.appr_stat = 3
+        AND d.mst_seq IS NOT NULL
+        AND d.mst_seq != ''
+        AND (d.cust_reg_attempted IS NULL OR d.cust_reg_attempted != 'Y')
+        <if test="user_no != null and user_no != ''">
+        AND c.emp_no = #{user_no}
+        </if>
+        GROUP BY d.id, d.emp_no, d.proj_code, d.proj_name, d.mst_seq, d.created_date, d.cust_reg_attempted
+        ORDER BY d.created_date DESC
+    </select>
+
+    <!-- 거래처 등록 시도 플래그 업데이트 -->
+    <update id="updateCustomerRegistrationAttempted">
+        UPDATE draft 
+        SET cust_reg_attempted = #{attempted}
+        WHERE id = #{draftId}
+    </update>
+
+
+</mapper>

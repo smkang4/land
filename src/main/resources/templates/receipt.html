@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="ko" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <link rel="stylesheet" th:href="@{/css/checkbox.css}">
+    <link rel="stylesheet" th:href="@{/css/grid.css}">
+
+    <!-- Select2   -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+
+    <!-- Toast Grid-->
+    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
+    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
+
+    <title>부동산 임차관리 플랫폼</title>
+    <style>
+        @charset "UTF-8";
+
+         .action-bar {
+            margin-bottom: 20px;
+        }
+
+        .btn-approve {
+            background: #2ecc71;
+        }
+        .btn-approve:hover {
+            background: #27ae60;
+            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
+        }
+        .btn-reject {
+            background: #e74c3c;
+        }
+        .btn-reject:hover {
+            background: #c0392b;
+            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
+        }
+
+
+        .status-badge {
+            padding: 3px 8px;
+            border-radius: 10px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: white;
+        }
+        .status-pending {
+            background-color: #f39c12;
+        }
+        .status-approved {
+            background-color: #2ecc71;
+        }
+        .status-rejected {
+            background-color: #e74c3c;
+        }
+        .content-card {
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        .no-data {
+            text-align: center;
+            padding: 50px 0;
+            color: #7f8c8d;
+        }
+        .table-container {
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+        }
+        .table {
+            margin-bottom: 0;
+        }
+        .table th {
+            background-color: #f8f9fa;
+            border-top: none;
+            font-weight: 600;
+            color: #495057;
+        }
+        .table td {
+            vertical-align: middle;
+        }
+        .detail-link {
+            color: #3498db;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .detail-link:hover {
+            color: #2980b9;
+            text-decoration: underline;
+        }
+        .pagination-container {
+            display: flex;
+            justify-content: center;
+            margin-top: 20px;
+        }
+        .search-box {
+            position: relative;
+        }
+        .search-box .form-control {
+            padding-left: 40px;
+            border-radius: 20px;
+        }
+        .search-box i {
+            position: absolute;
+            left: 15px;
+            top: 10px;
+            color: #adb5bd;
+        }
+        .form-check-input:checked {
+            background-color: #3498db;
+            border-color: #3498db;
+        }
+          .filter-section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+
+    </style>
+</head>
+
+<body>
+
+<header class="main-header">
+    <div class="header-content">
+        <a href="/" class="logo-container" >
+            <img src="/images/dongah.gif" alt="로고" class="logo">
+            <span class="header-title">부동산 임차관리 플랫폼</span>
+        </a>
+        <div class="user-info">
+            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
+            <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
+            <a href="/admin" class="btn btn-back me-2">
+                <i class="bi bi-arrow-left"></i> 관리자
+            </a>
+            <form th:action="@{/logout}" method="post" class="d-inline">
+                <button type="submit" class="btn btn-action">로그아웃</button>
+            </form>
+        </div>
+    </div>
+</header>
+
+<main>
+
+    <div class="container-fluid">
+        <div class="row mb-4">
+            <h3>관리자 접수함</h3>
+            <span>관리자에게 들어온 사전조사서를 조회하여 다음 요청처리를 할 수 있습니다</span>
+        </div>
+
+
+        <div class="row mb-2">
+
+            <div class="col col-12 col-sm-12">
+                <form id="search_form" method="get">
+                    <div class="row mb-1 bg-style-search">
+                        <div class="col-sm-5">
+                            <select id="sel_proj" name="proj_code" class="form-select form-select-sm"  style="width:100%"></select>
+                        </div>
+                        <input type="hidden" name="appr_group" value="A">
+                        <input type="hidden" name="last_tag" value="T">
+                        <div class="col-auto">
+                            <button type="button" class="btn btn-sm btn-danger btn_s" id="searchBtn"><i class="bi bi-search"></i> 조회</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="row mb-1">
+            <div class="col col-12">
+                <button type="button" class="btn btn-sm btn-primary"  id="btnSelectConfirm">
+                    <i class="bi bi-arrow-right-square"></i> 관리부서접수
+                </button>
+                <button class="btn btn-sm btn-danger" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan"><i class="bi bi-slash-square"></i> 반려</button>
+            </div>
+        </div>
+        <div class="row" style="height: calc(100vh - 250px);">
+            <div class="col col-12" id="grid" style="height: 100%;"></div>
+        </div>
+    </div>
+
+
+    <!-- 결재라인 Modal -->
+    <div id="remark_popup" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" >
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content rounded-3 shadow">
+                <div class="modal-header p-4 text-center">
+                    <h5>관리부서 접수</h5>
+                </div>
+
+                <div class="modal-body p-4 text-center">
+                    <select class="form-control btn-conf mb-2" id="next_emp_user"></select>
+                    <textarea class="form-control mt-2" placeholder="Comments" id="txtApprRemarks" style="height: 100px"></textarea>
+                </div>
+
+                <div class="modal-footer flex-nowrap p-0" id="">
+                    <button type="button" id="appr_confirm_yes" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0 border-end" data-bs-dismiss=""><strong>확인</strong></button>
+                    <button type="button" id="appr_confirm_no" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0" data-bs-dismiss="">취소</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+</main>
+
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
+<!-- Toast Grid  -->
+<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
+<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
+<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
+<script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
+<!-- Custom   -->
+<script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
+<script th:inline="javascript">
+
+     var user_no = [[${#authentication.principal.userNo}]];
+     var emp_no = [[${#authentication.principal.empNo}]];
+     var dept_code = [[${#authentication.principal.deptCode}]];
+     var proj_url = '/api/code/proj/'+user_no;
+
+     ufn_select2_getData(proj_url,"#sel_proj","현장",dept_code,function(){});
+
+
+    const grid = new Grid({
+      el: document.getElementById('grid'), // Container element
+      //data: dataSource,
+      bodyHeight: 'fitToParent',
+      rowHeight: 20,
+      rowHeaders: [
+        { type: 'rowNum', width: 30, align: 'right', valign: 'middle' },
+        {
+            type: 'checkbox',
+            header:
+            `<label for="all-checkbox" class="checkbox">
+            <input type="checkbox" id="all-checkbox" class="hidden-input" name="_checked" />
+            <span class="custom-input"></span>
+            </label>` ,
+            renderer: {
+                type: CheckboxRenderer
+            }
+        }
+      ],
+      header:{
+          height: 50,
+          complexColumns: [
+          {
+            header: '고용허가기간',
+            name: 'mergeColumn1',
+            childNames: ['goyong_date1', 'goyong_date2']
+          }
+        ]
+      },
+      hideLoadingBar: false,
+      pageOptions: {
+        useClient: true,
+        type: 'scroll',
+        perPage: -1
+      },
+      columns: [
+        { header: '계약seq',name: 'd_seq',width: 70, align: 'center',sortable: true ,hidden: true},
+        { header: '결재순번',name: 'appr_num',width: 70, align: 'center',sortable: true ,hidden: true},
+        { header: '결재번호',name: 'appr_no',width: 70, align: 'center',sortable: true ,hidden: true},
+        { header: '확인자',name: 'appr_emp_no',width: 70, align: 'center',sortable: true ,hidden: true},
+        { header: '확인상태',name: 'appr_stat',width: 90, align: 'center',sortable: true ,hidden: false
+            ,formatter: function (e) {
+                return decode(e.value,'3','완료','4','반려','요청')
+            }
+        },
+        { header: '확인',name: 'confirm',width: 70, align: 'center',sortable: false
+            ,formatter:function(e){
+                if(e.row.appr_stat == '999'){
+                    return '';
+                }else{
+                    return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
+                }
+            }
+        },
+
+        { header: '현장코드',name: 'proj_code',sortable: true, filter: 'text' , hidden: true},
+        { header: '현장명',name: 'proj_name',width: 300, sortable: true, filter:{type:'text'}},
+
+        { header: '현장숙소 주소',name: 'address',width: 500, sortable: true, filter:{type:'text'}
+            ,formatter:function(e){
+                return '<a href="#">'+e.value+'</a>'
+            }
+        },
+
+        { header: '요청자',name: 'first_appr_emp_nm',width: 100, align: 'center', sortable: true},
+        { header: '요청일',name: 'first_appr_date',width: 100, align: 'center', sortable: true
+            ,formatter: function (e) {
+                return toStringByFormatting(e.value)
+            }
+        },
+
+        { header: '다음확인자',name: 'next_appr_emp_nm',width: 100, align: 'center', sortable: true},
+
+        { header: '최종확인자',name: 'last_appr_emp_nm',width: 100, align: 'center', sortable: true},
+        { header: '최종확인일',name: 'last_appr_date',width: 100, align: 'center', sortable: true
+            ,formatter: function (e) {
+                return toStringByFormatting(e.value)
+            }
+        },
+      ],
+      columnOptions: {
+        resizable: true
+      }
+    });
+
+    grid.on('click',(ev)=>{
+        if (ev.targetType === 'cell' && ev.columnName === 'address') {
+            const rowIndex = ev.rowKey;
+            const row = grid.getRow(rowIndex);
+
+            openMap(row.address);
+        }
+
+        if (ev.targetType === 'cell' && ev.columnName === 'detail') {
+            const rowIndex = ev.rowKey;
+            const row = grid.getRow(rowIndex);
+
+            openDetail(row.seq);
+        }
+
+        if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
+
+            const rowIndex = ev.rowKey;
+            const row = grid.getRow(rowIndex);
+            if(row.appr_stat == '999'){
+                return false;
+            }else if(row.appr_stat == '4'){
+               var vHtml = "";
+               vHtml += "<h3 class='text-center text-danger'>반려사유</h3>";
+               vHtml += "<p class='pt-2'>"+row.reject+"</p>";
+               MsgBox.Alert(vHtml);
+               return false;
+            }else{
+                openApproval(row.appr_no);
+            }
+        }
+
+        if (ev.targetType === 'cell' && ev.columnName === 'docu_file') {
+            const rowIndex = ev.rowKey;
+            const row = grid.getRow(rowIndex);
+            if(row.fn_tg == 'F'){
+                return false;
+            }else{
+                btnDocContractDown(row.seq);
+            }
+        }
+    });
+
+    grid.on('dblclick', (ev) => {
+        //console.log(ev.rowKey+"//"+ev.columnName);
+        //var vData = grid.getValue(ev.rowKey, ev.columnName);
+        //console.log(vData);
+    });
+
+    grid.on('check', (ev) => {
+      var appr_stat = grid.getValue(ev.rowKey, "appr_stat");
+
+      if(appr_stat == '3' || appr_stat == '4' ){
+        MsgBox.Alert("*확인완료 또는 반려 처리된 문서는 선택이 불가능 합니다.");
+        grid.uncheck(ev.rowKey);
+      }
+    });
+
+    grid.on('checkAll', () => {
+        var checkedRows = grid.getCheckedRows();
+        checkedRows.forEach((row, index) => {
+           if(row.appr_stat == '3' || row.appr_stat == '4' ){
+                grid.uncheck(row.rowKey);
+           }
+        });
+    });
+
+    $("#searchBtn").on("click",function(e){
+        G_load(grid,"/appr/list/admin","search_form");
+    });
+
+    function openMap(searchTxt){
+        var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+        window.open("https://map.naver.com/p/search/"+searchTxt, 'docu',options);
+    }
+
+    function openDetail(seq){
+        var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+        window.open("/detail?seq="+seq, 'docu',options);
+    }
+
+    function openApproval(appr_no){
+
+        var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
+        window.open("/appr/reg/"+appr_no,"approval", options);
+
+    }
+
+    $("#btnSelectConfirm").on("click",function(){
+        var grdData = grid.getCheckedRows();
+
+        if(grdData.length == 0){
+            MsgBox.Alert("*선택된 행(row)이 없습니다.");
+            $(".btn-conf").prop("disabled",false);
+            return false;
+        }else{
+
+             $.ajax({
+                url: '/api/code/proj/admin',
+                dataType: "json",
+                contentType: "application/json; UTF-8;",
+                success: function(data) {
+                    console.log(data);
+                    const formattedData = data.map(item => {
+                            console.log("각 아이템:", item);  // 각 아이템의 구조 확인
+                            return {
+                                id: item.emp_no,
+                                text: item.name
+                            };
+                        });
+
+                        // 기존 select2가 있다면 제거
+                        if ($('#next_emp_user').data('select2')) {
+                            $('#next_emp_user').select2('destroy');
+                        }
+
+                        // select 초기화
+                        $('#next_emp_user').empty();
+
+                        // 기본 옵션 추가
+                        $('#next_emp_user').append('<option value=""></option>');
+
+                        // 데이터를 직접 option으로 추가
+                        data.forEach(function(item) {
+                            $('#next_emp_user').append(
+                                $('<option></option>')
+                                    .val(item.emp_no)
+                                    .text(item.name)
+                            );
+                        });
+
+                        // Select2 초기화 전에 기존 인스턴스 제거
+                        if ($('#next_emp_user').data('select2')) {
+                            $('#next_emp_user').select2('destroy');
+                        }
+
+                        // Select2 초기화
+                        $('#next_emp_user').select2({
+                            allowClear: true,
+                            theme: "bootstrap-5",
+                            placeholder: "다음확인자",
+                            width: '100%',
+                            dropdownParent: $('#remark_popup'), // 모달 내부에서 사용하는 경우 필요
+                            minimumResultsForSearch: 0, // 검색 기능 활성화
+                            language: {
+                                noResults: function() {
+                                    return "검색 결과가 없습니다.";
+                                }
+                            }
+                        });
+
+
+                    },
+                    error: function(xhr, status, error) {
+                        console.error("API 호출 에러:", error);
+                    }
+            });
+
+            $("#txtApprRemarks").val("");
+            $("#remark_popup").modal("show");
+        }
+    });
+
+     var receiptTotalCount = 0;
+     var receiptCompletedCount = 0;
+     var receiptReloadFlag = false; // 중복 실행 방지 플래그
+
+     $("#appr_confirm_yes").on("click",function(){
+        var grdData = grid.getCheckedRows();
+        var appr_remarks = $("#txtApprRemarks").val();
+        
+        // 카운터 초기화
+        receiptTotalCount = grdData.length;
+        receiptCompletedCount = 0;
+        receiptReloadFlag = false;
+
+        for(var i = 0 ; i <= grdData.length-1 ; i++){
+             btnConfirmApply(grdData[i].d_seq,grdData[i].appr_no,grdData[i].appr_num,emp_no);
+        }
+
+        $("#remark_popup").modal("hide");
+
+    });
+
+    $("#appr_confirm_no").on("click",function(){
+       $("#remark_popup").modal("hide");
+    });
+
+
+    function btnConfirmApply(d_seq,appr_no,appr_num,appr_emp_no){
+        var next_emp_user = $("#next_emp_user").val();
+
+        var params = "";
+        params += "gubun=A";
+        params += "&appr_d_seq="+d_seq;
+        params += "&appr_emp_no="+appr_emp_no;
+        params += "&appr_no="+appr_no;
+        params += "&appr_num="+appr_num;
+        params += "&next_emp_user="+next_emp_user;
+        params += "&banRemark="+encodeURIComponent($("#txtApprRemarks").val());
+
+        var vUrl = "/appr/update/detail";
+        ufn_transaction(
+            vUrl
+            ,"POST"
+            ,params
+            ,"text"
+            ,function(){} //before
+            ,function(){ //success
+                receiptCompletedCount++;
+                
+                if(receiptCompletedCount >= receiptTotalCount && !receiptReloadFlag){
+                    receiptReloadFlag = true;
+                    
+                    setTimeout(function() {
+                        $(".btn-conf").prop("disabled",false);
+                        G_load(grid,"/appr/list/admin","search_form");
+                        
+                        setTimeout(function() {
+                            MsgBox.Alert("*확인완료");
+                        }, 500);
+                    }, 300);
+                }
+            }
+            ,function(){ //error
+                receiptCompletedCount++;
+                
+                if(receiptCompletedCount >= receiptTotalCount && !receiptReloadFlag){
+                    receiptReloadFlag = true;
+                    
+                    setTimeout(function() {
+                        $(".btn-conf").prop("disabled",false);
+                        G_load(grid,"/appr/list/admin","search_form");
+                        
+                        setTimeout(function() {
+                            MsgBox.Alert("*일부 항목 처리 중 오류가 발생했습니다.");
+                        }, 500);
+                    }, 300);
+                }
+            }, //error
+            "" // 성공 메시지
+        );
+    }
+
+    function init() {
+       G_load(grid,"/appr/list/admin","search_form");
+    }
+
+    document.addEventListener('DOMContentLoaded', init);
+
+
+</script>
+</body>
+</html> 
