@@ -224,12 +224,13 @@ public class ErpRegistrationScheduler {
                     leaseContData.put("seq", leaseData.getArSeq());
                     leaseContData.put("contSeq", contSeq);
                     leaseContData.put("crtUserNo", crtUserNo);
-                    leaseContData.put("contName", "1차 계약");
+                    leaseContData.put("contName", 1); // 1차 계약
                     leaseContData.put("chgDt", leaseData.getArExprDt());
                     leaseContData.put("dpstAmt", leaseData.getArDpstAmt());
                     leaseContData.put("monRent", leaseData.getArMonRent());
                     leaseContData.put("remarks", leaseData.getArRemarks());
-                    leaseContData.put("contBaseDt", leaseData.getArExprDt());
+                    leaseContData.put("contBaseDt", leaseData.getArContDt() != null && leaseData.getArContDt().length() >= 7
+                            ? leaseData.getArContDt().substring(0, 7) : null); // YYYY-MM
                     leaseContData.put("exprDt", leaseData.getArExprDt());
                     leaseContData.put("crncCode", leaseData.getArCrncCode());
                     

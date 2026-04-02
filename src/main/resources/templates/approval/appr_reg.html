@@ -648,7 +648,22 @@
                                                 <i class="bi bi-building"></i> 공인중개 관련
                                                 <small class="text-muted ms-2">(부동산명함 및 정보)</small>
                                             </h6>
-                                            <div class="file-list" th:if="${detail.real_estate_files != null and detail.real_estate_files != ''}">
+                                            <div class="file-list" th:if="${detail.realEstateFileList != null and !detail.realEstateFileList.isEmpty()}">
+                                                <div class="list-group">
+                                                    <div class="list-group-item" th:each="file : ${detail.realEstateFileList}">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="file-info">
+                                                                <i class="bi bi-file-earmark-text file-icon"></i>
+                                                                <span class="file-name" th:text="${file.originalFilename}">파일명</span>
+                                                            </div>
+                                                            <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-sm btn-outline-primary" th:download="${file.originalFilename}" target="_blank">
+                                                                <i class="bi bi-download"></i> 다운로드
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="file-list" th:if="${(detail.realEstateFileList == null or detail.realEstateFileList.isEmpty()) and detail.real_estate_files != null and detail.real_estate_files != ''}">
                                                 <div class="list-group">
                                                     <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.real_estate_files, ';')}">
                                                         <div class="d-flex align-items-center justify-content-between">
@@ -656,17 +671,14 @@
                                                                 <i class="bi bi-file-earmark-text file-icon"></i>
                                                                 <span class="file-name" th:text="${fileId}">파일명</span>
                                                             </div>
-                                                            <a th:href="@{'/api/download-file/' + ${fileId}}"
-                                                               class="btn btn-sm btn-outline-primary"
-                                                               th:download="${fileId}"
-                                                               target="_blank">
+                                                            <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-sm btn-outline-primary" th:download="${fileId}" target="_blank">
                                                                 <i class="bi bi-download"></i> 다운로드
                                                             </a>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="no-files text-muted" th:unless="${detail.real_estate_files != null and detail.real_estate_files != ''}">
+                                            <div class="no-files text-muted" th:unless="${(detail.realEstateFileList != null and !detail.realEstateFileList.isEmpty()) or (detail.real_estate_files != null and detail.real_estate_files != '')}">
                                                 첨부된 파일이 없습니다.
                                             </div>
                                         </div>
@@ -679,7 +691,22 @@
                                                 <i class="bi bi-file-earmark-text"></i> 등기부등본
                                                 <small class="text-muted ms-2">(채권순위 확인)</small>
                                             </h6>
-                                            <div class="file-list" th:if="${detail.credit_files != null and detail.credit_files != ''}">
+                                            <div class="file-list" th:if="${detail.creditFileList != null and !detail.creditFileList.isEmpty()}">
+                                                <div class="list-group">
+                                                    <div class="list-group-item" th:each="file : ${detail.creditFileList}">
+                                                        <div class="d-flex align-items-center justify-content-between">
+                                                            <div class="file-info">
+                                                                <i class="bi bi-file-earmark-text file-icon"></i>
+                                                                <span class="file-name" th:text="${file.originalFilename}">파일명</span>
+                                                            </div>
+                                                            <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-sm btn-outline-primary" th:download="${file.originalFilename}" target="_blank">
+                                                                <i class="bi bi-download"></i> 다운로드
+                                                            </a>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="file-list" th:if="${(detail.creditFileList == null or detail.creditFileList.isEmpty()) and detail.credit_files != null and detail.credit_files != ''}">
                                                 <div class="list-group">
                                                     <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.credit_files, ';')}">
                                                         <div class="d-flex align-items-center justify-content-between">
@@ -687,17 +714,14 @@
                                                                 <i class="bi bi-file-earmark-text file-icon"></i>
                                                                 <span class="file-name" th:text="${fileId}">파일명</span>
                                                             </div>
-                                                            <a th:href="@{'/api/download-file/' + ${fileId}}"
-                                                               class="btn btn-sm btn-outline-primary"
-                                                               th:download="${fileId}"
-                                                               target="_blank">
+                                                            <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-sm btn-outline-primary" th:download="${fileId}" target="_blank">
                                                                 <i class="bi bi-download"></i> 다운로드
                                                             </a>
                                                         </div>
                                                     </div>
                                                 </div>
                                             </div>
-                                            <div class="no-files text-muted" th:unless="${detail.credit_files != null and detail.credit_files != ''}">
+                                            <div class="no-files text-muted" th:unless="${(detail.creditFileList != null and !detail.creditFileList.isEmpty()) or (detail.credit_files != null and detail.credit_files != '')}">
                                                 첨부된 파일이 없습니다.
                                             </div>
                                         </div>

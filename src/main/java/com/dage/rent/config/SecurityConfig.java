@@ -1,5 +1,6 @@
 package com.dage.rent.config;
 
+import com.dage.rent.Service.SsoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -12,15 +13,21 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CustomAuthenticationProvider customAuthenticationProvider;
+    private final SsoService ssoService;
 
     @Autowired
-    public SecurityConfig(CustomAuthenticationProvider customAuthenticationProvider) {
+    public SecurityConfig(CustomAuthenticationProvider customAuthenticationProvider, SsoService ssoService) {
         this.customAuthenticationProvider = customAuthenticationProvider;
+        this.ssoService = ssoService;
     }
 
     @Override
@@ -38,7 +45,8 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
             .csrf().disable()
             .authorizeRequests()
-                .antMatchers("/","/view", "/login", "/css/**", "/js/**", "/images/**").permitAll()
+                .antMatchers("/sso/**").permitAll()
+                .antMatchers("/", "/view", "/login", "/css/**", "/js/**", "/images/**").permitAll()
                 .anyRequest().authenticated()
             .and()
             .formLogin()
@@ -52,6 +60,15 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .logout()
                 .logoutUrl("/logout")
+                .addLogoutHandler((HttpServletRequest req, HttpServletResponse res, org.springframework.security.core.Authentication a) -> {
+                    HttpSession session = req.getSession(false);
+                    if (session != null) {
+                        String ssoToken = (String) session.getAttribute("SSO_ACCESS_TOKEN");
+                        if (ssoToken != null && ssoService.isEnabled()) {
+                            ssoService.logout(ssoToken);
+                        }
+                    }
+                })
                 .logoutSuccessUrl("/login")
                 .permitAll()
             .and()

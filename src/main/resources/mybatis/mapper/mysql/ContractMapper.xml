@@ -645,6 +645,17 @@
         </foreach>
     </delete>
 
+    <select id="selectContractDWithFileReferences" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT d.seq, d.real_estate_files AS real_estate_files, d.credit_files AS credit_files
+        FROM contract_d d
+        WHERE (d.real_estate_files IS NOT NULL AND TRIM(d.real_estate_files) != '')
+           OR (d.credit_files IS NOT NULL AND TRIM(d.credit_files) != '')
+    </select>
 
+    <update id="updateContractFileReferences">
+        UPDATE contract_d
+        SET real_estate_files = #{realEstateFiles}, credit_files = #{creditFiles}
+        WHERE seq = #{seq}
+    </update>
 
 </mapper> 

@@ -2521,7 +2521,10 @@
                         select.append('<option value="">은행 선택</option>');
                         
                         banks.forEach(function(bank) {
-                            const option = `<option value="${bank.text}" ${selectedValue === bank.text ? 'selected' : ''}>${bank.text}</option>`;
+                            // value는 은행 코드(id)를 사용하고, 표시는 은행명(text)을 사용
+                            // 기존 데이터 호환성을 위해 selectedValue가 은행명인 경우도 처리
+                            const isSelected = selectedValue === bank.id || selectedValue === bank.text ? 'selected' : '';
+                            const option = `<option value="${bank.id}" ${isSelected}>${bank.text}</option>`;
                             select.append(option);
                         });
                         
@@ -2559,7 +2562,10 @@
                 select.append('<option value="">은행 선택</option>');
                 
                 defaultBanks.forEach(function(bank) {
-                    const option = `<option value="${bank.text}" ${selectedValue === bank.text ? 'selected' : ''}>${bank.text}</option>`;
+                    // value는 은행 코드(id)를 사용하고, 표시는 은행명(text)을 사용
+                    // 기존 데이터 호환성을 위해 selectedValue가 은행명인 경우도 처리
+                    const isSelected = selectedValue === bank.id || selectedValue === bank.text ? 'selected' : '';
+                    const option = `<option value="${bank.id}" ${isSelected}>${bank.text}</option>`;
                     select.append(option);
                 });
                 

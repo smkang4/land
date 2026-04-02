@@ -196,6 +196,33 @@ public class CustomerRegistrationScheduler {
     }
     
     /**
+     * lessor 값의 형식에 따라 regCls 결정
+     * @param lessor 임대인 사업자번호/주민번호
+     * @return "1" (사업자등록번호 10자리) 또는 "2" (주민번호 13자리)
+     */
+    private String determineRegCls(String lessor) {
+        if (lessor == null || lessor.trim().isEmpty()) {
+            return "1"; // 기본값: 사업자등록번호
+        }
+        
+        // 하이픈 제거하고 숫자만 추출
+        String numbersOnly = lessor.replaceAll("[^0-9]", "");
+        
+        // 길이에 따라 구분
+        if (numbersOnly.length() == 13) {
+            // 주민번호 형식 (13자리)
+            return "2";
+        } else if (numbersOnly.length() == 10) {
+            // 사업자등록번호 형식 (10자리)
+            return "1";
+        } else {
+            // 기본값: 사업자등록번호로 간주
+            System.out.println("⚠️ lessor 형식이 명확하지 않음 (길이: " + numbersOnly.length() + "), 기본값 '1' 사용: " + lessor);
+            return "1";
+        }
+    }
+    
+    /**
      * 거래처 등록 프로시저를 위한 ERP 데이터 준비
      */
     private Map<String, Object> prepareErpData(DraftDTO draft, DraftDTO.ContractDetailDTO detail) {
@@ -244,7 +271,11 @@ public class CustomerRegistrationScheduler {
             erpData.put("taxCls", "10");     // 2자 이하 (기본값: "10")
             erpData.put("representCustCode", "");
             erpData.put("sBankNo", "");
-            erpData.put("regCls", "1");
+            
+            // regCls 결정: lessor 값의 형식에 따라 구분
+            // 주민번호 형식 (13자리): "2", 사업자등록번호 형식 (10자리): "1"
+            String regCls = determineRegCls(detail.getLessor());
+            erpData.put("regCls", regCls);
             
             // 기존 거래처 체크를 위한 필드
             erpData.put("existing_cust_code", ""); // 빈 값으로 설정하여 신규 거래처로 처리

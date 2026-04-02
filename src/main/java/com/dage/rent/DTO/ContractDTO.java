@@ -2,6 +2,8 @@ package com.dage.rent.DTO;
 
 import lombok.Data;
 
+import java.util.List;
+
 @Data
 public class ContractDTO {
     private String seq;
@@ -38,6 +40,9 @@ public class ContractDTO {
     private String reject;
     private String real_estate_files;
     private String credit_files;
+    /** id로 조회한 원본 파일명 목록 (화면 표시용, attachment_file 기반) */
+    private List<AttachmentFileDTO> realEstateFileList;
+    private List<AttachmentFileDTO> creditFileList;
     private String accu_type; // DB와 통일
     private String rewrite;
     private String post_code;

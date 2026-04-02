@@ -2,6 +2,8 @@ package com.dage.rent.Service;
 
 import com.dage.rent.DAO.mysql.DraftDAO;
 import com.dage.rent.DAO.oracle.RentDAO;
+import com.dage.rent.DTO.ApprovalDDTO;
+import com.dage.rent.DTO.ApprovalMDTO;
 import com.dage.rent.DTO.DraftDTO;
 import com.dage.rent.DTO.LoginDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,6 +30,8 @@ public class DraftService {
     private FtpService ftpService;
     @Autowired
     private RentService rentService;
+    @Autowired
+    private ApprovalService approvalService;
 
     /**
      * draftId로 기안서 상세 정보 조회 (Long 타입)
@@ -78,7 +82,10 @@ public class DraftService {
                     draftDAO.saveContractDetail(detail);
                 }
             }
-
+            
+            // 3. mst_seq 생성 및 Oracle 프로시저 호출은 기안서 업로드 시점에 수행됨
+            System.out.println("=== 기안서 저장 완료 (MySQL만 저장) ===");
+            System.out.println("※ mst_seq 생성 및 Oracle 프로시저 호출은 기안서 업로드 시점에 수행됩니다.");
 
         }
 
@@ -687,14 +694,48 @@ public class DraftService {
                     }
                 }
                 
-                // mst_seq 생성 완료 (Oracle DB 저장은 결재문서 생성 시 수행)
+                // mst_seq 생성 완료 후 Oracle 프로시저 호출
                 if (newMstSeq != null) {
                     System.out.println("✅ mst_seq 생성 완료: " + newMstSeq);
-                    System.out.println("※ Oracle DB 저장은 결재문서 생성 시 수행됩니다.");
+                    
+                    // Oracle 프로시저 호출 (SPCC_E_CONF_STATUS_I)
+                    try {
+                        System.out.println("=== 오라클 결재문서 저장 시작 ===");
+                        System.out.println("mst_seq: " + newMstSeq);
+                        
+                        // 기안서 정보 다시 조회 (최신 정보)
+                        DraftDTO savedDraft = getDraftByIdLong(draftId);
+                        if (savedDraft != null) {
+                            // mst_seq 업데이트
+                            savedDraft.setMst_seq(newMstSeq);
+                            
+                            // 결재문서 HTML 생성
+                            String htmlContent = generateApprovalDocumentHTML(savedDraft, "");
+                            
+                            // ERP 데이터 준비
+                            Map<String, Object> erpData = prepareErpDataForOracle(savedDraft, 0, htmlContent);
+                            
+                            if (erpData != null) {
+                                // 오라클 프로시저 호출 (SPCC_E_CONF_STATUS_I)
+                                boolean oracleResult = callERPProcedure(erpData);
+                                if (oracleResult) {
+                                    System.out.println("=== 오라클 결재문서 저장 완료 ===");
+                                } else {
+                                    System.err.println("❌ 오라클 결재문서 저장 실패");
+                                }
+                            } else {
+                                System.err.println("❌ ERP 데이터 준비 실패");
+                            }
+                        } else {
+                            System.err.println("❌ 기안서 정보 조회 실패");
+                        }
+                    } catch (Exception e) {
+                        System.err.println("오라클 결재문서 저장 실패: " + e.getMessage());
+                        e.printStackTrace();
+                    }
                 }
                 
-                System.out.println("=== 기안서 업로드: mst_seq 생성 완료 - draftId: " + draftId + " ===");
-                System.out.println("※ 거래처 등록은 기안서 작성 시 이미 완료되었으므로 건너뜀");
+                System.out.println("=== 기안서 업로드: mst_seq 생성 및 Oracle 저장 완료 - draftId: " + draftId + " ===");
                 
             } catch (Exception e) {
                 System.out.println("mst_seq 생성 실패 - draftId: " + draftId + ", 오류: " + e.getMessage());
@@ -742,6 +783,33 @@ public class DraftService {
     }
 
     /**
+     * lessor 값의 형식에 따라 regCls 결정
+     * @param lessor 임대인 사업자번호/주민번호
+     * @return "1" (사업자등록번호 10자리) 또는 "2" (주민번호 13자리)
+     */
+    private String determineRegCls(String lessor) {
+        if (lessor == null || lessor.trim().isEmpty()) {
+            return "1"; // 기본값: 사업자등록번호
+        }
+        
+        // 하이픈 제거하고 숫자만 추출
+        String numbersOnly = lessor.replaceAll("[^0-9]", "");
+        
+        // 길이에 따라 구분
+        if (numbersOnly.length() == 13) {
+            // 주민번호 형식 (13자리)
+            return "2";
+        } else if (numbersOnly.length() == 10) {
+            // 사업자등록번호 형식 (10자리)
+            return "1";
+        } else {
+            // 기본값: 사업자등록번호로 간주
+            System.out.println("⚠️ lessor 형식이 명확하지 않음 (길이: " + numbersOnly.length() + "), 기본값 '1' 사용: " + lessor);
+            return "1";
+        }
+    }
+    
+    /**
      * 거래처 등록 프로시저를 위한 ERP 데이터 준비
      */
     private Map<String, Object> prepareErpData(DraftDTO draft, DraftDTO.ContractDetailDTO detail) {
@@ -781,7 +849,11 @@ public class DraftService {
             erpData.put("taxCls", "VAT");
             erpData.put("representCustCode", "");
             erpData.put("sBankNo", "");
-            erpData.put("regCls", "1");
+            
+            // regCls 결정: lessor 값의 형식에 따라 구분
+            // 주민번호 형식 (13자리): "2", 사업자등록번호 형식 (10자리): "1"
+            String regCls = determineRegCls(detail.getLessor());
+            erpData.put("regCls", regCls);
             
             // 기존 거래처 체크를 위한 필드
             erpData.put("existing_cust_code", ""); // 빈 값으로 설정하여 신규 거래처로 처리
@@ -905,6 +977,101 @@ public class DraftService {
             
         } catch (Exception e) {
             System.err.println("ERP 데이터 준비 실패: " + e.getMessage());
+            e.printStackTrace();
+            return null;
+        }
+    }
+    
+    /**
+     * 오라클 저장을 위한 ERP 데이터 준비 (기안서 작성 시)
+     */
+    private Map<String, Object> prepareErpDataForOracle(DraftDTO draft, int appr_no, String htmlContent) {
+        try {
+            System.out.println("=== prepareErpDataForOracle 시작 ===");
+            System.out.println("draftId: " + draft.getId());
+            System.out.println("appr_no: " + appr_no);
+            System.out.println("mst_seq: " + draft.getMst_seq());
+            
+            Map<String, Object> erpData = new HashMap<>();
+            
+            // 현재 로그인한 사용자 정보 가져오기
+            try {
+                LoginDTO loginUser = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                erpData.put("crtUserNo", String.valueOf(loginUser.getUserNo()));
+                erpData.put("requestEmpNo", String.valueOf(draft.getEmp_no()));
+                erpData.put("requestId", loginUser.getUserId());
+                erpData.put("requestIdName", loginUser.getUserName());
+            } catch (Exception e) {
+                // 로그인 정보가 없으면 draft에서 가져오기
+                System.out.println("로그인 정보 조회 실패, draft 정보 사용: " + e.getMessage());
+                erpData.put("crtUserNo", String.valueOf(draft.getEmp_no()));
+                erpData.put("requestEmpNo", String.valueOf(draft.getEmp_no()));
+                erpData.put("requestId", "");
+                erpData.put("requestIdName", draft.getUser_nm());
+            }
+            
+            // 기본 정보
+            erpData.put("mstSeq", draft.getMst_seq());
+            erpData.put("subSeq", "1"); // 기본값
+            erpData.put("makeProj", draft.getProj_code() != null ? draft.getProj_code() : "100");
+            erpData.put("makeProjName", draft.getProj_name() != null ? draft.getProj_name() : "");
+            
+            // 날짜 정보
+            LocalDate currentDate = LocalDate.now();
+            String makeDt = String.format("%d-%02d-%02d", currentDate.getYear(), currentDate.getMonthValue(), currentDate.getDayOfMonth());
+            erpData.put("makeDt", makeDt);
+            
+            // MAKE_SEQ와 MAKE_DOC_NO 조회
+            Map<String, Object> seqData = rentDAO.getERPMakeSeqAndDocNo(draft.getProj_code() != null ? draft.getProj_code() : "100", makeDt);
+            erpData.put("makeSeq", seqData.get("MAKE_SEQ"));
+            erpData.put("makeDocNo", seqData.get("MAKE_DOC_NO"));
+            
+            // E_DOC_CODE와 E_DOC_NAME (기본값 - 실제로는 조회 필요)
+            erpData.put("eDocCode", "");
+            erpData.put("eDocName", "");
+            erpData.put("eaId", "");
+            
+            // E_DOC_FILE_NAME 생성
+            String yearMonth = String.format("%d%02d", currentDate.getYear(), currentDate.getMonthValue());
+            String fileName = yearMonth+"/"+seqData.get("MAKE_DOC_NO")+".htm";
+            erpData.put("eDocUrl", "http://derp.dage.co.kr/DAGE/unicon_gw/gw_doc_file/"+fileName);
+            erpData.put("eDocFileName", fileName);
+            
+            // 요청명
+            String requestName = "임대차계약 (" + (draft.getProj_name() != null ? draft.getProj_name() : "") + ")";
+            erpData.put("requestName", requestName);
+            
+            // HTML 내용
+            erpData.put("html", htmlContent);
+            
+            // 상태 정보
+            erpData.put("eConfStatus", "00"); // 미전송
+            erpData.put("remarks", "");
+            erpData.put("gjMsbh", "");
+            erpData.put("gjSeq", "");
+            
+            // 참조 정보 (기본값)
+            erpData.put("refNm1", "");
+            erpData.put("refNm2", "");
+            erpData.put("refNm3", "");
+            erpData.put("refNm4", "");
+            erpData.put("refNm5", "");
+            erpData.put("refUrl1", "");
+            erpData.put("refUrl2", "");
+            erpData.put("refUrl3", "");
+            erpData.put("refUrl4", "");
+            erpData.put("refUrl5", "");
+            
+            // 파일 정보
+            erpData.put("exportTag", "H");
+            erpData.put("reportFileName", "RentContRequest.jsp");
+            erpData.put("parameters", "MST_SEQ=" + draft.getMst_seq());
+            
+            System.out.println("오라클 ERP 데이터 준비 완료: " + erpData);
+            return erpData;
+            
+        } catch (Exception e) {
+            System.err.println("오라클 ERP 데이터 준비 실패: " + e.getMessage());
             e.printStackTrace();
             return null;
         }

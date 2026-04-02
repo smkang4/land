@@ -4,6 +4,7 @@ import com.dage.rent.Component.Mail;
 import com.dage.rent.DTO.*;
 import com.dage.rent.Service.AdminService;
 import com.dage.rent.Service.ApprovalService;
+import com.dage.rent.Service.AttachmentFileService;
 import com.dage.rent.Service.ContractService;
 import com.dage.rent.Service.RentService;
 import lombok.RequiredArgsConstructor;
@@ -38,6 +39,9 @@ public class ApprovalController {
 
     @Autowired
     RentService rentService;
+
+    @Autowired
+    private AttachmentFileService attachmentFileService;
 
     @GetMapping("/list")
     @ResponseBody
@@ -161,11 +165,8 @@ public class ApprovalController {
         }
 
         List<ContractDTO> contract = contractService.getContractDetailForList(appr_no);
-        // 파일 데이터 로깅 추가
         for (ContractDTO c : contract) {
-            System.out.println("Contract files for seq " + c.getSeq() + ":");
-            System.out.println("Real estate files: " + c.getReal_estate_files());
-            System.out.println("Credit files: " + c.getCredit_files());
+            resolveFileLists(c);
         }
         model.addAttribute("contract", contract);
 
@@ -1074,13 +1075,25 @@ public class ApprovalController {
         System.out.println("allApprNos 크기: " + allApprNos.size());
         System.out.println("전체 계약 수: " + (allContracts != null ? allContracts.size() : 0));
         System.out.println("========================================");
-        
+        if (allContracts != null) {
+            for (ContractDTO c : allContracts) {
+                resolveFileLists(c);
+            }
+        }
         model.addAttribute("contract", allContracts);
         model.addAttribute("mainApprNo", appr_no);
         model.addAttribute("additionalApprNos", additionalApprNos != null ? additionalApprNos : new ArrayList<>());
         model.addAttribute("allApprNos", allApprNos);
         
         return "draft";
+    }
+
+    private void resolveFileLists(ContractDTO contract) {
+        if (contract == null) return;
+        List<Long> realIds = AttachmentFileService.parseFileIds(contract.getReal_estate_files());
+        List<Long> creditIds = AttachmentFileService.parseFileIds(contract.getCredit_files());
+        contract.setRealEstateFileList(realIds.isEmpty() ? new ArrayList<>() : attachmentFileService.findByIds(realIds));
+        contract.setCreditFileList(creditIds.isEmpty() ? new ArrayList<>() : attachmentFileService.findByIds(creditIds));
     }
 
     /**

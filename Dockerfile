@@ -1,6 +1,6 @@
 FROM eclipse-temurin:17-jdk
-ARG JAR_FILE=2/target/rent-0.0.1-SNAPSHOT.jar
-COPY /target/rent-0.0.1-SNAPSHOT.jar app.jar
+ARG JAR_FILE=target/rent-0.0.1-SNAPSHOT.jar
+COPY ${JAR_FILE} app.jar
 
 # JVM 메모리 및 GC 설정 (메모리 부족 문제 해결을 위해 더 보수적으로 설정)
 # ENV JAVA_TOOL_OPTIONS="-Xms128m -Xmx384m \

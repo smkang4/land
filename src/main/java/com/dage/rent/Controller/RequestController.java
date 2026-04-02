@@ -1,8 +1,11 @@
 package com.dage.rent.Controller;
 
 import com.dage.rent.DTO.*;
+import com.dage.rent.Service.AttachmentFileService;
 import com.dage.rent.Service.ContractService;
 import com.dage.rent.Service.RentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.Resource;
@@ -39,10 +42,14 @@ import java.util.UUID;
 @RequestMapping("/api")
 public class RequestController {
 
+    private static final Logger log = LoggerFactory.getLogger(RequestController.class);
+
     @Autowired
     private ContractService contractService;
     @Autowired
     private RentService rentService;
+    @Autowired
+    private AttachmentFileService attachmentFileService;
     private final DateTimeFormatter dateFormatter = DateTimeFormatter.ofPattern("yyyy-MM-dd");
 
     @Value("${file.upload-dir}")
@@ -159,96 +166,37 @@ public class RequestController {
             @RequestParam("files") MultipartFile[] files,
             @RequestParam("section") String section) {
         try {
-            System.out.println("=== 파일 업로드 시작 ===");
+            System.out.println("=== 파일 업로드 시작 (attachment_file + 암호화) ===");
             System.out.println("섹션: " + section);
             System.out.println("파일 개수: " + files.length);
-            System.out.println("업로드 디렉토리: " + uploadDir);
-            
-            // 업로드 디렉토리 생성
-            Path uploadPath = Paths.get(uploadDir, section);
-            if (!Files.exists(uploadPath)) {
-                Files.createDirectories(uploadPath);
-                System.out.println("섹션별 디렉토리 생성: " + uploadPath);
-            }
 
             List<Map<String, Object>> uploadedFiles = new java.util.ArrayList<>();
-            
             for (MultipartFile file : files) {
                 if (file.isEmpty()) {
                     System.out.println("빈 파일 건너뜀: " + file.getOriginalFilename());
                     continue;
                 }
-
                 System.out.println("파일 처리 중: " + file.getOriginalFilename() + " (크기: " + file.getSize() + " bytes)");
-
-                // 원본 파일명 유지 (중복 방지를 위해 타임스탬프 추가)
-                String originalFilename = file.getOriginalFilename();
-                String filename = originalFilename;
-                
-                // 파일명 중복 방지 (같은 이름의 파일이 있으면 타임스탬프 추가)
-                Path filePath = uploadPath.resolve(filename);
-                int counter = 1;
-                while (Files.exists(filePath)) {
-                    String nameWithoutExt = originalFilename;
-                    String extension = "";
-                    if (originalFilename != null && originalFilename.contains(".")) {
-                        nameWithoutExt = originalFilename.substring(0, originalFilename.lastIndexOf("."));
-                        extension = originalFilename.substring(originalFilename.lastIndexOf("."));
-                    }
-                    filename = nameWithoutExt + "_" + System.currentTimeMillis() + extension;
-                    filePath = uploadPath.resolve(filename);
-                    counter++;
-                }
-                
-                // 파일 저장
-                Files.copy(file.getInputStream(), filePath);
-                
-                System.out.println("파일 저장 완료: " + filePath);
-                
-                // 파일 정보 생성
+                com.dage.rent.DTO.AttachmentFileDTO dto = attachmentFileService.saveFile(file, section);
                 Map<String, Object> fileInfo = new HashMap<>();
-                fileInfo.put("id", filename);
-                fileInfo.put("originalName", originalFilename);
-                fileInfo.put("size", file.getSize());
-                fileInfo.put("section", section);
-                fileInfo.put("uploadPath", filePath.toString());
-                
+                fileInfo.put("id", dto.getId());
+                fileInfo.put("originalName", dto.getOriginalFilename());
+                fileInfo.put("size", dto.getFileSize());
+                fileInfo.put("section", dto.getSection());
                 uploadedFiles.add(fileInfo);
+                System.out.println("파일 저장 완료: id=" + dto.getId() + ", original=" + dto.getOriginalFilename());
             }
-            
-            // DB 저장용 파일명 문자열 생성 (세미콜론으로 구분)
-            StringBuilder dbFileNames = new StringBuilder();
-            for (Map<String, Object> fileInfo : uploadedFiles) {
-                if (dbFileNames.length() > 0) {
-                    dbFileNames.append(";");
-                }
-                dbFileNames.append(fileInfo.get("originalName"));
-            }
-            
             System.out.println("업로드 완료된 파일 수: " + uploadedFiles.size());
-            System.out.println("DB 저장용 파일명 문자열: " + dbFileNames.toString());
-            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "파일 업로드가 완료되었습니다.");
             response.put("files", uploadedFiles);
-            response.put("dbFileNames", dbFileNames.toString()); // DB 저장용 파일명 문자열 추가
-            
             return ResponseEntity.ok(response);
-            
-        } catch (IOException e) {
-            System.err.println("파일 업로드 중 IOException 발생: " + e.getMessage());
-            e.printStackTrace();
+        } catch (Exception e) {
+            log.error("파일 업로드 실패 section={}, 파일수={}, 원인: {}", section, files != null ? files.length : 0, e.getMessage(), e);
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("success", false);
             errorResponse.put("message", "파일 업로드 중 오류가 발생했습니다: " + e.getMessage());
-            return ResponseEntity.badRequest().body(errorResponse);
-        } catch (Exception e) {
-            System.err.println("파일 업로드 중 예상치 못한 오류 발생: " + e.getMessage());
-            e.printStackTrace();
-            Map<String, Object> errorResponse = new HashMap<>();
-            errorResponse.put("success", false);
-            errorResponse.put("message", "파일 업로드 중 예상치 못한 오류가 발생했습니다: " + e.getMessage());
             return ResponseEntity.badRequest().body(errorResponse);
         }
     }
@@ -256,40 +204,40 @@ public class RequestController {
     /**
      * 파일 다운로드 API
      */
-    @GetMapping("/download-file/{filename}")
+    @GetMapping("/download-file/{fileIdOrName}")
     @ResponseBody
-    public ResponseEntity<Resource> downloadFile(@PathVariable String filename) {
+    public ResponseEntity<Resource> downloadFile(@PathVariable String fileIdOrName) {
         try {
-            // 파일 경로 찾기 (섹션별로 검색)
+            // 숫자 id면 attachment_file 테이블에서 조회 후 암호화 파일 복호화 반환
+            if (fileIdOrName != null && fileIdOrName.matches("\\d+")) {
+                Long id = Long.parseLong(fileIdOrName);
+                com.dage.rent.DTO.AttachmentFileDTO dto = attachmentFileService.findById(id);
+                if (dto == null) return ResponseEntity.notFound().build();
+                byte[] bytes = attachmentFileService.loadFileBytes(id);
+                if (bytes == null) return ResponseEntity.notFound().build();
+                String originalFilename = dto.getOriginalFilename() != null ? dto.getOriginalFilename() : "download";
+                return ResponseEntity.ok()
+                        .contentType(MediaType.APPLICATION_OCTET_STREAM)
+                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalFilename + "\"")
+                        .body(new org.springframework.core.io.ByteArrayResource(bytes));
+            }
+            // 레거시: 원본 파일명으로 검색 (영문 폴더 먼저, 한글 폴더는 구 폴더명 호환)
             Path filePath = null;
-            String section = null;
-            
-            // 부동산정보와 채권순위 디렉토리에서 파일 검색
-            String[] sections = {"부동산정보", "채권순위"};
-            for (String sect : sections) {
-                Path searchPath = Paths.get(uploadDir, sect, filename);
+            String[] legacyFolders = {"real_estate", "credit", "부동산정보", "채권순위"};
+            for (String folder : legacyFolders) {
+                Path searchPath = Paths.get(uploadDir, folder, fileIdOrName);
                 if (Files.exists(searchPath)) {
                     filePath = searchPath;
-                    section = sect;
                     break;
                 }
             }
-            
-            if (filePath == null || !Files.exists(filePath)) {
-                return ResponseEntity.notFound().build();
-            }
-            
+            if (filePath == null || !Files.exists(filePath)) return ResponseEntity.notFound().build();
             Resource resource = new UrlResource(filePath.toUri());
-            
-            // 원본 파일명 사용
-            String originalFilename = filename;
-            
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalFilename + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileIdOrName + "\"")
                     .body(resource);
-                    
-        } catch (MalformedURLException e) {
+        } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
@@ -298,41 +246,45 @@ public class RequestController {
     /**
      * 파일 삭제 API
      */
-    @DeleteMapping("/delete-file/{filename}")
+    @DeleteMapping("/delete-file/{fileIdOrName}")
     @ResponseBody
-    public ResponseEntity<?> deleteFile(@PathVariable String filename) {
+    public ResponseEntity<?> deleteFile(@PathVariable String fileIdOrName) {
         try {
-            // 파일 경로 찾기 (섹션별로 검색)
+            if (fileIdOrName != null && fileIdOrName.matches("\\d+")) {
+                Long id = Long.parseLong(fileIdOrName);
+                boolean deleted = attachmentFileService.deleteById(id);
+                if (!deleted) {
+                    Map<String, Object> err = new HashMap<>();
+                    err.put("success", false);
+                    err.put("message", "파일을 찾을 수 없습니다.");
+                    return ResponseEntity.badRequest().body(err);
+                }
+                Map<String, Object> response = new HashMap<>();
+                response.put("success", true);
+                response.put("message", "파일이 삭제되었습니다.");
+                return ResponseEntity.ok(response);
+            }
+            // 레거시: 디스크에서 파일명으로 삭제 (영문 폴더 먼저, 한글 폴더는 구 폴더명 호환)
             Path filePath = null;
-            String section = null;
-            
-            // 부동산정보와 채권순위 디렉토리에서 파일 검색
-            String[] sections = {"부동산정보", "채권순위"};
-            for (String sect : sections) {
-                Path searchPath = Paths.get(uploadDir, sect, filename);
+            String[] legacyFolders = {"real_estate", "credit", "부동산정보", "채권순위"};
+            for (String folder : legacyFolders) {
+                Path searchPath = Paths.get(uploadDir, folder, fileIdOrName);
                 if (Files.exists(searchPath)) {
                     filePath = searchPath;
-                    section = sect;
                     break;
                 }
             }
-            
             if (filePath == null || !Files.exists(filePath)) {
                 Map<String, Object> errorResponse = new HashMap<>();
                 errorResponse.put("success", false);
                 errorResponse.put("message", "파일을 찾을 수 없습니다.");
                 return ResponseEntity.badRequest().body(errorResponse);
             }
-            
-            // 파일 삭제
             Files.delete(filePath);
-            
             Map<String, Object> response = new HashMap<>();
             response.put("success", true);
             response.put("message", "파일이 삭제되었습니다.");
-            
             return ResponseEntity.ok(response);
-            
         } catch (IOException e) {
             e.printStackTrace();
             Map<String, Object> errorResponse = new HashMap<>();
@@ -552,11 +504,19 @@ public class RequestController {
                 updateM.put("seq",seq);
                 rentService.updateContractForM(updateM);
                 System.out.println("Contract updated successfully!");
-
+                // 첨부파일 contract_seq 연결
+                java.util.List<Long> realIds = AttachmentFileService.parseFileIds(contractD.getRealEstateFiles());
+                java.util.List<Long> creditIds = AttachmentFileService.parseFileIds(contractD.getCreditFiles());
+                attachmentFileService.linkToContract(realIds, seq);
+                attachmentFileService.linkToContract(creditIds, seq);
             }else{
                 System.out.println("Saving contract data...");
                 rentService.saveContract(contractM, contractD);
                 System.out.println("Contract saved successfully!");
+                java.util.List<Long> realIds = AttachmentFileService.parseFileIds(contractD.getRealEstateFiles());
+                java.util.List<Long> creditIds = AttachmentFileService.parseFileIds(contractD.getCreditFiles());
+                attachmentFileService.linkToContract(realIds, seq);
+                attachmentFileService.linkToContract(creditIds, seq);
             }
 
             Map<String, Object> response = new HashMap<>();
@@ -597,7 +557,8 @@ public class RequestController {
             if (contract == null) {
                 return "error";
             }
-            model.addAttribute("contract", contract);
+            resolveFileLists(contract);
+            model.addAttribute("contract", java.util.Collections.singletonList(contract));
             
             return "detail";
         } catch (Exception e) {
@@ -613,6 +574,9 @@ public class RequestController {
             List<ContractDTO> contract = contractService.getContractDetailForAdmin(seq);
             if (contract == null) {
                 return "error";
+            }
+            for (ContractDTO c : contract) {
+                resolveFileLists(c);
             }
             System.out.println("contract size = " + contract.size());
             model.addAttribute("contract", contract);
@@ -772,13 +736,20 @@ public class RequestController {
 
             if("Y".equals(rewrite)){
                 System.out.println(" 재작성, insert 진행 ");
-                //반려 재작성의 경우 insert
-                contractService.insertRewrite(contract);
-                //이전 seq 정보에 재작성 flag 심기
+                int newSeq = contractService.insertRewrite(contract);
                 System.out.println(" 재작성, rewrite 업데이트 ");
                 contractService.updateContractRewrite(Integer.parseInt((String) requestData.get("seq")));
+                java.util.List<Long> realIds = AttachmentFileService.parseFileIds(contract.getReal_estate_files());
+                java.util.List<Long> creditIds = AttachmentFileService.parseFileIds(contract.getCredit_files());
+                attachmentFileService.linkToContract(realIds, newSeq);
+                attachmentFileService.linkToContract(creditIds, newSeq);
             }else{
                 rentService.updateContract(contract);
+                int seqNum = Integer.parseInt(contract.getSeq());
+                java.util.List<Long> realIds = AttachmentFileService.parseFileIds(contract.getReal_estate_files());
+                java.util.List<Long> creditIds = AttachmentFileService.parseFileIds(contract.getCredit_files());
+                attachmentFileService.linkToContract(realIds, seqNum);
+                attachmentFileService.linkToContract(creditIds, seqNum);
             }
 
             System.out.println("=== DB 업데이트 완료 ===");
@@ -1086,5 +1057,14 @@ public class RequestController {
         }
     }
 
-
+    /**
+     * contract_d의 real_estate_files, credit_files(id 목록)를 attachment_file에서 조회해 원본 파일명 목록 세팅
+     */
+    private void resolveFileLists(ContractDTO contract) {
+        if (contract == null) return;
+        List<Long> realIds = AttachmentFileService.parseFileIds(contract.getReal_estate_files());
+        List<Long> creditIds = AttachmentFileService.parseFileIds(contract.getCredit_files());
+        contract.setRealEstateFileList(realIds.isEmpty() ? new java.util.ArrayList<>() : attachmentFileService.findByIds(realIds));
+        contract.setCreditFileList(creditIds.isEmpty() ? new java.util.ArrayList<>() : attachmentFileService.findByIds(creditIds));
+    }
 } 

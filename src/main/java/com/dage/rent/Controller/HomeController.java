@@ -4,9 +4,13 @@ import com.dage.rent.DAO.mysql.ContractDAO;
 import com.dage.rent.DTO.*;
 import com.dage.rent.Service.AdminService;
 import com.dage.rent.Service.ApprovalService;
+import com.dage.rent.Service.AttachmentFileService;
 import com.dage.rent.Service.ContractService;
 import com.dage.rent.Service.DraftService;
 import com.dage.rent.Service.RentService;
+import com.dage.rent.Service.SsoService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -28,14 +32,19 @@ public class HomeController {
     private final AdminService adminservice;
     private final ApprovalService approvalService;
     private final DraftService draftService;
+    private final AttachmentFileService attachmentFileService;
+    private final SsoService ssoService;
+    private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public HomeController(RentService rentService, ContractDAO contractDAO, ContractService contractService, AdminService admminservice, AdminService adminservice, ApprovalService approvalService, DraftService draftService) {
+    public HomeController(RentService rentService, ContractDAO contractDAO, ContractService contractService, AdminService admminservice, AdminService adminservice, ApprovalService approvalService, DraftService draftService, AttachmentFileService attachmentFileService, SsoService ssoService) {
         this.rentService = rentService;
         this.contractService = contractService;
         this.adminservice = adminservice;
         this.approvalService = approvalService;
         this.draftService = draftService;
+        this.attachmentFileService = attachmentFileService;
+        this.ssoService = ssoService;
     }
 
 
@@ -53,7 +62,11 @@ public class HomeController {
             System.out.println("Login error occurred");
             model.addAttribute("error", "���̵� �Ǵ� ��й�ȣ�� ��ġ���� �ʽ��ϴ�.");
         }
-        
+
+        if (ssoService.isEnabled()) {
+            model.addAttribute("ssoUrl", "/sso/login");
+        }
+
         return "login";
     }
 
@@ -67,22 +80,26 @@ public class HomeController {
             return "redirect:/login";
         }
 
-        // 현재 사용자의 임시저장 데이터 확인
         LoginDTO loginDTO = (LoginDTO) auth.getPrincipal();
         ContractDTO temp = contractService.getContractDetailForTemp(loginDTO.getUserNo());
-        
+        model.addAttribute("contractRealEstateFileListJson", "[]");
+        model.addAttribute("contractCreditFileListJson", "[]");
+        model.addAttribute("tempRealEstateFileListJson", "[]");
+        model.addAttribute("tempCreditFileListJson", "[]");
         if (temp != null) {
+            resolveFileLists(temp);
             model.addAttribute("temp", temp);
+            addFileListJsonToModel(model, temp, "temp");
         }
 
         if (seq != null) {
             ContractDTO contract = contractService.getContractDetail(seq);
-
-            if (contract == null ) {
-                return "error"; // 또는 "redirect:/error" 등 적절한 에러 페이지
+            if (contract == null) {
+                return "error";
             }
-
+            resolveFileLists(contract);
             model.addAttribute("contract", contract);
+            addFileListJsonToModel(model, contract, "contract");
         }
 
         return "index"; // 항상 index 뷰로 이동 (seq 유무에 따라 model만 다름)
@@ -166,7 +183,8 @@ public class HomeController {
     public String getRequestDetail(@RequestParam int seq, Model model) {
         try {
             ContractDTO contract = contractService.getContractDetail(seq);
-            model.addAttribute("contract", contract);
+            resolveFileLists(contract);
+            model.addAttribute("contract", java.util.Collections.singletonList(contract));
             model.addAttribute("flag", "Y");
 
             if(contract.getAppr_no() != null){
@@ -250,13 +268,8 @@ public class HomeController {
             }
 
             List<ContractDTO> contract = contractService.getContractDetailForList(seq);
-            // 파일 데이터 로깅 추가
             for (ContractDTO c : contract) {
-                System.out.println("Contract files for seq " + c.getSeq() + ":");
-                System.out.println("Real estate files: " + c.getReal_estate_files());
-                System.out.println("Credit files: " + c.getCredit_files());
-
-                // 면적을 평으로 변환
+                resolveFileLists(c);
                 if (c.getArea() != null && !c.getArea().isEmpty()) {
                     double area = Double.parseDouble(c.getArea());
                     double areaInPyeong = Math.round((area / 3.30578) * 100.0) / 100.0;
@@ -283,11 +296,10 @@ public class HomeController {
     @GetMapping("/edit")
     public String edit(@RequestParam int seq, Model model) {
         try {
-
             ContractDTO contract = contractService.getContractDetail(seq);
+            resolveFileLists(contract);
             model.addAttribute("detail", contract);
             model.addAttribute("rewrite", "N");
-
             return "edit";
         } catch (Exception e) {
             e.printStackTrace();
@@ -298,15 +310,41 @@ public class HomeController {
     @GetMapping("/rewrite")
     public String rewrite(@RequestParam int seq, Model model) {
         try {
-
             ContractDTO contract = contractService.getContractDetail(seq);
+            resolveFileLists(contract);
             model.addAttribute("detail", contract);
             model.addAttribute("rewrite", "Y");
-
             return "edit";
         } catch (Exception e) {
             e.printStackTrace();
             return "error";
+        }
+    }
+
+    private void resolveFileLists(ContractDTO contract) {
+        if (contract == null) return;
+        List<Long> realIds = AttachmentFileService.parseFileIds(contract.getReal_estate_files());
+        List<Long> creditIds = AttachmentFileService.parseFileIds(contract.getCredit_files());
+        contract.setRealEstateFileList(realIds.isEmpty() ? new ArrayList<>() : attachmentFileService.findByIds(realIds));
+        contract.setCreditFileList(creditIds.isEmpty() ? new ArrayList<>() : attachmentFileService.findByIds(creditIds));
+    }
+
+    /** index(사전조사서 작성) 폼에서 파일명 표시용 JSON 전달 */
+    private void addFileListJsonToModel(Model model, ContractDTO dto, String prefix) {
+        try {
+            if (dto.getRealEstateFileList() != null && !dto.getRealEstateFileList().isEmpty()) {
+                model.addAttribute(prefix + "RealEstateFileListJson", objectMapper.writeValueAsString(dto.getRealEstateFileList()));
+            } else {
+                model.addAttribute(prefix + "RealEstateFileListJson", "[]");
+            }
+            if (dto.getCreditFileList() != null && !dto.getCreditFileList().isEmpty()) {
+                model.addAttribute(prefix + "CreditFileListJson", objectMapper.writeValueAsString(dto.getCreditFileList()));
+            } else {
+                model.addAttribute(prefix + "CreditFileListJson", "[]");
+            }
+        } catch (JsonProcessingException e) {
+            model.addAttribute(prefix + "RealEstateFileListJson", "[]");
+            model.addAttribute(prefix + "CreditFileListJson", "[]");
         }
     }
 

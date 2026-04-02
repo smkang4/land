@@ -438,7 +438,7 @@
                                         <i class="bi bi-upload"></i> 업로드
                                     </button>
                                 </div>
-                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.</div>
+                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 1000MB까지 업로드 가능합니다.</div>
                                 <div class="file-list">
                                     <div class="list-group file-list-4">
                                         <!-- 업로드된 파일 목록이 여기에 표시됩니다 -->
@@ -490,7 +490,7 @@
                                         <i class="bi bi-upload"></i> 업로드
                                     </button>
                                 </div>
-                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.</div>
+                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 1000MB까지 업로드 가능합니다.</div>
                                 <div class="file-list">
                                     <div class="list-group file-list-5">
                                         <!-- 업로드된 파일 목록이 여기에 표시됩니다 -->
@@ -622,8 +622,11 @@
     <script th:inline="javascript">
         // 파일 업로드 관련 변수
         let uploadedFiles = [];
-        const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+        const MAX_FILE_SIZE = 1000 * 1024 * 1024; // 1000MB
         const MAX_FILES = 5;
+        // 서버에서 id+원본파일명 목록 (attachment_file 기반, 계약/임시저장 불러올 때)
+        const realEstateFileListFromServer = /*[[${contract != null ? contractRealEstateFileListJson : (temp != null ? tempRealEstateFileListJson : '[]')}]]*/ '[]';
+        const creditFileListFromServer = /*[[${contract != null ? contractCreditFileListJson : (temp != null ? tempCreditFileListJson : '[]')}]]*/ '[]';
 
         function sample6_execDaumPostcode() {
             new daum.Postcode({
@@ -763,70 +766,58 @@
 
         function loadExistingFiles() {
             try {
-                // 부동산정보 섹션 파일 로드
-                const realEstateFiles = /*[[${temp != null ? temp.real_estate_files : (contract != null ? contract.realEstateFiles : '[]')}]]*/ [];
-                console.log('Real Estate Files type:', typeof realEstateFiles);
-                console.log('Real Estate Files:', realEstateFiles);
                 const realEstateFileList = $('.file-list-4');
                 realEstateFileList.empty();
-                
-                if (realEstateFiles && realEstateFiles !== '[]' && realEstateFiles !== '') {
-                    // 콤마 또는 세미콜론으로 구분된 파일명들을 배열로 분리 (기존 데이터 호환성)
-                    let fileNames;
-                    if (realEstateFiles.includes(';')) {
-                        fileNames = realEstateFiles.split(';');
-                    } else if (realEstateFiles.includes(',')) {
-                        fileNames = realEstateFiles.split(',');
-                    } else {
-                        // 단일 파일인 경우
-                        fileNames = [realEstateFiles];
-                    }
-                    
-                    fileNames.forEach(fileName => {
-                        if (fileName.trim()) {
-                            const fileInfo = {
-                                id: fileName.trim(),  // 파일명을 ID로 사용
-                                originalName: fileName.trim(),
-                                section: '부동산정보'
-                            };
-                            console.log('Processing real estate file:', fileInfo);
-                            uploadedFiles.push(fileInfo);
-                            addFileToList(fileInfo, realEstateFileList);
-                        }
+                // 1) 서버에서 id+원본파일명 목록이 있으면 우선 사용 (원본 파일명 표시)
+                let realEstateList = [];
+                try {
+                    realEstateList = typeof realEstateFileListFromServer === 'string' ? JSON.parse(realEstateFileListFromServer) : realEstateFileListFromServer;
+                } catch (e) { realEstateList = []; }
+                if (Array.isArray(realEstateList) && realEstateList.length > 0) {
+                    realEstateList.forEach(function(file) {
+                        const fileInfo = { id: file.id, originalName: file.originalFilename || String(file.id), section: 'real_estate', size: file.fileSize };
+                        uploadedFiles.push(fileInfo);
+                        addFileToList(fileInfo, realEstateFileList);
                     });
+                } else {
+                    // 2) 레거시: 세미콜론 구분 문자열로 로드
+                    const realEstateFiles = /*[[${temp != null ? temp.real_estate_files : (contract != null ? contract.real_estate_files : '')}]]*/ '';
+                    if (realEstateFiles && realEstateFiles !== '') {
+                        const fileNames = realEstateFiles.split(';');
+                        fileNames.forEach(function(fileName) {
+                            if (fileName.trim()) {
+                                const fileInfo = { id: fileName.trim(), originalName: fileName.trim(), section: 'real_estate' };
+                                uploadedFiles.push(fileInfo);
+                                addFileToList(fileInfo, realEstateFileList);
+                            }
+                        });
+                    }
                 }
 
-                // 채권순위 섹션 파일 로드
-                const creditFiles = /*[[${temp != null ? temp.credit_files : (contract != null ? contract.creditFiles : '[]')}]]*/ [];
-                console.log('Credit Files type:', typeof creditFiles);
-                console.log('Credit Files:', creditFiles);
                 const creditFileList = $('.file-list-5');
                 creditFileList.empty();
-                
-                if (creditFiles && creditFiles !== '[]' && creditFiles !== '') {
-                    // 콤마 또는 세미콜론으로 구분된 파일명들을 배열로 분리 (기존 데이터 호환성)
-                    let fileNames;
-                    if (creditFiles.includes(';')) {
-                        fileNames = creditFiles.split(';');
-                    } else if (creditFiles.includes(',')) {
-                        fileNames = creditFiles.split(',');
-                    } else {
-                        // 단일 파일인 경우
-                        fileNames = [creditFiles];
-                    }
-                    
-                    fileNames.forEach(fileName => {
-                        if (fileName.trim()) {
-                            const fileInfo = {
-                                id: fileName.trim(),  // 파일명을 ID로 사용
-                                originalName: fileName.trim(),
-                                section: '채권순위'
-                            };
-                            console.log('Processing credit file:', fileInfo);
-                            uploadedFiles.push(fileInfo);
-                            addFileToList(fileInfo, creditFileList);
-                        }
+                let creditList = [];
+                try {
+                    creditList = typeof creditFileListFromServer === 'string' ? JSON.parse(creditFileListFromServer) : creditFileListFromServer;
+                } catch (e) { creditList = []; }
+                if (Array.isArray(creditList) && creditList.length > 0) {
+                    creditList.forEach(function(file) {
+                        const fileInfo = { id: file.id, originalName: file.originalFilename || String(file.id), section: 'credit', size: file.fileSize };
+                        uploadedFiles.push(fileInfo);
+                        addFileToList(fileInfo, creditFileList);
                     });
+                } else {
+                    const creditFiles = /*[[${temp != null ? temp.credit_files : (contract != null ? contract.credit_files : '')}]]*/ '';
+                    if (creditFiles && creditFiles !== '') {
+                        const fileNames = creditFiles.split(';');
+                        fileNames.forEach(function(fileName) {
+                            if (fileName.trim()) {
+                                const fileInfo = { id: fileName.trim(), originalName: fileName.trim(), section: 'credit' };
+                                uploadedFiles.push(fileInfo);
+                                addFileToList(fileInfo, creditFileList);
+                            }
+                        });
+                    }
                 }
             } catch (error) {
                 console.error('Error loading files:', error);
@@ -916,13 +907,15 @@
             // 기존 파일 목록 로드
             loadExistingFiles();
 
-            // 파일 업로드 버튼 클릭 이벤트
-            $(document).on('click', '.upload-btn-4, .upload-btn-5', function() {
-                const sectionId = $(this).attr('class').split(' ').find(cls => cls.startsWith('upload-btn-')).split('-')[2];
+            // 파일 업로드 버튼 클릭 이벤트 (아이콘 클릭 시에도 버튼 기준으로 섹션 판단)
+            $(document).on('click', '.upload-btn-4, .upload-btn-5', function(e) {
+                const $btn = $(e.currentTarget).closest('[class*="upload-btn-"]');
+                const match = ($btn.attr('class') || '').split(' ').find(c => c.startsWith('upload-btn-'));
+                const sectionId = match ? match.split('-')[2] : '';
                 const fileInput = $(`.file-upload-${sectionId}`)[0];
-                const files = fileInput.files;
+                const files = fileInput && fileInput.files ? fileInput.files : [];
                 const fileList = $(`.file-list-${sectionId}`);
-                const section = sectionId === '4' ? '부동산정보' : '채권순위';
+                const section = sectionId === '4' ? 'real_estate' : 'credit';
 
                 if (files.length === 0) {
                     alert('파일을 선택해주세요.');
@@ -937,75 +930,80 @@
                 // 파일 크기 체크
                 for (let file of files) {
                     if (file.size > MAX_FILE_SIZE) {
-                        alert(`파일 크기는 최대 10MB까지 가능합니다.\n문제 파일: ${file.name}`);
+                        alert(`파일 크기는 최대 1000MB까지 가능합니다.\n문제 파일: ${file.name}`);
                         return;
                     }
                 }
 
-                // FormData 생성
-                const formData = new FormData();
-                for (let file of files) {
-                    formData.append('files', file);
-                }
-                formData.append('section', section);
+                let totalBytes = 0;
+                for (let i = 0; i < files.length; i++) totalBytes += files[i].size;
 
-                // 업로드 진행
-                $.ajax({
-                    url: '/api/upload-files',
-                    type: 'POST',
-                    data: formData,
-                    processData: false,
-                    contentType: false,
-                    beforeSend: function(xhr) {
-                        const token = $("meta[name='_csrf']").attr("content");
-                        const header = $("meta[name='_csrf_header']").attr("content");
-                        if (token && header) {
-                            xhr.setRequestHeader(header, token);
-                        }
-                    },
-                    success: function(response) {
-                        if (response.success) {
-                            // 업로드된 파일 목록에 추가
-                            response.files.forEach(file => {
-                                // 섹션별로 파일 목록 관리
-                                const sectionFiles = uploadedFiles.filter(f => f.section === section);
-                                if (sectionFiles.length >= MAX_FILES) {
-                                    alert(`해당 섹션에는 최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
-                                    return;
-                                }
-                                uploadedFiles.push(file);
-                                addFileToList(file, fileList);
-                            });
-                            
-                            // DB 저장용 파일명 문자열 로그 출력
-                            if (response.dbFileNames) {
-                                console.log('DB 저장용 파일명 문자열:', response.dbFileNames);
-                            }
-                            
-                            // 파일 입력 초기화
-                            fileInput.value = '';
-                        } else {
-                            alert('파일 업로드 실패: ' + response.message);
-                        }
-                    },
-                    error: function(xhr, status, error) {
-                        console.error('Upload error:', error);
-                        console.error('Status:', status);
-                        console.error('Response:', xhr.responseText);
-                        
-                        let errorMessage = '파일 업로드 중 오류가 발생했습니다.';
-                        try {
-                            const response = JSON.parse(xhr.responseText);
-                            if (response.message) {
-                                errorMessage = response.message;
-                            }
-                        } catch (e) {
-                            console.error('Error parsing response:', e);
-                        }
-                        
-                        alert(errorMessage);
+                // 요청 전 콘솔 로그
+                const uploadUrl = window.location.origin + '/api/upload-files';
+                console.log('[업로드 요청] URL=', uploadUrl, '| section=', section, '| 파일 수=', files.length, '| 총 크기=', totalBytes, 'bytes');
+                for (let i = 0; i < files.length; i++) {
+                    console.log('  파일' + (i + 1) + ':', files[i].name, files[i].size, 'bytes');
+                }
+
+                // 업로드 진행 (413 시 1회 자동 재시도. 재시도 시 FormData 새로 생성)
+                function doUpload(retryCount) {
+                    const formData = new FormData();
+                    formData.append('section', section);
+                    for (let file of files) {
+                        const safeName = file.name.replace(/,/g, '_');
+                        const fileToSend = safeName !== file.name ? new File([file], safeName, { type: file.type, lastModified: file.lastModified }) : file;
+                        formData.append('files', fileToSend);
                     }
-                });
+                    $.ajax({
+                        url: '/api/upload-files',
+                        type: 'POST',
+                        data: formData,
+                        processData: false,
+                        contentType: false,
+                        beforeSend: function(xhr) {
+                            const token = $("meta[name='_csrf']").attr("content");
+                            const header = $("meta[name='_csrf_header']").attr("content");
+                            if (token && header) {
+                                xhr.setRequestHeader(header, token);
+                            }
+                        },
+                        success: function(response) {
+                            if (response.success) {
+                                response.files.forEach(file => {
+                                    const sectionFiles = uploadedFiles.filter(f => (section === 'real_estate' && (f.section === 'real_estate' || f.section === '부동산정보')) || (section === 'credit' && (f.section === 'credit' || f.section === '채권순위')));
+                                    if (sectionFiles.length >= MAX_FILES) {
+                                        alert(`해당 섹션에는 최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
+                                        return;
+                                    }
+                                    uploadedFiles.push(file);
+                                    addFileToList(file, fileList);
+                                });
+                                if (response.dbFileNames) console.log('DB 저장용 파일명 문자열:', response.dbFileNames);
+                                fileInput.value = '';
+                            } else {
+                                alert('파일 업로드 실패: ' + response.message);
+                            }
+                        },
+                        error: function(xhr, status, error) {
+                            if (xhr.status === 413 && (retryCount || 0) === 0) {
+                                console.warn('[업로드] 413 발생, 1회 재시도합니다.');
+                                return doUpload(1);
+                            }
+                            console.error('[업로드 실패] HTTP status=', xhr.status, 'status=', status, 'error=', error);
+                            if (xhr.status === 413) {
+                                console.error('[업로드 실패] 413 = 요청 크기 초과. Nginx/프록시에서 차단됐을 수 있음. section=', section, '총 크기=', totalBytes, 'bytes');
+                            }
+                            console.error('Response:', xhr.responseText);
+                            let errorMessage = '파일 업로드 중 오류가 발생했습니다.';
+                            try {
+                                const res = JSON.parse(xhr.responseText);
+                                if (res.message) errorMessage = res.message;
+                            } catch (e) {}
+                            alert(errorMessage);
+                        }
+                    });
+                }
+                doUpload(0);
             });
 
             // 파일 다운로드
@@ -1148,7 +1146,7 @@
                                 
                                 if (!hasFiles) {
                                     if (sectionId === '4') {
-                                        missingFiles.push('부동산정보 첨부파일');
+                                        missingFiles.push('부동산 정보 첨부파일');
                                     } else if (sectionId === '5') {
                                         missingFiles.push('등기부등본 첨부파일');
                                     }
@@ -1233,16 +1231,16 @@
                         section: file.section
                     };
 
-                    if (file.section === '부동산정보') {
+                    if (file.section === 'real_estate' || file.section === '부동산정보') {
                         formData.attachments.realEstate.push(fileInfo);
-                    } else if (file.section === '채권순위') {
+                    } else if (file.section === 'credit' || file.section === '채권순위') {
                         formData.attachments.credit.push(fileInfo);
                     }
                 });
 
                 // DB 저장용 파일명 문자열 생성 (세미콜론으로 구분)
-                const realEstateFiles = uploadedFiles.filter(f => f.section === '부동산정보');
-                const creditFiles = uploadedFiles.filter(f => f.section === '채권순위');
+                const realEstateFiles = uploadedFiles.filter(f => f.section === 'real_estate' || f.section === '부동산정보');
+                const creditFiles = uploadedFiles.filter(f => f.section === 'credit' || f.section === '채권순위');
                 
                 const realEstateFileNames = realEstateFiles.map(f => f.originalName).join(';');
                 const creditFileNames = creditFiles.map(f => f.originalName).join(';');
@@ -1491,16 +1489,16 @@
                     section: file.section
                 };
 
-                if (file.section === '부동산정보') {
+                if (file.section === 'real_estate' || file.section === '부동산정보') {
                     formData.attachments.realEstate.push(fileInfo);
-                } else if (file.section === '채권순위') {
+                } else if (file.section === 'credit' || file.section === '채권순위') {
                     formData.attachments.credit.push(fileInfo);
                 }
             });
 
             // DB 저장용 파일명 문자열 생성 (세미콜론으로 구분)
-            const realEstateFiles = uploadedFiles.filter(f => f.section === '부동산정보');
-            const creditFiles = uploadedFiles.filter(f => f.section === '채권순위');
+const realEstateFiles = uploadedFiles.filter(f => f.section === 'real_estate' || f.section === '부동산정보');
+                const creditFiles = uploadedFiles.filter(f => f.section === 'credit' || f.section === '채권순위');
             
             const realEstateFileNames = realEstateFiles.map(f => f.originalName).join(';');
             const creditFileNames = creditFiles.map(f => f.originalName).join(';');

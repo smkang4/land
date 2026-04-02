@@ -1278,8 +1278,10 @@
                 select.append('<option value="">은행 선택</option>');
                 
                 banks.forEach(function(bank) {
-                    const selected = bank.text === selectedBank || bank.id === selectedBank ? 'selected' : '';
-                    select.append(`<option value="${bank.text}" ${selected}>${bank.text}</option>`);
+                    // value는 은행 코드(id)를 사용하고, 표시는 은행명(text)을 사용
+                    // 기존 데이터 호환성을 위해 selectedBank가 은행명인 경우도 처리
+                    const selected = bank.id === selectedBank || bank.text === selectedBank ? 'selected' : '';
+                    select.append(`<option value="${bank.id}" ${selected}>${bank.text}</option>`);
                 });
             },
             error: function(xhr, status, error) {

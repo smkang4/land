@@ -211,7 +211,7 @@
             #{mstSeq}, #{subSeq}, #{crtUserNo}, #{makeProj}, #{makeDt},
             #{makeSeq}, #{makeDocNo}, #{requestId}, #{requestEmpNo}, #{eDocCode},
             #{eDocName}, #{requestName}, #{exportTag}, #{reportFileName}, #{parameters},
-            #{eDocUrl}, #{eDocFileName}, #{eConfStatus}, #{remarks}, #{록하는 ㅂㅂgjMsbh},
+            #{eDocUrl}, #{eDocFileName}, #{eConfStatus}, #{remarks}, #{gjMsbh},
             #{refNm1}, #{refNm2}, #{refNm3}, #{refNm4}, #{refNm5},
             #{refUrl1}, #{refUrl2}, #{refUrl3}, #{refUrl4}, #{refUrl5},
             #{makeProjName}, #{requestIdName}, #{eaId}, #{gjSeq}

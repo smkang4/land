@@ -654,20 +654,29 @@
                                     </div>
                                     <div class="file-list">
                                         <div class="list-group file-list-4">
-                                            <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.real_estate_files, ';')}">
+                                            <div class="list-group-item" th:each="file : ${detail.realEstateFileList != null ? detail.realEstateFileList : T(java.util.Collections).emptyList()}">
+                                                <div class="file-info">
+                                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                                    <span class="file-name" th:text="${file.originalFilename}">파일명</span>
+                                                    <div class="file-actions">
+                                                        <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-outline-primary" th:download="${file.originalFilename}" target="_blank">
+                                                            <i class="bi bi-download"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${file.id}" data-section="4">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="list-group-item" th:each="fileId : ${(detail.realEstateFileList == null or detail.realEstateFileList.isEmpty()) and detail.real_estate_files != null and detail.real_estate_files != '' ? #strings.arraySplit(detail.real_estate_files, ';') : T(java.util.Collections).emptyList()}">
                                                 <div class="file-info">
                                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                                     <span class="file-name" th:text="${fileId}">파일명</span>
                                                     <div class="file-actions">
-                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" 
-                                                           class="btn btn-outline-primary"
-                                                           th:download="${fileId}"
-                                                           target="_blank">
+                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-outline-primary" th:download="${fileId}" target="_blank">
                                                             <i class="bi bi-download"></i>
                                                         </a>
-                                                        <button type="button" class="btn btn-outline-danger delete-btn"
-                                                                th:data-file-id="${fileId}"
-                                                                data-section="4">
+                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${fileId}" data-section="4">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
                                                     </div>
@@ -713,20 +722,29 @@
                                     </div>
                                     <div class="file-list">
                                         <div class="list-group file-list-5">
-                                            <div class="list-group-item" th:each="fileId : ${#strings.arraySplit(detail.credit_files, ';')}">
+                                            <div class="list-group-item" th:each="file : ${detail.creditFileList != null ? detail.creditFileList : T(java.util.Collections).emptyList()}">
+                                                <div class="file-info">
+                                                    <i class="bi bi-file-earmark-text file-icon"></i>
+                                                    <span class="file-name" th:text="${file.originalFilename}">파일명</span>
+                                                    <div class="file-actions">
+                                                        <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-outline-primary" th:download="${file.originalFilename}" target="_blank">
+                                                            <i class="bi bi-download"></i>
+                                                        </a>
+                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${file.id}" data-section="5">
+                                                            <i class="bi bi-trash"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="list-group-item" th:each="fileId : ${(detail.creditFileList == null or detail.creditFileList.isEmpty()) and detail.credit_files != null and detail.credit_files != '' ? #strings.arraySplit(detail.credit_files, ';') : T(java.util.Collections).emptyList()}">
                                                 <div class="file-info">
                                                     <i class="bi bi-file-earmark-text file-icon"></i>
                                                     <span class="file-name" th:text="${fileId}">파일명</span>
                                                     <div class="file-actions">
-                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" 
-                                                           class="btn btn-outline-primary"
-                                                           th:download="${fileId}"
-                                                           target="_blank">
+                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-outline-primary" th:download="${fileId}" target="_blank">
                                                             <i class="bi bi-download"></i>
                                                         </a>
-                                                        <button type="button" class="btn btn-outline-danger delete-btn"
-                                                                th:data-file-id="${fileId}"
-                                                                data-section="5">
+                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${fileId}" data-section="5">
                                                             <i class="bi bi-trash"></i>
                                                         </button>
                                                     </div>
@@ -844,7 +862,7 @@
                             const fileInfo = {
                                 id: fileName.trim(),
                                 originalName: fileName.trim(),
-                                section: '부동산정보'
+                                section: 'real_estate'
                             };
                             console.log('부동산정보 파일 추가:', fileInfo);
                             uploadedFiles.push(fileInfo);
@@ -871,7 +889,7 @@
                             const fileInfo = {
                                 id: fileName.trim(),
                                 originalName: fileName.trim(),
-                                section: '채권순위'
+                                section: 'credit'
                             };
                             console.log('채권순위 파일 추가:', fileInfo);
                             uploadedFiles.push(fileInfo);
@@ -898,7 +916,7 @@
                             const fileInfo = {
                                 id: fileId,
                                 originalName: fileName,
-                                section: '부동산정보'
+                                section: 'real_estate'
                             };
                             console.log('부동산정보 기존 파일 추가:', fileInfo);
                             uploadedFiles.push(fileInfo);
@@ -918,7 +936,7 @@
                             const fileInfo = {
                                 id: fileId,
                                 originalName: fileName,
-                                section: '채권순위'
+                                section: 'credit'
                             };
                             console.log('채권순위 기존 파일 추가:', fileInfo);
                             uploadedFiles.push(fileInfo);
@@ -1015,7 +1033,7 @@
                 const fileInput = $(`.file-upload-${sectionId}`)[0];
                 const files = fileInput.files;
                 const fileList = $(`.file-list-${sectionId}`);
-                const section = sectionId === '4' ? '부동산정보' : '채권순위';
+                const section = sectionId === '4' ? 'real_estate' : 'credit';
 
                 if (files.length === 0) {
                     alert('파일을 선택해주세요.');
@@ -1281,8 +1299,8 @@
 
                 // 파일 정보 추가
                 data.attachments = {
-                    realEstate: uploadedFiles.filter(f => f.section === '부동산정보'),
-                    credit: uploadedFiles.filter(f => f.section === '채권순위')
+                    realEstate: uploadedFiles.filter(f => f.section === 'real_estate' || f.section === '부동산정보'),
+                    credit: uploadedFiles.filter(f => f.section === 'credit' || f.section === '채권순위')
                 };
                 
                 // 디버깅을 위한 로그

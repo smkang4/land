@@ -42,4 +42,8 @@ public interface ContractDAO {
     void updateContractRewrite(Integer seq);
     void deleteContractDetails(@Param("seqList") List<Integer> seqList);
     void deleteContractMasters(@Param("seqList") List<Integer> seqList);
+    /** 마이그레이션: 파일 참조가 있는 contract_d 목록 (seq, real_estate_files, credit_files) */
+    List<ContractDTO> selectContractDWithFileReferences();
+    /** 마이그레이션: contract_d의 파일 컬럼만 업데이트 */
+    void updateContractFileReferences(@Param("seq") int seq, @Param("realEstateFiles") String realEstateFiles, @Param("creditFiles") String creditFiles);
 }
