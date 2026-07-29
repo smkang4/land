@@ -597,7 +597,7 @@
             , approval_m a1
         where m.seq = d.seq
         AND m.appr_no = a1.appr_no
-        <if test="proj_code != null">
+        <if test="proj_code != null and proj_code != ''">
             AND m.proj_code = #{proj_code}
         </if>
         ) sub

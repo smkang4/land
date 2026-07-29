@@ -3,6 +3,7 @@ package com.dage.rent.Controller;
 import com.dage.rent.DAO.mysql.ContractDAO;
 import com.dage.rent.DTO.*;
 import com.dage.rent.Service.AdminService;
+import com.dage.rent.Service.AppSettingsService;
 import com.dage.rent.Service.ApprovalService;
 import com.dage.rent.Service.AttachmentFileService;
 import com.dage.rent.Service.ContractService;
@@ -32,16 +33,18 @@ public class HomeController {
     private final ApprovalService approvalService;
     private final DraftService draftService;
     private final AttachmentFileService attachmentFileService;
+    private final AppSettingsService appSettingsService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public HomeController(RentService rentService, ContractDAO contractDAO, ContractService contractService, AdminService admminservice, AdminService adminservice, ApprovalService approvalService, DraftService draftService, AttachmentFileService attachmentFileService) {
+    public HomeController(RentService rentService, ContractDAO contractDAO, ContractService contractService, AdminService admminservice, AdminService adminservice, ApprovalService approvalService, DraftService draftService, AttachmentFileService attachmentFileService, AppSettingsService appSettingsService) {
         this.rentService = rentService;
         this.contractService = contractService;
         this.adminservice = adminservice;
         this.approvalService = approvalService;
         this.draftService = draftService;
         this.attachmentFileService = attachmentFileService;
+        this.appSettingsService = appSettingsService;
     }
 
 
@@ -148,6 +151,7 @@ public class HomeController {
         }
 
         model.addAttribute("admin", admin);
+        model.addAttribute("noticeModalEnabled", appSettingsService.isMainNoticeModalEnabled());
         return "main";
     }
 

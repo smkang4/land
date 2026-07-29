@@ -5,6 +5,7 @@ import com.dage.rent.DTO.DraftDTO;
 import com.dage.rent.DTO.EmpUserDTO;
 import com.dage.rent.DTO.LoginDTO;
 import com.dage.rent.Service.AdminService;
+import com.dage.rent.Service.AppSettingsService;
 import com.dage.rent.Service.DraftService;
 import com.dage.rent.Service.ErpRegistrationService;
 import com.dage.rent.Service.RentService;
@@ -33,6 +34,9 @@ public class AdminController {
 
     @Autowired
     private ErpRegistrationService erpRegistrationService;
+
+    @Autowired
+    private AppSettingsService appSettingsService;
     
     @Autowired
     private Mail mail;
@@ -46,6 +50,41 @@ public class AdminController {
     @GetMapping("/settings")
     public String adminSettings() {
         return "admin_settings";
+    }
+
+    @GetMapping("/notice-modal")
+    @ResponseBody
+    public ResponseEntity<?> getNoticeModalSetting() {
+        try {
+            return ResponseEntity.ok(Map.of("enabled", appSettingsService.isMainNoticeModalEnabled()));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", "공지 모달 설정 조회 실패"));
+        }
+    }
+
+    @PutMapping("/notice-modal")
+    @ResponseBody
+    public ResponseEntity<?> updateNoticeModalSetting(@RequestBody Map<String, Object> request) {
+        try {
+            LoginDTO currentUser = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!adminService.isAdmin(currentUser.getEmpNo())) {
+                return ResponseEntity.badRequest().body(Map.of("error", "관리자만 접근 가능합니다."));
+            }
+            Object enabledObj = request.get("enabled");
+            if (enabledObj == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "enabled 값이 필요합니다."));
+            }
+            boolean enabled = Boolean.parseBoolean(enabledObj.toString());
+            appSettingsService.setMainNoticeModalEnabled(enabled);
+            return ResponseEntity.ok(Map.of(
+                    "message", "공지 모달 설정이 저장되었습니다.",
+                    "enabled", enabled
+            ));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(Map.of("error", "공지 모달 설정 저장 실패"));
+        }
     }
 
     @GetMapping("/list")

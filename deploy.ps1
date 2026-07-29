@@ -39,7 +39,7 @@ if (-not $SkipGit) {
     $porcelain = git status --porcelain
     if ($porcelain) {
         if ([string]::IsNullOrWhiteSpace($Message)) {
-            $Message = "deploy: $(Get-Date -Format 'yyyy-MM-dd HH:mm')"
+            Fail "커밋할 변경이 있습니다. -Message `"변경 요약`" 을 지정하세요."
         }
         git commit -m $Message
         if ($LASTEXITCODE -ne 0) { Fail "git commit 실패" }
@@ -76,23 +76,32 @@ $wslPath = "/mnt/$drive" + ($PSScriptRoot.Substring(2) -replace "\\", "/")
 
 $dockerPushCmd = if ($SkipPush) { "echo skip docker push" } else { "docker push $Image" }
 
-$bash = @"
+# CRLF가 WSL bash에 들어가면 set/cd가 깨지므로 LF 스크립트 파일로 실행
+$bashLf = @"
 set -e
 cd '$wslPath'
-echo "==> docker build -t $Image ."
+echo '==> docker build -t $Image .'
 docker build -t $Image .
-echo "==> docker tag $Image ${Image}:latest"
+echo '==> docker tag $Image ${Image}:latest'
 docker tag $Image ${Image}:latest
-echo "==> $dockerPushCmd"
+echo '==> $dockerPushCmd'
 $dockerPushCmd
 echo DONE
 "@
+$bashLf = $bashLf -replace "`r`n", "`n" -replace "`r", "`n"
+
+$winScript = Join-Path $env:TEMP "rent-deploy-docker.sh"
+[System.IO.File]::WriteAllText($winScript, $bashLf, [System.Text.UTF8Encoding]::new($false))
+
+$scriptDrive = $winScript.Substring(0, 1).ToLower()
+$wslScript = "/mnt/$scriptDrive" + ($winScript.Substring(2) -replace "\\", "/")
 
 Step "WSL ($WslDistro) docker build / tag / push"
 Write-Host "WSL path: $wslPath"
+Write-Host "WSL script: $wslScript"
 
-wsl.exe -d $WslDistro -- bash -lc $bash
-if ($LASTEXITCODE -ne 0) { Fail "WSL docker 단계 실패" }
+wsl.exe -d $WslDistro -- bash "$wslScript"
+if ($LASTEXITCODE -ne 0) { Fail "WSL docker 단계 실패 (exit=$LASTEXITCODE)" }
 
 Write-Host ""
 Write-Host "완료. 서버에서 pull 후 재기동하면 반영됩니다." -ForegroundColor Green

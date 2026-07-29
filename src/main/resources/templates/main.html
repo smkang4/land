@@ -446,8 +446,8 @@
 
     <div th:replace="~{fragments/footer.html :: site-footer}"></div>
 
-    <!-- 기능 안내 공지 Modal -->
-    <div class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <!-- 기능 안내 공지 Modal (관리자 ON일 때만) -->
+    <div th:if="${noticeModalEnabled}" class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header notice-modal-header">

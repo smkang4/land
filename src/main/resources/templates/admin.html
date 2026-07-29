@@ -996,6 +996,21 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="notice-modal-setting mt-4 pt-3 border-top">
+                            <div class="d-flex align-items-center justify-content-between">
+                                <div>
+                                    <h6 class="mb-1">메인 공지 모달 표시</h6>
+                                    <p class="text-muted small mb-0">메인 페이지 기능 안내 모달을 사용자에게 표시합니다</p>
+                                </div>
+                                <div class="mail-check-wrapper">
+                                    <label class="mail-check">
+                                        <input type="checkbox" id="noticeModalEnabledCheck">
+                                        <span class="mail-check-slider"></span>
+                                    </label>
+                                    <span class="switch-status" id="noticeModalEnabledStatus">OFF</span>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1019,7 +1034,6 @@
         var user_no = [[${#authentication.principal.userNo}]];
         var dept_code = [[${#authentication.principal.deptCode}]];
         var proj_url = '/api/code/proj/'+user_no;
-        ufn_select2_getData(proj_url,"#con","현장",dept_code,function(){});
 
         function move(flag) {
             var url;
@@ -1145,6 +1159,8 @@
                   }
                 });
 
+        ufn_select2_getData(proj_url,"#con","현장",dept_code,function(){});
+
         grid.on('click',(ev)=>{
             if (ev.targetType === 'cell' && ev.columnName === 'address') {
                 const rowIndex = ev.rowKey;
@@ -1232,12 +1248,17 @@
     });
 
     function init() {
-       $.when(getApprStat()).done(function () {
+       // 통계 API 실패여도 그리드는 로드 (빈 proj_code는 서버에서 전체 조회로 처리)
+       $.when(getApprStat()).always(function () {
             G_load(grid, "/api/cont_list_all", "search_form");
         });
     }
 
-    document.addEventListener('DOMContentLoaded', init);
+    if (document.readyState === 'loading') {
+        document.addEventListener('DOMContentLoaded', init);
+    } else {
+        init();
+    }
 
     // 관리자 설정 모달 관련 함수들
     function loadAdminList() {
@@ -1364,6 +1385,52 @@
     $('#adminSettingsModal').on('show.bs.modal', function () {
         loadAdminList();
         loadEmployeeList();
+        loadNoticeModalSetting();
+    });
+
+    function loadNoticeModalSetting() {
+        $.ajax({
+            url: '/admin/notice-modal',
+            type: 'GET',
+            success: function(response) {
+                const enabled = !!response.enabled;
+                $('#noticeModalEnabledCheck').prop('checked', enabled);
+                $('#noticeModalEnabledStatus').text(enabled ? 'ON' : 'OFF');
+            },
+            error: function() {
+                console.error('공지 모달 설정 조회 실패');
+            }
+        });
+    }
+
+    $('#noticeModalEnabledCheck').on('change', function() {
+        const enabled = $(this).prop('checked');
+        const $checkbox = $(this);
+        $.ajax({
+            url: '/admin/notice-modal',
+            type: 'PUT',
+            contentType: 'application/json',
+            data: JSON.stringify({ enabled: enabled }),
+            success: function(response) {
+                const saved = response.enabled !== undefined ? !!response.enabled : enabled;
+                $('#noticeModalEnabledStatus').text(saved ? 'ON' : 'OFF');
+                if (typeof showToast === 'function') {
+                    showToast(saved ? '공지 모달을 표시합니다.' : '공지 모달을 숨깁니다.');
+                } else {
+                    alert(saved ? '공지 모달을 표시합니다.' : '공지 모달을 숨깁니다.');
+                }
+            },
+            error: function(xhr) {
+                $checkbox.prop('checked', !enabled);
+                $('#noticeModalEnabledStatus').text(!enabled ? 'ON' : 'OFF');
+                const msg = (xhr.responseJSON && xhr.responseJSON.error) ? xhr.responseJSON.error : '공지 모달 설정 저장에 실패했습니다.';
+                if (typeof showToast === 'function') {
+                    showToast(msg);
+                } else {
+                    alert(msg);
+                }
+            }
+        });
     });
 
     // 관리자 추가 폼 제출
