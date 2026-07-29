@@ -51,8 +51,16 @@ public class HomeController {
     @GetMapping({"/", "/login"})
     public String login(HttpServletRequest request, Model model, @RequestParam(required = false) String error) {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-            System.out.println("이미 로그인된 사용자 → 메인으로 이동");
+        boolean loggedIn = auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser");
+        String path = request.getRequestURI();
+        boolean loginPath = path != null && path.endsWith("/login");
+
+        // 이미 로그인된 사용자가 / 또는 /login 으로 온 경우 → 메인으로 보냄 (정상 이동은 로그 안 남김)
+        if (loggedIn) {
+            // /login 에 로그인한 채로 직접 들어온 경우만 이상 접근으로 기록
+            if (loginPath) {
+                System.out.println("이상 접근: 로그인 상태에서 /login 요청 → /main 리다이렉트");
+            }
             return "redirect:/main";
         }
 
@@ -60,8 +68,6 @@ public class HomeController {
         if (error != null) {
             System.out.println("로그인 실패: 아이디 또는 비밀번호 불일치");
             model.addAttribute("error", "아이디 또는 비밀번호가 일치하지 않습니다.");
-        } else {
-            System.out.println("로그인 페이지 접근");
         }
 
         return "login";

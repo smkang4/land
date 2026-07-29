@@ -361,7 +361,7 @@
                 <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
             </div>
             <div class="button-container">
-                <a href="/" class="btn btn-back">
+                <a href="/main" class="btn btn-back">
                     <i class="bi bi-arrow-left"></i> 메인화면
                 </a>
                 <form th:action="@{/logout}" method="post" class="d-inline">
