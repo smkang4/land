@@ -151,6 +151,12 @@ public class ContractService {
         return contractDAO.getContractDetailForList(appr_no);
     }
 
+    /** 기안서 작성 화면 전용: 이미 다른 기안서에 포함된 contract는 제외 */
+    @Transactional("mysqlTransactionManager")
+    public List<ContractDTO> getContractDetailForDraft(Integer appr_no) {
+        return contractDAO.getContractDetailForDraft(appr_no);
+    }
+
     @Transactional("mysqlTransactionManager")
     public List<ContractDTO> getContractDetailForReceipt() {
         return contractDAO.getContractDetailForReceipt();

@@ -784,12 +784,12 @@
                             <i class="bi bi-search me-1"></i>현장조회
                         </button>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item" role="presentation" th:if="${showErpCustomerTabs}">
                         <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-tab-pane" type="button" role="tab" aria-controls="register-tab-pane" aria-selected="false">
                             <i class="bi bi-plus-circle me-1"></i>ERP등록
                         </button>
                     </li>
-                    <li class="nav-item" role="presentation">
+                    <li class="nav-item" role="presentation" th:if="${showErpCustomerTabs}">
                         <button class="nav-link" id="customer-register-tab" data-bs-toggle="tab" data-bs-target="#customer-register-tab-pane" type="button" role="tab" aria-controls="customer-register-tab-pane" aria-selected="false">
                             <i class="bi bi-people-fill me-1"></i>거래처등록
                         </button>
@@ -821,7 +821,8 @@
                     </div>
 
                     <!-- ERP등록 탭 -->
-                    <div class="tab-pane fade" id="register-tab-pane" role="tabpanel" aria-labelledby="register-tab" tabindex="0">
+                    <div class="tab-pane fade" id="register-tab-pane" role="tabpanel" aria-labelledby="register-tab" tabindex="0"
+                         th:if="${showErpCustomerTabs}">
                         <div class="row">
                             <div class="col-12">
                                 <div class="alert alert-info" role="alert">
@@ -852,15 +853,29 @@
                                                 <i class="bi bi-exclamation-triangle me-2"></i>ERP 등록 데이터 삭제 (테스트용)
                                             </div>
                                             <div class="card-body">
-                                                <div class="input-group">
-                                                    <span class="input-group-text">SEQ</span>
-                                                    <input type="number" class="form-control" id="erpDeleteSeqInput" placeholder="삭제할 SEQ 입력">
+                                                <div class="d-flex justify-content-between align-items-center mb-1">
+                                                    <label for="erpDeleteSeqInput" class="form-label mb-0">삭제할 SEQ</label>
+                                                    <span class="badge bg-secondary" id="erpDeleteSeqCount">0건</span>
+                                                </div>
+                                                <textarea class="form-control mb-2 font-monospace" id="erpDeleteSeqInput" rows="10"
+                                                          style="min-height: 180px; resize: vertical;"
+                                                          placeholder="엑셀에서 SEQ 열을 복사(Ctrl+C)한 뒤 여기에 붙여넣기(Ctrl+V) 하세요.&#10;한 줄에 SEQ 하나씩 자동 정리됩니다."></textarea>
+                                                <div class="d-flex flex-wrap gap-2 justify-content-between">
+                                                    <div class="d-flex flex-wrap gap-2">
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="erpDeletePasteBtn">
+                                                            <i class="bi bi-clipboard"></i> 클립보드 붙여넣기
+                                                        </button>
+                                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="erpDeleteClearBtn">
+                                                            <i class="bi bi-x-lg"></i> 비우기
+                                                        </button>
+                                                    </div>
                                                     <button type="button" class="btn btn-danger" id="erpDeleteBtn">
-                                                        <i class="bi bi-trash"></i> 삭제
+                                                        <i class="bi bi-trash"></i> <span id="erpDeleteBtnLabel">삭제</span>
                                                     </button>
                                                 </div>
                                                 <small class="text-muted d-block mt-2">
-                                                    ⚠️ 주의: SEQ를 입력하면 해당 SEQ의 모든 ERP 등록 데이터가 삭제됩니다.<br>
+                                                    💡 엑셀·시트에서 SEQ 열만 선택 후 복사 → 붙여넣기하면 바로 사용할 수 있습니다.<br>
+                                                    ⚠️ 입력한 SEQ마다 ERP 등록 데이터가 삭제됩니다.
                                                     (TIA_B_LEASE, TIA_B_LEASE_CONT, TIA_B_LEASE_TRAN, TIA_B_LEASE_INTR)
                                                 </small>
                                             </div>
@@ -877,7 +892,8 @@
                     </div>
 
                     <!-- 거래처등록 탭 -->
-                    <div class="tab-pane fade" id="customer-register-tab-pane" role="tabpanel" aria-labelledby="customer-register-tab" tabindex="0">
+                    <div class="tab-pane fade" id="customer-register-tab-pane" role="tabpanel" aria-labelledby="customer-register-tab" tabindex="0"
+                         th:if="${showErpCustomerTabs}">
                         <div class="row">
                             <div class="col-12">
                                 <div class="alert alert-info" role="alert">
@@ -1493,21 +1509,23 @@
     // ERP등록 탭 그리드 초기화
     let erpGrid = null;
 
-    // ERP등록 탭 클릭 시 데이터 로드
-    document.getElementById('register-tab').addEventListener('click', function() {
-        // 탭이 활성화된 후 약간의 지연을 두고 데이터 로드
-        setTimeout(function() {
-            loadErpData();
-        }, 100);
-    });
-
-    // 거래처등록 탭 클릭 시 데이터 로드
-    document.getElementById('customer-register-tab').addEventListener('click', function() {
-        // 탭이 활성화된 후 약간의 지연을 두고 데이터 로드
-        setTimeout(function() {
-            loadCustomerData();
-        }, 100);
-    });
+    // ERP등록 / 거래처등록 탭 (권한 없으면 DOM 없음)
+    var registerTabEl = document.getElementById('register-tab');
+    if (registerTabEl) {
+        registerTabEl.addEventListener('click', function() {
+            setTimeout(function() {
+                loadErpData();
+            }, 100);
+        });
+    }
+    var customerRegisterTabEl = document.getElementById('customer-register-tab');
+    if (customerRegisterTabEl) {
+        customerRegisterTabEl.addEventListener('click', function() {
+            setTimeout(function() {
+                loadCustomerData();
+            }, 100);
+        });
+    }
 
     // ERP등록 데이터 로드
     function loadErpData() {
@@ -1708,61 +1726,149 @@
         registerMultipleToErp(checkedRows);
     });
 
+    function parseErpDeleteSeqList(input) {
+        if (!input || input.trim() === '') {
+            return [];
+        }
+        const seqSet = new Set();
+        input.replace(/\r/g, '').split(/[\n,;|\t]+/).forEach(function(part) {
+            const trimmed = part.trim();
+            if (!/^\d+$/.test(trimmed)) {
+                return;
+            }
+            const seqNum = parseInt(trimmed, 10);
+            if (!isNaN(seqNum) && seqNum > 0) {
+                seqSet.add(seqNum);
+            }
+        });
+        return Array.from(seqSet).sort(function(a, b) { return a - b; });
+    }
+
+    function normalizeErpDeleteSeqInput(raw) {
+        return parseErpDeleteSeqList(raw).join('\n');
+    }
+
+    function updateErpDeleteSeqCount() {
+        const seqList = parseErpDeleteSeqList($('#erpDeleteSeqInput').val());
+        const count = seqList.length;
+        $('#erpDeleteSeqCount').text(count + '건');
+        $('#erpDeleteBtnLabel').text(count > 0 ? count + '건 삭제' : '삭제');
+    }
+
+    function applyErpDeleteSeqPaste(rawText) {
+        const normalized = normalizeErpDeleteSeqInput(rawText);
+        $('#erpDeleteSeqInput').val(normalized);
+        updateErpDeleteSeqCount();
+        const count = parseErpDeleteSeqList(normalized).length;
+        if (count > 0) {
+            showToast(count + '건 SEQ 붙여넣기 완료', 'success');
+        } else {
+            showToast('인식된 SEQ가 없습니다. 숫자만 포함된 열을 복사해주세요.', 'error');
+        }
+    }
+
+    $('#erpDeleteSeqInput').on('input', updateErpDeleteSeqCount);
+
+    $('#erpDeleteSeqInput').on('paste', function() {
+        const textarea = this;
+        setTimeout(function() {
+            textarea.value = normalizeErpDeleteSeqInput(textarea.value);
+            updateErpDeleteSeqCount();
+        }, 0);
+    });
+
+    $('#erpDeletePasteBtn').on('click', function() {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            navigator.clipboard.readText()
+                .then(function(text) {
+                    applyErpDeleteSeqPaste(text);
+                })
+                .catch(function() {
+                    showToast('클립보드 읽기에 실패했습니다. textarea에 직접 Ctrl+V로 붙여넣어주세요.', 'error');
+                    $('#erpDeleteSeqInput').focus();
+                });
+            return;
+        }
+        showToast('textarea를 클릭한 뒤 Ctrl+V로 붙여넣어주세요.', 'error');
+        $('#erpDeleteSeqInput').focus();
+    });
+
+    $('#erpDeleteClearBtn').on('click', function() {
+        $('#erpDeleteSeqInput').val('');
+        updateErpDeleteSeqCount();
+    });
+
+    updateErpDeleteSeqCount();
+
     // ERP 등록 데이터 삭제 버튼 클릭 이벤트
     $('#erpDeleteBtn').on('click', function() {
-        const seq = $('#erpDeleteSeqInput').val();
-        
-        if (!seq || seq.trim() === '') {
-            showToast('SEQ를 입력해주세요.', 'error');
+        const seqList = parseErpDeleteSeqList($('#erpDeleteSeqInput').val());
+
+        if (seqList.length === 0) {
+            showToast('삭제할 SEQ를 입력해주세요. (양수, 쉼표·줄바꿈·공백으로 구분)', 'error');
             return;
         }
-        
-        const seqNum = parseInt(seq);
-        if (isNaN(seqNum) || seqNum <= 0) {
-            showToast('올바른 SEQ를 입력해주세요. (양수만 가능)', 'error');
+
+        const preview = seqList.length <= 10
+            ? seqList.join(', ')
+            : seqList.slice(0, 10).join(', ') + ' 외 ' + (seqList.length - 10) + '건';
+
+        if (!confirm('⚠️ 경고: 아래 SEQ(' + seqList.length + '건)의 ERP 등록 데이터가 삭제됩니다.\n\n' + preview + '\n\n삭제할 테이블:\n- TIA_B_LEASE_INTR\n- TIA_B_LEASE_TRAN\n- TIA_B_LEASE_CONT\n- TIA_B_LEASE\n\n정말 삭제하시겠습니까?')) {
             return;
         }
-        
-        // 확인 다이얼로그
-        if (!confirm('⚠️ 경고: SEQ ' + seqNum + '의 모든 ERP 등록 데이터가 삭제됩니다.\n\n삭제할 테이블:\n- TIA_B_LEASE_INTR\n- TIA_B_LEASE_TRAN\n- TIA_B_LEASE_CONT\n- TIA_B_LEASE\n\n정말 삭제하시겠습니까?')) {
-            return;
-        }
-        
-        console.log('=== ERP 등록 데이터 삭제 요청 ===');
-        console.log('SEQ: ' + seqNum);
-        
+
+        console.log('=== ERP 등록 데이터 다중 삭제 요청 ===');
+        console.log('SEQ 목록:', seqList);
+
         $.ajax({
-            url: '/admin/erp/delete',
+            url: '/admin/erp/delete/multiple',
             method: 'POST',
             contentType: 'application/json',
-            data: JSON.stringify({ seq: seqNum }),
+            data: JSON.stringify({ seq_list: seqList }),
             beforeSend: function() {
-                $('#erpDeleteBtn').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>삭제 중...');
+                $('#erpDeleteBtn').prop('disabled', true);
+                $('#erpDeleteBtnLabel').html('<span class="spinner-border spinner-border-sm me-1"></span>삭제 중...');
             },
             success: function(response) {
-                console.log('✅ ERP 등록 데이터 삭제 성공:', response);
-                showToast(response.message || 'ERP 등록 데이터가 삭제되었습니다.', 'success');
-                $('#erpDeleteSeqInput').val(''); // 입력 필드 초기화
+                console.log('✅ ERP 등록 데이터 삭제 완료:', response);
+
+                let message = response.message || 'ERP 등록 데이터 삭제가 완료되었습니다.';
+                if (response.success_count !== undefined) {
+                    message += ' (성공: ' + response.success_count + '건';
+                    if (response.fail_count !== undefined && response.fail_count > 0) {
+                        message += ', 실패: ' + response.fail_count + '건';
+                    }
+                    message += ')';
+                }
+
+                const toastType = (response.fail_count && response.fail_count > 0) ? 'error' : 'success';
+                showToast(message, toastType);
+
+                if (response.failures && response.failures.length > 0) {
+                    console.error('삭제 실패 SEQ:', response.failures);
+                }
+
+                if (!response.fail_count || response.success_count > 0) {
+                    $('#erpDeleteSeqInput').val('');
+                    updateErpDeleteSeqCount();
+                }
             },
             error: function(xhr, status, error) {
-                console.error('❌ ERP 등록 데이터 삭제 실패:');
-                console.error('Status:', status);
-                console.error('Error:', error);
-                console.error('Response Text:', xhr.responseText);
-                console.error('Response JSON:', xhr.responseJSON);
-                
+                console.error('❌ ERP 등록 데이터 삭제 실패:', error);
                 const errorMessage = xhr.responseJSON?.error || 'ERP 등록 데이터 삭제에 실패했습니다.';
                 showToast('오류: ' + errorMessage, 'error');
             },
             complete: function() {
-                $('#erpDeleteBtn').prop('disabled', false).html('<i class="bi bi-trash"></i> 삭제');
+                $('#erpDeleteBtn').prop('disabled', false);
+                updateErpDeleteSeqCount();
             }
         });
     });
-    
-    // Enter 키로 삭제 실행
-    $('#erpDeleteSeqInput').on('keypress', function(e) {
-        if (e.which === 13) { // Enter 키
+
+    // Ctrl+Enter 로 삭제 실행 (textarea 에서 Enter 는 줄바꿈)
+    $('#erpDeleteSeqInput').on('keydown', function(e) {
+        if (e.which === 13 && (e.ctrlKey || e.metaKey)) {
+            e.preventDefault();
             $('#erpDeleteBtn').click();
         }
     });

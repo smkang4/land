@@ -2,6 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.dage.rent.DAO.oracle.RentDAO">
     <select id="selectLogin" resultType="com.dage.rent.DTO.LoginDTO">
+        Select * From (
         Select
         b.emp_no as empNo,
         a.user_no as userNo,
@@ -22,6 +23,9 @@
         AND B.POSITION_CODE = C.POSITION_CODE
         And a.user_id = #{userId}
         And a.USE_FG = 'T'
+        Order by a.user_no desc
+        )
+        <![CDATA[ Where ROWNUM = 1 ]]>
     </select>
 
     <select id="getAllProjects" resultType="com.dage.rent.DTO.ProjDTO">
@@ -47,7 +51,7 @@
         and use_tag = 'T'
         and nvl(op_cls,'10') = '10'
         and proj_name NOT like '(신규)%'
-        and sati_dept_code not in (2012,2031)
+        <!-- and sati_dept_code not in (2012,2031) -->
         and proj_code in (Select distinct PROJ_CODE From Table(SFCC_AUTH_PROJ2(#{user_no})))
         order by sati_head_code,sati_dept_code,proj_code desc
 
@@ -92,6 +96,7 @@
     </select>
 
     <select id="getUserinfo" resultType="com.dage.rent.DTO.LoginDTO">
+        Select * From (
         Select
         b.emp_no as empNo,
         a.user_no as userNo,
@@ -105,6 +110,14 @@
         ,THR_PM_BASE b
         Where a.empno = b.EMP_NO
         And a.empno = #{emp_no}
+        <if test="user_nm != null and user_nm != ''">
+        And trim(a.user_nm) = trim(#{user_nm})
+        </if>
+        And a.USE_FG = 'T'
+        And b.retired_dt is null
+        Order by a.user_no desc
+        )
+        <![CDATA[ Where ROWNUM = 1 ]]>
     </select>
 
     <!-- ERP 거래처 검색 -->
@@ -135,7 +148,7 @@
     </select>
 
     <select id="getEmpUserInfo" resultType="com.dage.rent.DTO.EmpUserDTO">
-        <![CDATA[
+        select * from (
         select
         a.emp_no,
         b.user_no,
@@ -148,7 +161,13 @@
         tcc_employe b
         where a.emp_no = b.empno
         and emp_no = #{emp_no}
-        ]]>
+        and b.USE_FG = 'T'
+        <if test="user_nm != null and user_nm != ''">
+        And trim(b.user_nm) = trim(#{user_nm})
+        </if>
+        order by b.user_no desc
+        )
+        <![CDATA[ where ROWNUM = 1 ]]>
     </select>
 
     <select id="getGwPjcode" parameterType="String" resultType="String">
@@ -276,8 +295,20 @@
     </select>
 
     <!-- 직원이름 조회 -->
-    <select id="getEmployeeName" parameterType="String" resultType="String">
-        SELECT user_nm FROM tcc_employe WHERE empno = #{emp_no}
+    <select id="getEmployeeName" resultType="String">
+        <choose>
+            <when test="user_nm != null and user_nm != ''">
+                SELECT user_nm FROM tcc_employe
+                WHERE empno = #{emp_no}
+                AND USE_FG = 'T'
+                AND trim(user_nm) = trim(#{user_nm})
+            </when>
+            <otherwise>
+                SELECT name FROM thr_pm_base
+                WHERE emp_no = #{emp_no}
+                AND retired_dt IS NULL
+            </otherwise>
+        </choose>
     </select>
 
     <!-- SFCC_E_CONF_STATUS_LAST 함수 호출 -->
@@ -568,7 +599,7 @@
         (
             #{arCompanyCode},
             #{arSeq},
-            #{arCrtUserNo},
+            #{arCrtUserNo,jdbcType=NUMERIC},
             SYSDATE,
             NULL,
             NULL,
@@ -683,12 +714,23 @@
         END;
     </select>
 
-    <!-- 사업자등록번호로 거래처 코드 조회 -->
+    <!-- 사업자등록번호/주민번호로 거래처 코드 조회 (tcc_cust_proj 우선, 없으면 TCC_CUST) -->
     <select id="getCustCodeByBizNo" parameterType="String" resultType="String">
-        SELECT cust_code 
-        FROM tcc_cust_proj 
-        WHERE biz_no = #{bizNo}
-        AND ROWNUM = 1
+        SELECT NVL(
+            (SELECT cust_code FROM (
+                SELECT cust_code
+                FROM tcc_cust_proj
+                WHERE biz_no = SF_CUST_UMASK(#{bizNo})
+                ORDER BY req_dt DESC NULLS LAST, cust_code DESC
+            ) WHERE ROWNUM = 1),
+            (SELECT cust_code FROM (
+                SELECT a.cust_code
+                FROM TCC_CUST a
+                WHERE a.BIZ_NO = SF_CUST_UMASK(#{bizNo})
+                AND a.ACCOUNT_WORK = 'T'
+                ORDER BY a.cust_code DESC
+            ) WHERE ROWNUM = 1)
+        ) FROM dual
     </select>
 
     <!-- ERP 등록 테스트 데이터 삭제 (SEQ 기준) -->

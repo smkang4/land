@@ -74,6 +74,7 @@ public class DraftDTO {
         private Integer id;          // 계약내용 상세 ID (PK)
         private Integer draftId;     // 기안서 ID (FK)
         private int appr_no;         // 해당 계약의 appr_no
+        private Integer contractSeq; // 원본 사전조사서 contract_m.seq
         private int rowNo;           // 행 번호
         private String type;      // 용도 (숙소/사무실)
         private String address;      // 부동산 소재지

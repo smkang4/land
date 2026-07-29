@@ -65,4 +65,9 @@ public class ApprovalDTO {
     
     // 계약 건수 (ERP 등록용)
     private Integer contract_count;
+
+    /** APPROVER | CC — 결재함 목록 표시용 */
+    private String view_role;
+
+    private String appr_admin;
 } 

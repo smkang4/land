@@ -4,15 +4,21 @@ import com.dage.rent.DAO.mysql.AdminDAO;
 import com.dage.rent.DTO.EmpUserDTO;
 import com.dage.rent.DTO.LoginDTO;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.List;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 @Service
 public class AdminService {
+
+    @Value("${app.admin.erp-customer-operation-emp-nos:}")
+    private String erpCustomerOperationEmpNos;
 
     @Autowired
     private AdminDAO adminDAO;
@@ -39,6 +45,34 @@ public class AdminService {
     @Transactional("mysqlTransactionManager")
     public boolean isAdmin(int empNo) {
         return adminDAO.isAdmin(empNo);
+    }
+
+    /**
+     * ERP등록·거래처등록 탭 및 관리자 결재 1단계 취소 권한.
+     * 설정 app.admin.erp-customer-operation-emp-nos 가 비어 있으면 admin 테이블 등록 관리자 전원,
+     * 값이 있으면 해당 사번만(반드시 admin 등록자여야 함).
+     */
+    public boolean canManageErpAndCustomer(int empNo) {
+        if (!isAdmin(empNo)) {
+            return false;
+        }
+        String raw = erpCustomerOperationEmpNos;
+        if (raw == null || raw.trim().isEmpty()) {
+            return true;
+        }
+        Set<Integer> allowed = new HashSet<>();
+        for (String part : raw.split(",")) {
+            String t = part.trim();
+            if (t.isEmpty()) {
+                continue;
+            }
+            try {
+                allowed.add(Integer.parseInt(t));
+            } catch (NumberFormatException ignored) {
+                // skip invalid token
+            }
+        }
+        return allowed.contains(empNo);
     }
 
     @Transactional("mysqlTransactionManager")
@@ -105,28 +139,29 @@ public class AdminService {
                 System.out.println("lessor_biz_no: " + lessorBizNo);
                 System.out.println("current_cust_code: " + currentCustCode);
                 
-                // cust_code가 이미 있으면 건너뛰기
-                if (currentCustCode != null && !currentCustCode.trim().isEmpty()) {
-                    System.out.println("✅ cust_code 이미 존재, 건너뛰기");
-                    continue;
-                }
-                
-                // 사업자등록번호가 없으면 건너뛰기
+                // 사업자등록번호/주민번호가 없으면 건너뛰기
                 if (lessorBizNo == null || lessorBizNo.trim().isEmpty()) {
                     System.out.println("❌ 사업자등록번호 없음, 건너뛰기");
                     continue;
                 }
                 
-                // Oracle에서 거래처 코드 조회
-                String custCode = rentService.getCustCodeByBizNo(lessorBizNo);
+                // Oracle에서 거래처 코드 조회 후 MySQL과 동기화
+                String oracleCustCode = rentService.getCustCodeByBizNo(lessorBizNo);
                 
-                if (custCode != null && !custCode.trim().isEmpty()) {
-                    // draft_contract_detail 테이블 업데이트
-                    adminDAO.updateDraftContractDetailCustCode(detailId, custCode);
-                    System.out.println("✅ cust_code 업데이트 완료: " + custCode);
-                    updateCount++;
+                if (oracleCustCode != null && !oracleCustCode.trim().isEmpty()) {
+                    if (currentCustCode == null || !oracleCustCode.equals(currentCustCode.trim())) {
+                        adminDAO.updateDraftContractDetailCustCode(detailId, oracleCustCode);
+                        if (currentCustCode != null && !currentCustCode.trim().isEmpty()) {
+                            System.out.println("⚠️ cust_code 불일치 수정: MySQL=" + currentCustCode + " → Oracle=" + oracleCustCode);
+                        } else {
+                            System.out.println("✅ cust_code 업데이트 완료: " + oracleCustCode);
+                        }
+                        updateCount++;
+                    } else {
+                        System.out.println("✅ cust_code 일치: " + oracleCustCode);
+                    }
                 } else {
-                    System.out.println("❌ 거래처 코드 조회 실패: " + lessorBizNo);
+                    System.out.println("❌ Oracle 거래처 코드 조회 실패: " + lessorBizNo);
                 }
                 
             } catch (Exception e) {
@@ -139,6 +174,11 @@ public class AdminService {
         System.out.println("업데이트된 건수: " + updateCount);
         
         return updateCount;
+    }
+
+    @Transactional("mysqlTransactionManager")
+    public void updateDraftContractDetailCustCode(int detailId, String custCode) {
+        adminDAO.updateDraftContractDetailCustCode(detailId, custCode);
     }
     
     /**

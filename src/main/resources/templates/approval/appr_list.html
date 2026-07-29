@@ -25,6 +25,36 @@
           height: 92%;
         }
 
+        .search-toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .search-toolbar__proj {
+            flex: 0 0 50%;
+            width: 50%;
+            max-width: 50%;
+            min-width: 0;
+        }
+
+        .appr-conf-tag-group {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.35rem;
+            flex: 0 0 auto;
+        }
+
+        .appr-conf-tag-group .btn {
+            min-width: 3.5rem;
+            font-size: 0.8125rem;
+        }
+
+        .appr-conf-tag-group .btn.active {
+            pointer-events: none;
+        }
+
         /* Responsive Design for Mobile */
         @media (max-width: 768px) {
             .container-fluid {
@@ -114,9 +144,26 @@
                 margin: 0;
             }
 
-            .bg-style-search .col-sm-5,
-            .bg-style-search .col-sm-1 {
-                margin-bottom: 0.5rem;
+            .search-toolbar {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .search-toolbar__proj {
+                width: 100%;
+                min-width: 0;
+            }
+
+            .appr-conf-tag-group {
+                width: 100%;
+            }
+
+            .appr-conf-tag-group .btn {
+                flex: 1 1 calc(50% - 0.35rem);
+            }
+
+            .search-toolbar #searchBtn {
+                width: 100%;
             }
 
             .bg-style-search .col-auto {
@@ -340,19 +387,20 @@
                 <form id="search_form" method="get">
 
                     <div class="row mb-1 bg-style-search">
-                        <div class="col-12 col-sm-5 mb-2 mb-sm-0">
-                            <select id="sel_proj" name="proj_code" class="form-select form-select-sm"  style="width:100%"></select>
-                        </div>
-                        <div class="col-6 col-sm-1 mb-2 mb-sm-0">
-                            <select id="sel_conf_tag" name="conf_tag" class="form-select form-select-sm" style="width:100%">
-                                <option value="2">대기</option>
-                                <option value="5">진행</option>
-                                <option value="3">완료</option>
-                                <option value="4">반려</option>
-                            </select>
-                        </div>
-                        <div class="col-6 col-sm-auto">
-                            <button type="button" class="btn btn-sm btn-danger btn_s w-100" id="searchBtn"><i class="bi bi-search"></i> 조회</button>
+                        <div class="col-12">
+                            <div class="search-toolbar">
+                                <div class="search-toolbar__proj">
+                                    <select id="sel_proj" name="proj_code" class="form-select form-select-sm" style="width:100%"></select>
+                                </div>
+                                <input type="hidden" id="sel_conf_tag" name="conf_tag" value="2">
+                                <div class="appr-conf-tag-group" id="conf_tag_buttons" role="group" aria-label="결재 상태">
+                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn active" data-conf-tag="2">대기</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="5">진행</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="3">완료</button>
+                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="4">반려</button>
+                                </div>
+                                <button type="button" class="btn btn-sm btn-danger btn_s" id="searchBtn"><i class="bi bi-search"></i> 조회</button>
+                            </div>
                         </div>
                     </div>
                 </form>
@@ -401,13 +449,14 @@
     <script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
     <!-- Custom   -->
     <script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
+    <script th:src="@{/js/approval-status.js}"></script>
     <script th:inline="javascript">
 
         var user_no = [[${#authentication.principal.userNo}]];
         var dept_code = [[${#authentication.principal.deptCode}]];
         var proj_url = '/api/code/proj/'+user_no;
 
-        ufn_select2_getData(proj_url,"#sel_proj","현장",dept_code,function(){});
+        ufn_select2_getData(proj_url,"#sel_proj","현장","",function(){});
         ufn_select2_getData_modal('/api/code/proj/user',"#sel_confirm_user","현장소장/대리인","",function(){});
 
        const grid = new Grid({
@@ -450,18 +499,20 @@
            { header: '결재순번',name: 'appr_num',width: 70, align: 'center',sortable: true ,hidden: true},
            { header: '결재번호',name: 'appr_no',width: 70, align: 'center',sortable: true ,hidden: true},
            { header: '결재자',name: 'appr_emp_no',width: 70, align: 'center',sortable: true ,hidden: true},
-           { header: '확인상태',name: 'appr_stat',width: 90, align: 'center',sortable: true ,hidden: false
-               ,formatter: function (e) {
-                   return decode(e.value,'3','완료','4','반려','확인요청')
-               }
-           },
+          { header: '구분',name: 'view_role',width: 55, align: 'center', sortable: true
+              ,formatter: function(e) {
+                  return formatViewRole(e.value);
+              }
+          },
+          { header: '확인상태',name: 'appr_stat',width: 90, align: 'center',sortable: true ,hidden: false
+              ,formatter: function (e) {
+                  var row = grid.getRow(e.rowKey);
+                  return formatApprStat(row);
+              }
+          },
            { header: '확인',name: 'confirm',width: 70, align: 'center',sortable: false, hidden: false
                ,formatter:function(e){
-                   if(e.row.appr_stat == '999' || e.row.appr_stat == '4'){
-                       return '';
-                   }else{
-                       return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
-                   }
+                   return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
                }
            },
 
@@ -511,21 +562,8 @@
            }
 
            if (ev.targetType === 'cell' && ev.columnName === 'confirm') {
-
-               const rowIndex = ev.rowKey;
-               const row = grid.getRow(rowIndex);
-               if(row.appr_stat == '999'){
-                   return false;
-               }else if(row.appr_stat == '4'){
-                  var vHtml = "";
-                  vHtml += "<h3 class='text-center text-danger'>반려사유</h3>";
-                  var reject = row.reject ? row.reject.replace(/\n/g, '<br>') : '';
-                  vHtml += "<p class='pt-2' style='white-space: pre-wrap;'>"+reject+"</p>";
-                  MsgBox.Alert(vHtml);
-                  return false;
-               }else{
-                   openApproval(row.appr_no);
-               }
+               const row = grid.getRow(ev.rowKey);
+               openApproval(row.appr_no);
            }
 
            if (ev.targetType === 'cell' && ev.columnName === 'docu_file') {
@@ -608,24 +646,43 @@
         });
 
 
-       $("#searchBtn").on("click",function(e){
-           var confTag = $("#sel_conf_tag").val();
-           
-           // conf_tag가 2가 아닌 경우 체크박스 숨기기
-           if (confTag !== "2") {
-               grid.hideColumn('_checked');
-           } else {
+       function getConfTag() {
+           return $("#sel_conf_tag").val();
+       }
+
+       function setConfTag(confTag) {
+           $("#sel_conf_tag").val(confTag);
+           $(".conf-tag-btn").removeClass("active");
+           $('.conf-tag-btn[data-conf-tag="' + confTag + '"]').addClass("active");
+           updateConfTagUi(confTag);
+       }
+
+       function updateConfTagUi(confTag) {
+           if (confTag === "2") {
                grid.showColumn('_checked');
-           }
-           
-           // conf_tag가 4(반려)인 경우 확인 컬럼 숨기기
-           if (confTag === "4") {
-               grid.hideColumn('confirm');
+               $("#btnSelectConfirm").show();
            } else {
-               grid.showColumn('confirm');
+               grid.hideColumn('_checked');
+               $("#btnSelectConfirm").hide();
            }
-           
-           G_load(grid,"/appr/list","search_form");
+       }
+
+       function loadApprovalList() {
+           updateConfTagUi(getConfTag());
+           G_load(grid, "/appr/list", "search_form");
+       }
+
+       $(".conf-tag-btn").on("click", function() {
+           var confTag = $(this).data("conf-tag");
+           if (String(confTag) === getConfTag()) {
+               return;
+           }
+           setConfTag(String(confTag));
+           loadApprovalList();
+       });
+
+       $("#searchBtn").on("click", function() {
+           loadApprovalList();
        });
 
 
@@ -654,10 +711,20 @@
                MsgBox.Alert("*선택된 행(row)이 없습니다.");
                $(".btn-conf").prop("disabled",false);
                return false;
-           }else{
-               $("#txtApprRemarks").val("");
-               $("#remark_popup").modal("show");
            }
+           var approverRows = grdData.filter(function(r) { return !isCcViewerRow(r); });
+           if (approverRows.length === 0) {
+               MsgBox.Alert("*참조 건은 일괄 확인할 수 없습니다.");
+               $(".btn-conf").prop("disabled",false);
+               return false;
+           }
+           if (approverRows.length < grdData.length) {
+               MsgBox.Alert("*참조 건은 제외하고 결재자 건만 일괄 확인합니다.");
+           }
+           grid.uncheckAll();
+           approverRows.forEach(function(r) { grid.check(r.rowKey); });
+           $("#txtApprRemarks").val("");
+           $("#remark_popup").modal("show");
        });
 
         var apprTotalCount = 0;
@@ -674,6 +741,7 @@
            apprReloadFlag = false;
 
            for(var i = 0 ; i <= grdData.length-1 ; i++){
+                if (isCcViewerRow(grdData[i])) { continue; }
                 btnConfirmApply(grdData[i].d_seq,grdData[i].appr_no,grdData[i].appr_num,grdData[i].appr_emp_no);
            }
 
@@ -740,22 +808,8 @@
        }
 
         function init() {
-            // 초기 conf_tag 값에 따라 체크박스 표시/숨김 설정
-            var confTag = $("#sel_conf_tag").val();
-            if (confTag !== "2") {
-                grid.hideColumn('_checked');
-            } else {
-                grid.showColumn('_checked');
-            }
-            
-            // conf_tag가 4(반려)인 경우 확인 컬럼 숨기기
-            if (confTag === "4") {
-                grid.hideColumn('confirm');
-            } else {
-                grid.showColumn('confirm');
-            }
-            
-            G_load(grid,"/appr/list","search_form");
+            setConfTag(getConfTag());
+            loadApprovalList();
         }
 
          document.addEventListener('DOMContentLoaded', init);

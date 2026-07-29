@@ -4,6 +4,7 @@ import com.dage.rent.Component.Mail;
 import com.dage.rent.DTO.*;
 import com.dage.rent.Service.AdminService;
 import com.dage.rent.Service.ApprovalService;
+import com.dage.rent.Service.ApprovalWorkflowService;
 import com.dage.rent.Service.AttachmentFileService;
 import com.dage.rent.Service.ContractService;
 import com.dage.rent.Service.RentService;
@@ -42,6 +43,9 @@ public class ApprovalController {
 
     @Autowired
     private AttachmentFileService attachmentFileService;
+
+    @Autowired
+    private ApprovalWorkflowService approvalWorkflowService;
 
     @GetMapping("/list")
     @ResponseBody
@@ -143,17 +147,18 @@ public class ApprovalController {
             }
         }
 
-        if(b_cnt == 0 && request_conf.equals("T")){
+        LoginDTO loginDTO = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        int currentEmpNo = loginDTO.getEmpNo();
+
+        if (b_cnt == 0 && request_conf.equals("T") && adminService.isAdmin(currentEmpNo)) {
             admin_tg = "T";
             appr_d_seq = last_appr_d_seq;
-            appr_num =  last_appr_num;
-        }else{
+            appr_num = last_appr_num;
+        } else {
             admin_tg = "F";
         }
 
         // 현재 사용자가 마지막 결재자인지 확인
-        LoginDTO loginDTO = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        int currentEmpNo = loginDTO.getEmpNo();
         String isLastApprover = "F";
         
         // 마지막 결재자 확인
@@ -178,6 +183,12 @@ public class ApprovalController {
         model.addAttribute("appr_no",appr_no);
         model.addAttribute("last",last_flag);
         model.addAttribute("is_last_approver",isLastApprover);
+        model.addAttribute("can_admin_cancel_last_step",
+                adminService.canManageErpAndCustomer(currentEmpNo) ? "T" : "F");
+
+        boolean ccOnly = approvalWorkflowService.isCcOnlyViewer(appr_no, currentEmpNo);
+        model.addAttribute("read_only", ccOnly ? "T" : "F");
+        model.addAttribute("cc_list", approvalWorkflowService.getCcList(appr_no));
 
         return "approval/appr_reg";
     }
@@ -186,363 +197,73 @@ public class ApprovalController {
     @PostMapping("/update/detail")
     @ResponseBody
     public ResponseEntity<?> updateApprovalConfirm(HttpServletRequest request) {
-
-        //T : 승인, F : 반려, A : 관리부서(다음결재자 지정 후 승인), TF : 관리부서 접수자 반려
         String gubun = request.getParameter("gubun");
-        int d_seq = Integer.valueOf(request.getParameter("appr_d_seq")) ;
-        int emp_no = Integer.valueOf(request.getParameter("appr_emp_no"));
-        int appr_no = Integer.valueOf(request.getParameter("appr_no"));
-        int appr_num = Integer.valueOf(request.getParameter("appr_num"));
-
-        System.out.println("데이터 확인: d_seq : "+d_seq+ " , emp_no : "+emp_no+" , appr_no : "+appr_no+" , appr_num: "+appr_num);
-
-        // 다음결재
+        int d_seq = Integer.parseInt(request.getParameter("appr_d_seq"));
+        int emp_no = Integer.parseInt(request.getParameter("appr_emp_no"));
+        int appr_no = Integer.parseInt(request.getParameter("appr_no"));
+        int appr_num = Integer.parseInt(request.getParameter("appr_num"));
         String next_emp_user = request.getParameter("next_emp_user");
+        String next_emp_nm = request.getParameter("next_emp_nm");
         String banRemark = request.getParameter("banRemark");
 
         try {
-
-            ApprovalDDTO apprDto = new ApprovalDDTO();
-            LoginDTO empData = new LoginDTO();
-
-            if(gubun.equals("T")){
-                // 승인
-                apprDto = new ApprovalDDTO();
-                apprDto.setAppr_no(appr_no);
-                apprDto.setAppr_num(appr_num);
-                apprDto.setD_seq(d_seq);
-                apprDto.setAppr_remarks(banRemark);
-                apprDto.setAppr_tg(gubun);
-                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                System.out.println(apprDto);
-                System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>");
-                approvalService.updateApprovalDetail(apprDto);
-
-                // 결재진행 업데이트
-                updateApprovalStatus(appr_no,"2","");
-
-                //approvalService.updateAdminTag(appr_no,"T");
-
-
-            }else if(gubun.equals("A")){
-                // 다음결재자 지정 후 승인
-                // 접수자
-                empData = getUserInfo(emp_no);
-                apprDto = new ApprovalDDTO();
-                apprDto.setAppr_no(appr_no);
-                apprDto.setAppr_emp_no(emp_no);
-                apprDto.setAppr_emp_nm(empData.getUserName());
-                apprDto.setAppr_position(empData.getPositionName());
-                apprDto.setAppr_remarks(banRemark);
-                apprDto.setAppr_group("B");
-                apprDto.setAppr_num(appr_num+1);
-                apprDto.setAppr_tg("T");
-                apprDto.setLast_tag("F");
-
-                approvalService.insertApprovalDetail(apprDto);
-                d_seq = apprDto.getD_seq();
-
-
-                // 다음결재자, 관리부서에서 본인을 선택할 경우 skip
-                if(Integer.valueOf(next_emp_user) != emp_no){
-
-                    empData = getUserInfo(Integer.valueOf(next_emp_user));
-                    apprDto = new ApprovalDDTO();
-                    apprDto.setAppr_no(appr_no);
-                    apprDto.setAppr_emp_no(Integer.valueOf(next_emp_user));
-                    apprDto.setAppr_emp_nm(empData.getUserName());
-                    apprDto.setAppr_position(empData.getPositionName());
-                    apprDto.setAppr_group("B");
-                    apprDto.setAppr_num(appr_num+2);
-                    apprDto.setAppr_tg("N");
-                    apprDto.setLast_tag("F");
-                    approvalService.insertApprovalDetail(apprDto);
-
-                }
-
-                apprDto = new ApprovalDDTO();
-                apprDto.setAppr_no(appr_no);
-                apprDto.setAppr_emp_no(999);
-                apprDto.setAppr_emp_nm("배호기");
-                apprDto.setAppr_position("상무");
-                apprDto.setAppr_num(appr_num+3);
-                apprDto.setLast_tag("F");
-                apprDto.setAppr_group("B");
-                apprDto.setAppr_tg("N");
-                approvalService.insertApprovalDetail(apprDto);
-
-                apprDto = new ApprovalDDTO();
-                apprDto.setAppr_no(appr_no);
-                apprDto.setAppr_emp_no(58);
-                apprDto.setAppr_emp_nm("이주희");
-                apprDto.setAppr_position("전무");
-                apprDto.setAppr_num(appr_num+4);
-                apprDto.setLast_tag("T");
-                apprDto.setAppr_group("B");
-                apprDto.setAppr_tg("N");
-                approvalService.insertApprovalDetail(apprDto);
-
-            }else if(gubun.equals("F")){
-                // 반려
-                apprDto = new ApprovalDDTO();
-                apprDto.setAppr_no(appr_no);
-                apprDto.setAppr_num(appr_num);
-                apprDto.setD_seq(d_seq);
-                apprDto.setAppr_remarks(banRemark);
-                apprDto.setAppr_tg(gubun);
-
-                approvalService.updateApprovalDetail(apprDto);
-
-                // 결재진행 업데이트
-                updateApprovalStatus(appr_no,"4",banRemark);
-            }else{
-
-                empData = getUserInfo(emp_no);
-                apprDto = new ApprovalDDTO();
-
-                apprDto.setAppr_no(appr_no);
-                apprDto.setAppr_emp_no(emp_no);
-                apprDto.setAppr_emp_nm(empData.getUserName());
-                apprDto.setAppr_position(empData.getPositionName());
-                apprDto.setAppr_remarks(banRemark);
-                apprDto.setAppr_group("B");
-                apprDto.setAppr_num(appr_num+1);
-                apprDto.setAppr_tg("F");
-                apprDto.setLast_tag("F");
-
-                approvalService.insertApprovalDetail(apprDto);
-                // 결재진행 업데이트
-                updateApprovalStatus(appr_no,"4",banRemark);
+            LoginDTO login = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (approvalWorkflowService.isCcOnlyViewer(appr_no, login.getEmpNo())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("msg", "참조 건은 승인·반려할 수 없습니다."));
             }
-
-            ApprovalDTO ddto1 = approvalService.getApprovalDetailOne(d_seq);
-            String appr_group = ddto1.getAppr_group();
-            String last_tag = ddto1.getLast_tag();
-            String appr_tag = ddto1.getAppr_tg();
-
-            // 요청부서 결재완료 시점->관리부서 접수 구분 추가
-            if(appr_group.equals("A") && last_tag.equals("T") && appr_tag.equals("T")){
-                System.out.println("관리부서 접수>>>>>>>>>>"+ddto1.getAppr_no());
-                try {
-                    int admin_cnt = approvalService.updateAdminTag(ddto1.getAppr_no(),"T");
-                    System.out.println("admin_cnt>>>>>>"+admin_cnt);
-                } catch (Exception e) {
-                    e.printStackTrace(); // or log.error("에러 발생", e);
-                }
-            }else{
-                System.out.println("관리부서 접수해제>>>>>>>>>>"+ddto1.getAppr_no());
-                approvalService.updateAdminTag(ddto1.getAppr_no(),"F");
+            if ("A".equals(gubun) && !adminService.isAdmin(login.getEmpNo())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("msg", "관리부서 접수 권한이 없습니다."));
             }
-
-            //승인완료 처리
-            String finish_tag = approvalService.getApprovalTag(appr_no);
-            if(finish_tag.equals("T")){
-                updateApprovalStatus(appr_no,"3","");
-            }
-
-            ApprovalDTO nextAppr = new ApprovalDTO();
-            nextAppr = approvalService.getApprovalDetailOne(d_seq);
-
-            // B: 관리부서 , C: 완료->기안자, A: 다음결재자
-            String send_type = nextAppr.getNext_send_type();
-            //F:반려
-            String appr_tg = nextAppr.getAppr_tg();
-
-            int nextEmpNo = nextAppr.getNext_emp_no();
-            int firstEmpNo = nextAppr.getFirst_appr_emp_no();
-
-            String sendHtml = confirmMailHtml(nextAppr);
-
-            String send_mail_title = "[동아지질] 현장숙소관리플랫폼 사전조사 확인요청의 건";
-
-            String[] ccRecipients = {};
-            String[] bccRecipients = {};
-
-            List<String> recipientList = new ArrayList<>();
-            System.out.println("send_type>>>"+send_type);
-
-            if("F".equals(appr_tg)){ //반려
-                EmpUserDTO empInfo = rentService.getEmpUserInfo(firstEmpNo);
-                if (empInfo != null && empInfo.getEmail() != null && !empInfo.getEmail().trim().isEmpty()) {
-                    recipientList.add(empInfo.getEmail());
-                } else {
-                    System.out.println("Warning: First approver email is null or empty for empNo: " + firstEmpNo);
-                }
-                send_mail_title = "[동아지질:관리부서 반려] 현장숙소관리플랫폼 사전조사 확인반려의 건";
-            }else if("B".equals(send_type)){ // 부서접수
-                List<EmpUserDTO> emp = adminService.getAllAdmins();
-                for(EmpUserDTO list : emp){
-                    if (list.getEmail() != null
-                            && !list.getEmail().isEmpty()
-                            && "Y".equals(list.getEmail_chk())) {
-                        recipientList.add(list.getEmail());
-                    }
-                }
-            }else if("A".equals(send_type)){ // 확인처리
-                EmpUserDTO empInfo = rentService.getEmpUserInfo(nextEmpNo);
-                if (empInfo != null && empInfo.getEmail() != null && !empInfo.getEmail().trim().isEmpty()) {
-                    recipientList.add(empInfo.getEmail());
-                } else {
-                    System.out.println("Warning: Next approver email is null or empty for empNo: " + nextEmpNo);
-                }
-            }else{ // 확인완료
-                EmpUserDTO empInfo = rentService.getEmpUserInfo(firstEmpNo);
-                if (empInfo != null && empInfo.getEmail() != null && !empInfo.getEmail().trim().isEmpty()) {
-                    recipientList.add(empInfo.getEmail());
-                } else {
-                    System.out.println("Warning: First approver email is null or empty for empNo: " + firstEmpNo);
-                }
-                send_mail_title = "[동아지질:관리부서 확인완료] 현장숙소관리플랫폼 사전조사 확인완료의 건";
-            }
-
-            // Check if we have any valid recipients
-            if (recipientList.isEmpty()) {
-                System.out.println("Warning: No valid email recipients found. Skipping email send.");
-                Map<String, Object> response = new HashMap<>();
-                response.put("msg","승인요청이 완료되었습니다. (이메일 발송 실패: 수신자 없음)");
-                return ResponseEntity.ok(response);
-            }
-
-            String[] recipients = recipientList.toArray(new String[0]);
-            System.out.println("메일 설정 완료: recipients=" + Arrays.toString(recipients) + " ccRecipients=" + Arrays.toString(ccRecipients) + "/ bccRecipients=" + Arrays.toString(bccRecipients) + "/ send_mail_title=" + send_mail_title);
-
-            mail.sendEmail(
-                recipients
-                ,ccRecipients
-                ,bccRecipients
-                ,send_mail_title
-                ,sendHtml
-            );
-
-            System.out.println("sendEmail 완료");
-            Map<String, Object> response = new HashMap<>();
-            response.put("msg","승인요청이 완료되었습니다.");
-            // 승인요청 취소 후 처리
-            return ResponseEntity.ok(response);
-
-        }catch (Exception e){
+            // 요청 사번이 세션과 같으면 세션 이름으로 동일 emp_no 중복 계정 구분
+            String empNm = (emp_no == login.getEmpNo()) ? login.getUserName() : null;
+            List<ApprovalCcDTO> ccList = ApprovalWorkflowService.parseCcListFromRequest(request);
+            Map<String, Object> result = approvalWorkflowService.processConfirm(
+                    gubun, d_seq, emp_no, empNm, appr_no, appr_num,
+                    next_emp_user, next_emp_nm, banRemark, ccList);
+            return ResponseEntity.ok(result);
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while saving data");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error occurred while saving data");
         }
     }
 
     @PostMapping("/multi/apply")
-    public ResponseEntity<?> multiApplyConfirmData(@RequestBody Map<String, Object> requestData, HttpServletRequest request) {
-
+    public ResponseEntity<?> multiApplyConfirmData(@RequestBody Map<String, Object> requestData) {
         LoginDTO loginDTO = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        int empNo = loginDTO.getEmpNo();
-        String userNm = loginDTO.getUserName();
         try {
-
+            @SuppressWarnings("unchecked")
             List<String> arrayList = (List<String>) requestData.get("arrayList");
-            String rApprEmpNo = (String)requestData.get("appr_emp_no");
-            if("0".equals(rApprEmpNo)){
-                rApprEmpNo = String.valueOf(empNo);
-            }
-
-            int vApprEmpNo = Integer.valueOf(rApprEmpNo);
-
-            ApprovalMDTO approvalMDTO = new ApprovalMDTO();
-            approvalMDTO.setAppr_emp_no(empNo);
-            approvalMDTO.setAppr_emp_nm(userNm);
-            if(empNo == vApprEmpNo) {
-                approvalMDTO.setAppr_stat("2");
-                approvalMDTO.setAppr_admin("T");
-            }else {
-                approvalMDTO.setAppr_stat("0");
-            }
-
-            approvalService.insertApprovalMaster(approvalMDTO);
-            int appr_no = approvalMDTO.getAppr_no();
-
-            LoginDTO empData = new LoginDTO();
-            empData = getUserInfo(vApprEmpNo);
-
-            ApprovalDDTO approvalDDTO = new ApprovalDDTO();
-            approvalDDTO.setAppr_no(appr_no);
-            approvalDDTO.setAppr_emp_no(empNo);
-            approvalDDTO.setAppr_emp_nm(userNm);
-            approvalDDTO.setAppr_position(loginDTO.getPositionName());
-            approvalDDTO.setAppr_group("A");
-            approvalDDTO.setAppr_num(0);
-            approvalDDTO.setAppr_tg("T");
-            approvalDDTO.setLast_tag("F");
-
-            if(empNo == vApprEmpNo){
-                // 기안자와 현장소장/대리인 동일할 경우
-                approvalDDTO.setLast_tag("T");
-                approvalService.insertApprovalDetail(approvalDDTO);
-            }else {
-                // 기안자
-                approvalService.insertApprovalDetail(approvalDDTO);
-                LoginDTO empData1 = new LoginDTO();
-                empData1 = getUserInfo(vApprEmpNo);
-
-                ApprovalDDTO approvalDDTO1 = new ApprovalDDTO();
-                approvalDDTO1.setAppr_no(appr_no);
-                approvalDDTO1.setAppr_emp_no(vApprEmpNo);
-                approvalDDTO1.setAppr_emp_nm(empData.getUserName());
-                approvalDDTO1.setAppr_position(empData.getPositionName());
-                approvalDDTO1.setAppr_group("A");
-                approvalDDTO1.setAppr_num(1);
-                approvalDDTO1.setLast_tag("T");
-                approvalDDTO.setAppr_tg("F");
-                // 현장소장/대리인
-                approvalService.insertApprovalDetail(approvalDDTO1);
-            }
-
-            contractService.updateContractMasterApprNo(appr_no,arrayList);
-
-
-            // 메일 발송
-            String send_mail_title = "[동아지질] 부동산 임차관리 플랫폼 사전조사 확인요청의 건";
-
-            String[] ccRecipients = {};
-            String[] bccRecipients = {};
-
-            List<String> recipientList = new ArrayList<>();
-
-            ApprovalDTO appr = new ApprovalDTO();
-            int d_seq = contractService.getMaxDseq(appr_no);
-            appr = approvalService.getApprovalDetailOne(d_seq);
-            String sendHtml = confirmMailHtml(appr);
-
-            if(empNo == vApprEmpNo) {
-                //기안자가 본인을 선택한 경우 바로 부서접수 되므로 관리자에게 메일발송
-                List<EmpUserDTO> emp = adminService.getAllAdmins();
-                for (EmpUserDTO list : emp) {
-                    if (list.getEmail() != null
-                            && !list.getEmail().isEmpty()
-                            && "Y".equals(list.getEmail_chk())) {
-                        recipientList.add(list.getEmail());
-                    }
+            List<ApprovalLineSubmitDTO> approvalLines =
+                    ApprovalWorkflowService.parseApprovalLines(requestData.get("approvalLines"));
+            if (approvalLines.isEmpty() && requestData.get("appr_emp_no") != null) {
+                String rApprEmpNo = String.valueOf(requestData.get("appr_emp_no"));
+                if ("0".equals(rApprEmpNo)) {
+                    rApprEmpNo = String.valueOf(loginDTO.getEmpNo());
                 }
-            }else {
-                EmpUserDTO empInfo = rentService.getEmpUserInfo(vApprEmpNo);
-                if (empInfo != null && empInfo.getEmail() != null && !empInfo.getEmail().trim().isEmpty()) {
-                    recipientList.add(empInfo.getEmail());
-                } else {
-                    System.out.println("Warning: First approver email is null or empty for empNo: " + vApprEmpNo);
-                }
+                String fallbackNm = String.valueOf(loginDTO.getEmpNo()).equals(rApprEmpNo)
+                        ? loginDTO.getUserName() : null;
+                approvalLines = List.of(new ApprovalLineSubmitDTO(
+                        Integer.parseInt(rApprEmpNo), fallbackNm, "FIELD", "F"));
             }
-            String[] recipients = recipientList.toArray(new String[0]);
-            System.out.println("현장 / 메일 설정 완료: recipients=" + Arrays.toString(recipients) + " ccRecipients=" + Arrays.toString(ccRecipients) + " / bccRecipients=" + Arrays.toString(bccRecipients) + "/ send_mail_title=" + send_mail_title);
+            List<ApprovalCcDTO> ccList = ApprovalWorkflowService.parseCcList(requestData.get("ccEmpNos"));
 
-            mail.sendEmail(
-                recipients
-                ,ccRecipients
-                ,bccRecipients
-                ,send_mail_title
-                ,sendHtml
-            );
-
-            Map<String, Object> response = new HashMap<>();
-            response.put("msg","승인요청이 완료되었습니다.");
-            return ResponseEntity.ok(response);
-
-        }catch (Exception e){
+            Map<String, Object> result = approvalWorkflowService.submit(
+                    loginDTO.getEmpNo(),
+                    loginDTO.getUserName(),
+                    loginDTO.getPositionName(),
+                    arrayList,
+                    approvalLines,
+                    ccList);
+            return ResponseEntity.ok(result);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("msg", e.getMessage()));
+        } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Error occurred while saving data");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("Error occurred while saving data");
         }
     }
 
@@ -557,10 +278,8 @@ public class ApprovalController {
         }
     }
 
-    private final LoginDTO getUserInfo(int emp_no){
-        LoginDTO dto = new LoginDTO();
-        dto = rentService.getUserinfo(emp_no);
-        return dto;
+    private final LoginDTO getUserInfo(int emp_no, String user_nm){
+        return rentService.getUserinfo(emp_no, user_nm);
     }
 
     private final void updateApprovalStatus(int appr_no, String appr_stat, String appr_remarks){
@@ -957,8 +676,8 @@ public class ApprovalController {
         System.out.println("additional_appr_nos: " + additionalApprNos);
         System.out.println("========================================");
 
-        // 메인 appr_no의 계약 데이터 조회
-        List<ContractDTO> contract = contractService.getContractDetailForList(appr_no);
+        // 메인 appr_no의 계약 데이터 조회 (이미 다른 기안서에 포함된 contract는 제외)
+        List<ContractDTO> contract = contractService.getContractDetailForDraft(appr_no);
         
         System.out.println("=== draft 메서드 디버깅 ===");
         System.out.println("입력 appr_no: " + appr_no);
@@ -992,7 +711,7 @@ public class ApprovalController {
         
         if (additionalApprNos != null && !additionalApprNos.isEmpty()) {
             for (Integer additionalApprNo : additionalApprNos) {
-                List<ContractDTO> additionalContract = contractService.getContractDetailForList(additionalApprNo);
+                List<ContractDTO> additionalContract = contractService.getContractDetailForDraft(additionalApprNo);
                 if (additionalContract != null && !additionalContract.isEmpty()) {
                     // 추가 계약 데이터의 proj_code도 패딩 처리
                     for (ContractDTO contractItem : additionalContract) {
@@ -1119,8 +838,63 @@ public class ApprovalController {
     }
 
     /**
-     * 결재취소 처리
+     * 본인이 남긴 결재 의견(appr_remarks)만 수정
      */
+    @PostMapping("/update/remarks")
+    @ResponseBody
+    public ResponseEntity<?> updateApprovalRemarks(HttpServletRequest request) {
+        try {
+            LoginDTO loginDTO = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            int appr_no = Integer.parseInt(request.getParameter("appr_no"));
+            int d_seq = Integer.parseInt(request.getParameter("d_seq"));
+            String appr_remarks = request.getParameter("appr_remarks");
+            if (appr_remarks == null) {
+                appr_remarks = "";
+            }
+
+            Map<String, Object> result = approvalService.updateOwnApprovalRemarks(
+                    appr_no, d_seq, loginDTO.getEmpNo(), appr_remarks);
+
+            if (Boolean.TRUE.equals(result.get("success"))) {
+                return ResponseEntity.ok(Map.of("success", true, "message", result.get("message")));
+            }
+            return ResponseEntity.badRequest().body(Map.of("success", false, "message", result.get("message")));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "의견 저장 중 오류가 발생했습니다."));
+        }
+    }
+
+    /**
+     * 관리자(ERP/거래처 탭 권한자) 결재 마지막 단계 1회 취소 — 요청자 사번은 세션만 사용
+     */
+    @PostMapping("/admin/cancel-last-step")
+    @ResponseBody
+    public ResponseEntity<?> adminCancelLastApprovalStep(HttpServletRequest request) {
+        try {
+            LoginDTO loginDTO = (LoginDTO) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            if (!adminService.canManageErpAndCustomer(loginDTO.getEmpNo())) {
+                return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                        .body(Map.of("success", false, "message", "권한이 없습니다."));
+            }
+            int appr_no = Integer.parseInt(request.getParameter("appr_no"));
+            Map<String, Object> result = approvalService.cancelApprovalAndCleanup(appr_no, loginDTO.getEmpNo(), true);
+            if (Boolean.TRUE.equals(result.get("success"))) {
+                Object msg = result.get("message");
+                return ResponseEntity.ok(Map.of("success", true,
+                        "message", msg != null ? msg.toString() : "결재 1단계가 취소되었습니다."));
+            }
+            Object failMsg = result.get("message");
+            return ResponseEntity.badRequest().body(Map.of("success", false,
+                    "message", failMsg != null ? failMsg.toString() : "취소할 수 없습니다."));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("success", false, "message", "처리 중 오류가 발생했습니다."));
+        }
+    }
+
     @PostMapping("/cancel")
     @ResponseBody
     public ResponseEntity<?> cancelApproval(HttpServletRequest request) {

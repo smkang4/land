@@ -16,6 +16,7 @@
     <!-- Select2   -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
+    <link rel="stylesheet" th:href="@{/css/approval-cc-select.css}">
 
     <!-- Toast Grid-->
     <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
@@ -204,6 +205,10 @@
 
                 <div class="modal-body p-4 text-center">
                     <select class="form-control btn-conf mb-2" id="next_emp_user"></select>
+                    <label class="form-label small text-start w-100 mb-1">참조(통보) — 여러 명 선택 가능</label>
+                    <div class="approval-cc-select-wrap w-100 text-start mb-2">
+                        <select class="form-control btn-conf approval-cc-select" id="receipt_cc_users" multiple style="width:100%"></select>
+                    </div>
                     <textarea class="form-control mt-2" placeholder="Comments" id="txtApprRemarks" style="height: 100px"></textarea>
                 </div>
 
@@ -467,8 +472,8 @@
                             theme: "bootstrap-5",
                             placeholder: "다음확인자",
                             width: '100%',
-                            dropdownParent: $('#remark_popup'), // 모달 내부에서 사용하는 경우 필요
-                            minimumResultsForSearch: 0, // 검색 기능 활성화
+                            dropdownParent: $('#remark_popup'),
+                            minimumResultsForSearch: 0,
                             language: {
                                 noResults: function() {
                                     return "검색 결과가 없습니다.";
@@ -476,6 +481,25 @@
                             }
                         });
 
+                        if ($('#receipt_cc_users').data('select2')) {
+                            $('#receipt_cc_users').select2('destroy');
+                        }
+                        $('#receipt_cc_users').empty();
+                        data.forEach(function(item) {
+                            $('#receipt_cc_users').append(
+                                $('<option></option>').val(item.emp_no).text(item.name)
+                            );
+                        });
+                        $('#receipt_cc_users').select2({
+                            allowClear: true,
+                            theme: "bootstrap-5",
+                            placeholder: "참조자 복수 선택",
+                            width: '100%',
+                            closeOnSelect: false,
+                            dropdownParent: $('#remark_popup'),
+                            minimumResultsForSearch: 0
+                        });
+                        $('#receipt_cc_users').val(null).trigger('change');
 
                     },
                     error: function(xhr, status, error) {
@@ -516,6 +540,7 @@
 
     function btnConfirmApply(d_seq,appr_no,appr_num,appr_emp_no){
         var next_emp_user = $("#next_emp_user").val();
+        var next_emp_nm = $("#next_emp_user option:selected").text() || "";
 
         var params = "";
         params += "gubun=A";
@@ -524,7 +549,16 @@
         params += "&appr_no="+appr_no;
         params += "&appr_num="+appr_num;
         params += "&next_emp_user="+next_emp_user;
+        params += "&next_emp_nm="+encodeURIComponent(next_emp_nm);
         params += "&banRemark="+encodeURIComponent($("#txtApprRemarks").val());
+        var ccVals = $('#receipt_cc_users').val() || [];
+        if (ccVals.length > 0) {
+            var ccPayload = ccVals.map(function(v) {
+                var $opt = $('#receipt_cc_users option[value="' + v + '"]');
+                return { empNo: parseInt(v, 10), empNm: ($opt.text() || '').trim() };
+            });
+            params += "&ccEmpNos=" + encodeURIComponent(JSON.stringify(ccPayload));
+        }
 
         var vUrl = "/appr/update/detail";
         ufn_transaction(

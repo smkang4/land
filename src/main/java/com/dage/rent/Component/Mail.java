@@ -89,7 +89,6 @@ public class Mail extends Authenticator {
             message.setContent(htmlContent, "text/html; charset=UTF-8");
 
             Transport.send(message);
-
             System.out.println("이메일이 성공적으로 전송되었습니다.");
 
         }catch (AddressException e) {  //예외처리 주소를 입력하지 않을 경우
@@ -148,7 +147,6 @@ public class Mail extends Authenticator {
 
             // 메일 송신
             Transport.send(msg);
-
             System.out.println("메일 발송을 완료하였습니다.");
             System.out.println("----------------------\n");
         } catch (AddressException addr_e) {  //예외처리 주소를 입력하지 않을 경우
@@ -230,8 +228,7 @@ public class Mail extends Authenticator {
             msg.setContent(multipart);
 
             // 메일 송신
-            Transport.send(msg);
-
+             Transport.send(msg);
             System.out.println("메일 발송을 완료하였습니다.");
             System.out.println("----------------------\n");
         } catch (AddressException addr_e) {  //예외처리 주소를 입력하지 않을 경우

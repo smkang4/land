@@ -13,6 +13,7 @@ import org.springframework.core.io.UrlResource;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.ContentDisposition;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -27,6 +28,7 @@ import javax.annotation.PostConstruct;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -218,7 +220,7 @@ public class RequestController {
                 String originalFilename = dto.getOriginalFilename() != null ? dto.getOriginalFilename() : "download";
                 return ResponseEntity.ok()
                         .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                        .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + originalFilename + "\"")
+                        .header(HttpHeaders.CONTENT_DISPOSITION, attachmentContentDisposition(originalFilename))
                         .body(new org.springframework.core.io.ByteArrayResource(bytes));
             }
             // 레거시: 원본 파일명으로 검색 (영문 폴더 먼저, 한글 폴더는 구 폴더명 호환)
@@ -235,12 +237,19 @@ public class RequestController {
             Resource resource = new UrlResource(filePath.toUri());
             return ResponseEntity.ok()
                     .contentType(MediaType.APPLICATION_OCTET_STREAM)
-                    .header(HttpHeaders.CONTENT_DISPOSITION, "attachment; filename=\"" + fileIdOrName + "\"")
+                    .header(HttpHeaders.CONTENT_DISPOSITION, attachmentContentDisposition(fileIdOrName))
                     .body(resource);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().build();
         }
+    }
+
+    private static String attachmentContentDisposition(String filename) {
+        return ContentDisposition.builder("attachment")
+                .filename(filename, StandardCharsets.UTF_8)
+                .build()
+                .toString();
     }
 
     /**
@@ -306,8 +315,14 @@ public class RequestController {
 
             Integer empNo = loginDTO.getUserNo();
             String userNm = loginDTO.getUserName();
-            Integer projCode = requestData.get("projCode") != null ? Integer.parseInt(requestData.get("projCode").toString()) : null;
+            Integer projCode = parseInteger(requestData.get("projCode"));
             String projName = (String) requestData.get("projName");
+            if (projCode == null) {
+                return ResponseEntity.badRequest().body(Map.of(
+                        "success", false,
+                        "message", "사용현장을 선택해주세요."
+                ));
+            }
             System.out.println("Project Info - Code: " + projCode + ", Name: " + projName);
             String contDateStr = (String) requestData.get("contDate");
             String moveDateStr = (String) requestData.get("moveDate");

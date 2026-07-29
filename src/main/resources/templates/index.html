@@ -520,9 +520,7 @@
         </div>
         </div>
 
-    <footer class="my-5 pt-5 text-muted text-center text-small">
-        <small class="mb-1">©2025. Dong-Ah Geological Engineering Company Ltd. All Rights Reserved.</small>
-    </footer>
+    <div th:replace="~{fragments/footer.html :: site-footer}"></div>
 </div>
 
 
@@ -705,6 +703,20 @@
                     console.error("버튼 클릭 오류: " + error);
                 }
             });
+        }
+
+        /** 사용현장 select value(proj_code) 및 표시 텍스트에서 현장명 추출 */
+        function getSelectedProjInfo() {
+            const projCode = ($('#con').val() || '').trim();
+            let projName = '';
+            const selectedText = ($('#con option:selected').text() || '').trim();
+            if (projCode && selectedText) {
+                const match = selectedText.match(/\([^)]+\)(.+)$/);
+                if (match) {
+                    projName = match[1].trim();
+                }
+            }
+            return { projCode, projName };
         }
 
         // 파일 크기 포맷팅
@@ -1184,19 +1196,7 @@
             $("#confirmSave").on("click", function() {
                 $('#saveConfirmModal').modal('hide');
                 
-                // 선택된 현장 정보 가공
-                const selectedOption = $('#con option:selected');
-                const selectedText = selectedOption.text();
-                let projCode = '';
-                let projName = '';
-                
-                if (selectedText) {
-                    const match = selectedText.match(/\((\d{10})\)(.+)/);
-                    if (match) {
-                        projCode = match[1];
-                        projName = match[2].trim();
-                    }
-                }
+                const { projCode, projName } = getSelectedProjInfo();
 
                 const formData = {
                     seq: $('#seq').val(),
@@ -1442,19 +1442,7 @@
 
         // 임시저장 함수
         function saveTemp() {
-            // 선택된 현장 정보 가공
-            const selectedOption = $('#con option:selected');
-            const selectedText = selectedOption.text();
-            let projCode = '';
-            let projName = '';
-            
-            if (selectedText) {
-                const match = selectedText.match(/\((\d{10})\)(.+)/);
-                if (match) {
-                    projCode = match[1];
-                    projName = match[2].trim();
-                }
-            }
+            const { projCode, projName } = getSelectedProjInfo();
 
             const formData = {
                 seq: $('#seq').val(),

@@ -36,6 +36,7 @@
             END ) as appr_tg_nm
         FROM approval_d
         where appr_no = #{appr_no}
+        ORDER BY appr_num ASC
     </select>
 
     <select id="getApprovalDetailOne" resultType="com.dage.rent.DTO.ApprovalDTO">
@@ -186,6 +187,15 @@
         and d_seq = #{d_seq}
     </update>
 
+    <!-- 본인 결재 의견만 수정 (appr_tg·appr_date 유지) -->
+    <update id="updateApprovalRemarksOnly">
+        UPDATE approval_d
+        SET appr_remarks = #{appr_remarks}
+        WHERE appr_no = #{appr_no}
+          AND d_seq = #{d_seq}
+          AND appr_emp_no = #{appr_emp_no}
+    </update>
+
     <select id="getApprovalTag" resultType="java.lang.String">
         select
             IFNULL(MAX(APPR_TG),'N') as appr_tg
@@ -216,7 +226,9 @@
         ,d.last_appr_emp_nm
         ,d.last_appr_date
         ,d.appr_stat
+        ,d.appr_admin
         ,d.all_appr_emp_nos
+        ,d.view_role
         FROM
         (
         SELECT
@@ -257,6 +269,7 @@
         ,c.next_appr_emp_nm
         ,c.next_appr_emp_no
         ,c.all_appr_emp_nos
+        ,c.view_role
         FROM
         (
         SELECT
@@ -282,6 +295,15 @@
         ,(CASE WHEN appr_group = 'A' AND next_appr_emp_nm = '' THEN '업무지원팀' ELSE next_appr_emp_nm END) next_appr_emp_nm
         ,b.next_appr_emp_no
         ,emp_list.all_appr_emp_nos
+        ,CASE
+            WHEN EXISTS (
+                SELECT 1 FROM approval_cc cc
+                WHERE cc.appr_no = b.appr_no AND cc.emp_no = #{emp_no}
+            )
+            AND (emp_list.all_appr_emp_nos IS NULL OR FIND_IN_SET(#{emp_no}, emp_list.all_appr_emp_nos) = 0)
+            THEN 'CC'
+            ELSE 'APPROVER'
+        END AS view_role
         FROM
         (
         SELECT
@@ -310,19 +332,25 @@
         ) c
         WHERE c.rnum = 1
         ) d ON a.appr_no = d.appr_no
-        AND FIND_IN_SET(#{emp_no}, d.all_appr_emp_nos) > 0
-        <if test="proj_code != null">
+        AND (
+            FIND_IN_SET(#{emp_no}, d.all_appr_emp_nos) > 0
+            OR EXISTS (
+                SELECT 1 FROM approval_cc cc
+                WHERE cc.appr_no = d.appr_no AND cc.emp_no = #{emp_no}
+            )
+        )
+        <if test="proj_code != null and proj_code != ''">
             and a.proj_code = #{proj_code}
         </if>
-        <if test="conf_tag == 2">
+        <if test='conf_tag == "2" or conf_tag == 2'>
             and d.appr_emp_no = #{emp_no}
             and d.appr_tg != 'T'
             and d.appr_stat not in ('3','4')
         </if>
-        <if test="conf_tag == 5">
-            and d.appr_stat in ('1','2')
+        <if test='conf_tag == "5" or conf_tag == 5'>
+            and d.appr_stat in ('0','1','2')
         </if>
-        <if test="conf_tag == 3 or conf_tag == 4">
+        <if test='conf_tag == "3" or conf_tag == 3 or conf_tag == "4" or conf_tag == 4'>
             and d.appr_stat = #{conf_tag}
         </if>
     </select>
@@ -437,7 +465,7 @@
 <!--        </if>-->
     </select>
 
-    <!-- 기안 미작성용 쿼리 -->
+    <!-- 기안 미작성용 쿼리: 같은 결재 묶음 내에서도 아직 기안서로 올라가지 않은 contract만 카운트 -->
     <select id="getApprovalListForDraft" parameterType="java.util.HashMap" resultType="com.dage.rent.DTO.ApprovalDTO">
         SELECT
         a.appr_no,
@@ -454,9 +482,10 @@
         WHERE a.appr_no IS NOT NULL
         AND am.appr_stat = 3
         AND a.emp_no = #{user_no}
-        AND a.appr_no NOT IN (
-            SELECT DISTINCT dcd.appr_no 
+        AND a.seq NOT IN (
+            SELECT dcd.contract_seq
             FROM draft_contract_detail dcd
+            WHERE dcd.contract_seq IS NOT NULL
         )
         GROUP BY a.appr_no,a.proj_name
         ORDER BY MAX(am.appr_date) DESC
@@ -467,6 +496,7 @@
         SELECT
         GROUP_CONCAT(DISTINCT dcd.appr_no ORDER BY dcd.appr_no SEPARATOR ',') as appr_no_list,
         d.emp_no,
+        d.user_nm,
         d.proj_name,
         d.proj_code,
         CONCAT(
@@ -487,7 +517,7 @@
         <if test="user_no != null and user_no != ''">
         AND (c.emp_no = #{user_no} OR c.emp_no IS NULL AND d.emp_no = #{user_no})
         </if>
-        GROUP BY d.id, d.emp_no, d.proj_code, d.proj_name, d.mst_seq, d.created_date, d.cust_reg_attempted
+        GROUP BY d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.mst_seq, d.created_date, d.cust_reg_attempted
         ORDER BY d.created_date DESC
     </select>
 
@@ -496,6 +526,7 @@
         SELECT
         GROUP_CONCAT(DISTINCT dcd.appr_no ORDER BY dcd.appr_no SEPARATOR ',') as appr_no_list,
         d.emp_no,
+        d.user_nm,
         d.proj_name,
         d.proj_code,
         CONCAT(
@@ -516,7 +547,7 @@
         <if test="user_no != null and user_no != ''">
         AND (c.emp_no = #{user_no} OR c.emp_no IS NULL AND d.emp_no = #{user_no})
         </if>
-        GROUP BY d.id, d.emp_no, d.proj_code, d.proj_name, d.mst_seq, d.cust_reg_attempted
+        GROUP BY d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.mst_seq, d.cust_reg_attempted
     </select>
 
     <!-- 관리자용 기안완료 목록 (ERP 등록용) -->
@@ -551,8 +582,32 @@
         ORDER BY d.created_date DESC
     </select>
 
-    <select id="getMaxApprovalNumber" resultType="int">
+    <select id="getMaxApprovalNumber" resultType="java.lang.Integer">
         SELECT MAX(appr_num) FROM approval_d WHERE appr_no = #{appr_no}
+    </select>
+
+    <!-- 마지막 단계(MAX appr_num)가 승인(T)이면서 해당 결재자인 행 수 (일반 결재취소 권한 검증용) -->
+    <select id="countLastApprovedStepByEmp" resultType="int">
+        SELECT COUNT(*)
+        FROM approval_d ad
+        WHERE ad.appr_no = #{appr_no}
+          AND ad.appr_emp_no = #{appr_emp_no}
+          AND IFNULL(ad.appr_tg, 'N') = 'T'
+          AND ad.appr_num = (SELECT MAX(appr_num) FROM approval_d WHERE appr_no = #{appr_no})
+    </select>
+
+    <select id="countApprovedAtMaxStep" resultType="int">
+        SELECT COUNT(*)
+        FROM approval_d ad
+        WHERE ad.appr_no = #{appr_no}
+          AND IFNULL(ad.appr_tg, 'N') = 'T'
+          AND ad.appr_num = (SELECT MAX(appr_num) FROM approval_d WHERE appr_no = #{appr_no})
+    </select>
+
+    <select id="getApprEmpNoAtApprNum" resultType="java.lang.Integer">
+        SELECT appr_emp_no FROM approval_d
+        WHERE appr_no = #{appr_no} AND appr_num = #{appr_num}
+        LIMIT 1
     </select>
 
     <!-- approval_d 상태 업데이트 -->
@@ -596,6 +651,7 @@
         SELECT
         GROUP_CONCAT(DISTINCT dcd.appr_no ORDER BY dcd.appr_no SEPARATOR ',') as appr_no_list,
         d.emp_no,
+        d.user_nm,
         d.proj_name,
         d.proj_code,
         CONCAT(
@@ -618,7 +674,7 @@
         <if test="user_no != null and user_no != ''">
         AND c.emp_no = #{user_no}
         </if>
-        GROUP BY d.id, d.emp_no, d.proj_code, d.proj_name, d.mst_seq, d.created_date, d.cust_reg_attempted
+        GROUP BY d.id, d.emp_no, d.user_nm, d.proj_code, d.proj_name, d.mst_seq, d.created_date, d.cust_reg_attempted
         ORDER BY d.created_date DESC
     </select>
 
@@ -628,6 +684,63 @@
         SET cust_reg_attempted = #{attempted}
         WHERE id = #{draftId}
     </update>
+
+    <select id="selectCcByApprNo" resultType="com.dage.rent.DTO.ApprovalCcDTO">
+        SELECT
+            cc_id AS ccId,
+            appr_no AS apprNo,
+            emp_no AS empNo,
+            emp_nm AS empNm,
+            position_nm AS positionNm,
+            added_by AS addedBy,
+            DATE_FORMAT(added_at, '%Y-%m-%d %H:%i') AS addedAt
+        FROM approval_cc
+        WHERE appr_no = #{appr_no}
+        ORDER BY cc_id ASC
+    </select>
+
+    <insert id="insertCc" parameterType="com.dage.rent.DTO.ApprovalCcDTO">
+        INSERT INTO approval_cc (appr_no, emp_no, emp_nm, position_nm, added_by)
+        VALUES (#{apprNo}, #{empNo}, #{empNm}, #{positionNm}, #{addedBy})
+    </insert>
+
+    <select id="countCcByApprAndEmp" resultType="int">
+        SELECT COUNT(*) FROM approval_cc
+        WHERE appr_no = #{appr_no} AND emp_no = #{emp_no}
+    </select>
+
+    <select id="countApproverOnLine" resultType="int">
+        SELECT COUNT(*) FROM approval_d
+        WHERE appr_no = #{appr_no} AND appr_emp_no = #{emp_no}
+    </select>
+
+    <select id="countCcOnlyViewer" resultType="int">
+        SELECT CASE
+            WHEN EXISTS (SELECT 1 FROM approval_cc WHERE appr_no = #{appr_no} AND emp_no = #{emp_no})
+             AND NOT EXISTS (SELECT 1 FROM approval_d WHERE appr_no = #{appr_no} AND appr_emp_no = #{emp_no})
+            THEN 1 ELSE 0 END
+    </select>
+
+    <select id="countDetailByGroup" resultType="int">
+        SELECT COUNT(*) FROM approval_d
+        WHERE appr_no = #{appr_no} AND appr_group = #{appr_group}
+    </select>
+
+    <select id="selectTemplateSteps" resultType="com.dage.rent.DTO.ApprovalTemplateStepDTO">
+        SELECT
+            id,
+            template_code AS templateCode,
+            step_order AS stepOrder,
+            emp_no AS empNo,
+            emp_nm AS empNm,
+            position_nm AS positionNm,
+            is_final AS isFinal,
+            use_yn AS useYn
+        FROM approval_template_step
+        WHERE template_code = #{template_code}
+          AND use_yn = 'Y'
+        ORDER BY step_order ASC
+    </select>
 
 
 </mapper>

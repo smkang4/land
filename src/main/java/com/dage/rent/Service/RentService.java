@@ -96,7 +96,22 @@ public class RentService {
 
     @Transactional("oracleTransactionManager")
     public LoginDTO getUserinfo(int emp_no){
-        return rentDAO.getUserinfo(emp_no);
+        return getUserinfo(emp_no, null);
+    }
+
+    @Transactional("oracleTransactionManager")
+    public LoginDTO getUserinfo(int emp_no, String user_nm){
+        return rentDAO.getUserinfo(emp_no, user_nm);
+    }
+
+    @Transactional("oracleTransactionManager")
+    public String getEmployeeName(String emp_no){
+        return getEmployeeName(emp_no, null);
+    }
+
+    @Transactional("oracleTransactionManager")
+    public String getEmployeeName(String emp_no, String user_nm){
+        return rentDAO.getEmployeeName(emp_no, user_nm);
     }
 
     @Transactional("oracleTransactionManager")
@@ -120,7 +135,11 @@ public class RentService {
     }
 
     public EmpUserDTO getEmpUserInfo(int emp_no){
-        return rentDAO.getEmpUserInfo(emp_no);
+        return getEmpUserInfo(emp_no, null);
+    }
+
+    public EmpUserDTO getEmpUserInfo(int emp_no, String user_nm){
+        return rentDAO.getEmpUserInfo(emp_no, user_nm);
     }
 
     @Transactional("oracleTransactionManager")

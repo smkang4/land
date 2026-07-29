@@ -8,7 +8,6 @@ import com.dage.rent.Service.AttachmentFileService;
 import com.dage.rent.Service.ContractService;
 import com.dage.rent.Service.DraftService;
 import com.dage.rent.Service.RentService;
-import com.dage.rent.Service.SsoService;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,38 +32,33 @@ public class HomeController {
     private final ApprovalService approvalService;
     private final DraftService draftService;
     private final AttachmentFileService attachmentFileService;
-    private final SsoService ssoService;
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @Autowired
-    public HomeController(RentService rentService, ContractDAO contractDAO, ContractService contractService, AdminService admminservice, AdminService adminservice, ApprovalService approvalService, DraftService draftService, AttachmentFileService attachmentFileService, SsoService ssoService) {
+    public HomeController(RentService rentService, ContractDAO contractDAO, ContractService contractService, AdminService admminservice, AdminService adminservice, ApprovalService approvalService, DraftService draftService, AttachmentFileService attachmentFileService) {
         this.rentService = rentService;
         this.contractService = contractService;
         this.adminservice = adminservice;
         this.approvalService = approvalService;
         this.draftService = draftService;
         this.attachmentFileService = attachmentFileService;
-        this.ssoService = ssoService;
     }
 
 
     @GetMapping({"/", "/login"})
     public String login(HttpServletRequest request, Model model, @RequestParam(required = false) String error) {
-        System.out.println("Login page accessed. Error: " + error);
-        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getName().equals("anonymousUser")) {
-            System.out.println("User already authenticated, redirecting to main");
+            System.out.println("이미 로그인된 사용자 → 메인으로 이동");
             return "redirect:/main";
         }
-        
-        if (error != null) {
-            System.out.println("Login error occurred");
-            model.addAttribute("error", "���̵� �Ǵ� ��й�ȣ�� ��ġ���� �ʽ��ϴ�.");
-        }
 
-        if (ssoService.isEnabled()) {
-            model.addAttribute("ssoUrl", "/sso/login");
+        // error=true 는 formLogin failureUrl(실제 로그인 실패)일 때만 붙음
+        if (error != null) {
+            System.out.println("로그인 실패: 아이디 또는 비밀번호 불일치");
+            model.addAttribute("error", "아이디 또는 비밀번호가 일치하지 않습니다.");
+        } else {
+            System.out.println("로그인 페이지 접근");
         }
 
         return "login";
@@ -175,7 +169,8 @@ public class HomeController {
         model.addAttribute("showDeleteFeature", showDeleteFeature);
         model.addAttribute("userNo", userNo);
         model.addAttribute("empNo", empNo);
-        
+        model.addAttribute("showErpCustomerTabs", adminservice.canManageErpAndCustomer(empNo));
+
         return "admin";
     }
 
@@ -284,6 +279,14 @@ public class HomeController {
             model.addAttribute("appr_d_seq",appr_d_seq);
             model.addAttribute("appr_num",appr_num);
             model.addAttribute("last",last_flag);
+            model.addAttribute("appr_no", seq);
+
+            int loginEmpNo = 0;
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.isAuthenticated() && auth.getPrincipal() instanceof LoginDTO) {
+                loginEmpNo = ((LoginDTO) auth.getPrincipal()).getEmpNo();
+            }
+            model.addAttribute("login_emp_no", loginEmpNo);
 
             return "view/view";
 

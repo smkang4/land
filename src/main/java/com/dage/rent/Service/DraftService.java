@@ -4,6 +4,7 @@ import com.dage.rent.DAO.mysql.DraftDAO;
 import com.dage.rent.DAO.oracle.RentDAO;
 import com.dage.rent.DTO.ApprovalDDTO;
 import com.dage.rent.DTO.ApprovalMDTO;
+import com.dage.rent.DTO.ContractDTO;
 import com.dage.rent.DTO.DraftDTO;
 import com.dage.rent.DTO.LoginDTO;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -32,6 +33,35 @@ public class DraftService {
     private RentService rentService;
     @Autowired
     private ApprovalService approvalService;
+    @Autowired
+    private ContractService contractService;
+
+    /**
+     * contract_seq(contract_m.seq) 기준으로 정확한 appr_no를 설정한다.
+     */
+    private void resolveApprNoFromContractSeq(DraftDTO.ContractDetailDTO detail) {
+        if (detail.getContractSeq() == null || detail.getContractSeq() <= 0) {
+            return;
+        }
+        ContractDTO contract = contractService.getContractDetail(detail.getContractSeq());
+        if (contract == null || contract.getAppr_no() == null || contract.getAppr_no().trim().isEmpty()) {
+            return;
+        }
+        try {
+            detail.setAppr_no(Integer.parseInt(contract.getAppr_no().trim()));
+        } catch (NumberFormatException ignored) {
+            // contract_m.appr_no 파싱 실패 시 클라이언트 값 유지
+        }
+    }
+
+    private void resolveAllContractDetailApprNos(DraftDTO draft) {
+        if (draft.getContractDetails() == null) {
+            return;
+        }
+        for (DraftDTO.ContractDetailDTO detail : draft.getContractDetails()) {
+            resolveApprNoFromContractSeq(detail);
+        }
+    }
 
     /**
      * draftId로 기안서 상세 정보 조회 (Long 타입)
@@ -63,9 +93,11 @@ public class DraftService {
                 
                 for (DraftDTO.ContractDetailDTO detail : draftDTO.getContractDetails()) {
                     detail.setDraftId(draftId);
+                    resolveApprNoFromContractSeq(detail);
                     
                     System.out.println("=== ContractDetail 저장 ===");
                     System.out.println("rowNo: " + detail.getRowNo());
+                    System.out.println("appr_no: " + detail.getAppr_no() + " (contract_seq: " + detail.getContractSeq() + ")");
                     System.out.println("type: " + detail.getType());
                     System.out.println("address: " + detail.getAddress());
                     System.out.println("rsrcCode: " + detail.getRsrcCode());
@@ -196,6 +228,7 @@ public class DraftService {
             if (draftDTO.getContractDetails() != null) {
                 for (DraftDTO.ContractDetailDTO detail : draftDTO.getContractDetails()) {
                     detail.setDraftId(draftId);
+                    resolveApprNoFromContractSeq(detail);
                     draftDAO.saveContractDetail(detail);
                 }
             }
@@ -232,6 +265,8 @@ public class DraftService {
      * 결재문서 HTML 생성 (첨부파일 리스트 포함)
      */
     public String generateApprovalDocumentHTML(DraftDTO draft, String attachmentList) {
+        resolveAllContractDetailApprNos(draft);
+
         StringBuilder html = new StringBuilder();
         
         // HTML 문서 시작

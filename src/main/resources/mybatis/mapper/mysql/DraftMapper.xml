@@ -20,14 +20,14 @@
     <!-- 계약내용 상세 저장 -->
     <insert id="saveContractDetail" parameterType="com.dage.rent.DTO.DraftDTO$ContractDetailDTO">
         INSERT INTO draft_contract_detail (
-            draft_id, appr_no, row_no, type, address, address_d, post_code, rsrc_code, area,
+            draft_id, appr_no, contract_seq, row_no, type, address, address_d, post_code, rsrc_code, area,
             cont_date_s, cont_date_e, chk_3, accu,
             deposit_amt, rent_amt, cont_amt, bigo,
             payment_date, lessor, lessor_name, lessor_account, lessor_bank
             <if test="custCode != null and custCode != ''">, cust_code</if>,
             created_date
         ) VALUES (
-            #{draftId}, #{appr_no}, #{rowNo}, #{type}, #{address}, #{addressD}, #{postCode}, #{rsrcCode}, #{area},
+            #{draftId}, #{appr_no}, #{contractSeq}, #{rowNo}, #{type}, #{address}, #{addressD}, #{postCode}, #{rsrcCode}, #{area},
             #{contDate_s}, #{contDate_e}, #{chk_3}, #{accu},
             #{depositAmt}, #{rentAmt}, #{contAmt}, #{bigo},
             #{paymentDate}, #{lessor}, #{lessorName}, #{lessorAccount}, #{lessorBank}
@@ -116,13 +116,13 @@
 
     <!-- 계약내용 상세 조회 -->
     <select id="getContractDetailsByDraftId" parameterType="int" resultType="com.dage.rent.DTO.DraftDTO$ContractDetailDTO">
-        SELECT 
-            id, draft_id as draftId, appr_no, row_no as rowNo, type, address, address_d as addressD, post_code as postCode, rsrc_code as rsrcCode, area,
+        SELECT
+            id, draft_id as draftId, appr_no, contract_seq as contractSeq, row_no as rowNo, type, address, address_d as addressD, post_code as postCode, rsrc_code as rsrcCode, area,
             cont_date_s as contDate_s, cont_date_e as contDate_e, chk_3 as chk_3, accu,
             deposit_amt as depositAmt, rent_amt as rentAmt, cont_amt as contAmt, bigo,
             payment_date as paymentDate, lessor, lessor_name as lessorName, lessor_account as lessorAccount, lessor_bank as lessorBank, cust_code as custCode,
             created_date
-        FROM draft_contract_detail 
+        FROM draft_contract_detail
         WHERE draft_id = #{draftId}
         ORDER BY row_no
     </select>
@@ -148,7 +148,6 @@
     <!-- 기안서 수정 -->
     <update id="updateDraft" parameterType="com.dage.rent.DTO.DraftDTO">
         UPDATE draft SET
-            gw_code = #{gw_code},
             rent_reason = #{rent_reason},
             rent_source = #{rent_source},
             execution_budget = #{execution_budget},

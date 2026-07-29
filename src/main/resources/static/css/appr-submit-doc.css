@@ -1,0 +1,136 @@
+/* 확인요청 결재문서 모달 */
+
+#appr_popup .modal-dialog {
+    max-width: 720px;
+}
+
+.appr-submit-doc {
+    text-align: left;
+}
+
+.appr-submit-doc__title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 0.25rem;
+}
+
+.appr-submit-doc__meta {
+    font-size: 0.8rem;
+    color: #6c757d;
+    margin-bottom: 1rem;
+}
+
+.appr-submit-doc__section {
+    margin-bottom: 1rem;
+}
+
+.appr-submit-doc__section-title {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #495057;
+    margin-bottom: 0.5rem;
+    padding-bottom: 0.25rem;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.appr-submit-line {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 0.5rem;
+    overflow-x: auto;
+    padding: 0.35rem 0.15rem 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.appr-submit-cc-preview {
+    margin-top: 0.15rem;
+    padding-top: 0.5rem;
+    border-top: 1px dashed #dee2e6;
+}
+
+.appr-submit-cc-preview__label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #868e96;
+    margin-bottom: 0.25rem;
+}
+
+.appr-submit-line--cc {
+    margin-bottom: 0;
+    padding-top: 0.15rem;
+}
+
+.appr-submit-line__card {
+    flex: 0 0 auto;
+    width: 108px;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background: #fff;
+    text-align: center;
+    overflow: hidden;
+}
+
+.appr-submit-line__card--draft {
+    border-color: #6ea8fe;
+    background: #f8f9ff;
+}
+
+.appr-submit-line__card--cc {
+    border-color: #a5d8ff;
+    background: #e7f5ff;
+}
+
+.appr-submit-line__pos {
+    font-size: 0.68rem;
+    font-weight: 600;
+    color: #6c757d;
+    background: #f1f3f5;
+    padding: 0.35rem 0.25rem;
+    border-bottom: 1px solid #eee;
+}
+
+.appr-submit-line__name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #212529;
+    padding: 0.5rem 0.35rem 0.35rem;
+    min-height: 2.2rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.appr-submit-line__status {
+    font-size: 0.65rem;
+    color: #868e96;
+    padding-bottom: 0.35rem;
+}
+
+.appr-submit-line__name--cc {
+    padding-bottom: 0.5rem;
+}
+
+.appr-line-row {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0.4rem;
+}
+
+.appr-line-row .appr-line-emp-select {
+    flex: 1;
+    min-width: 0;
+}
+
+.appr-line-row .btn-remove-line {
+    flex-shrink: 0;
+    padding: 0.15rem 0.45rem;
+}
+
+.appr-submit-arrow {
+    align-self: center;
+    color: #adb5bd;
+    font-size: 1.1rem;
+    flex-shrink: 0;
+}

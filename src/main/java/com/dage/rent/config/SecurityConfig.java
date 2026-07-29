@@ -1,38 +1,41 @@
 package com.dage.rent.config;
 
-import com.dage.rent.Service.SsoService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.authentication.builders.AuthenticationManagerBuilder;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.builders.WebSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.security.web.firewall.DefaultHttpFirewall;
 import org.springframework.web.filter.CharacterEncodingFilter;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.servlet.http.HttpSession;
 
 @Configuration
 @EnableWebSecurity
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     private final CustomAuthenticationProvider customAuthenticationProvider;
-    private final SsoService ssoService;
 
     @Autowired
-    public SecurityConfig(CustomAuthenticationProvider customAuthenticationProvider, SsoService ssoService) {
+    public SecurityConfig(CustomAuthenticationProvider customAuthenticationProvider) {
         this.customAuthenticationProvider = customAuthenticationProvider;
-        this.ssoService = ssoService;
     }
 
     @Override
     protected void configure(AuthenticationManagerBuilder auth) throws Exception {
         auth.authenticationProvider(customAuthenticationProvider);
+    }
+
+    @Override
+    public void configure(WebSecurity web) {
+        web.httpFirewall(new DefaultHttpFirewall());
     }
 
     @Override
@@ -45,7 +48,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)
             .csrf().disable()
             .authorizeRequests()
-                .antMatchers("/sso/**").permitAll()
                 .antMatchers("/", "/view", "/login", "/css/**", "/js/**", "/images/**").permitAll()
                 .anyRequest().authenticated()
             .and()
@@ -60,23 +62,43 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .and()
             .logout()
                 .logoutUrl("/logout")
-                .addLogoutHandler((HttpServletRequest req, HttpServletResponse res, org.springframework.security.core.Authentication a) -> {
-                    HttpSession session = req.getSession(false);
-                    if (session != null) {
-                        String ssoToken = (String) session.getAttribute("SSO_ACCESS_TOKEN");
-                        if (ssoToken != null && ssoService.isEnabled()) {
-                            ssoService.logout(ssoToken);
-                        }
-                    }
-                })
                 .logoutSuccessUrl("/login")
                 .permitAll()
             .and()
             .exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> {
-                    System.out.println("Authentication failed: " + authException.getMessage());
-                    response.sendRedirect("/login?error=true");
+                    if (isApiOrAjaxRequest(request)) {
+                        System.out.println("미인증 API/AJAX 요청 차단(401): "
+                                + request.getMethod() + " " + request.getRequestURI());
+                        response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
+                        return;
+                    }
+                    String loginUrl = buildLoginRedirectUrl(request);
+                    System.out.println("미인증 접근 → 로그인 리다이렉트: "
+                            + request.getMethod() + " " + request.getRequestURI() + " -> " + loginUrl);
+                    response.sendRedirect(loginUrl);
                 });
+    }
+
+    private static boolean isApiOrAjaxRequest(HttpServletRequest request) {
+        String uri = request.getRequestURI();
+        if (uri != null && uri.startsWith("/api/")) {
+            return true;
+        }
+        if ("XMLHttpRequest".equals(request.getHeader("X-Requested-With"))) {
+            return true;
+        }
+        String accept = request.getHeader("Accept");
+        return accept != null && accept.contains("application/json");
+    }
+
+    /** 미인증 페이지 접근 시 로그인으로만 보냄. error=true는 실제 로그인 실패에만 사용. */
+    private static String buildLoginRedirectUrl(HttpServletRequest request) {
+        String contextPath = request.getContextPath();
+        if (contextPath == null || "/".equals(contextPath)) {
+            contextPath = "";
+        }
+        return contextPath + "/login";
     }
 
     @Bean

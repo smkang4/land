@@ -16,8 +16,8 @@ public interface RentDAO {
     List<ComCodeDTO> getSelectProjects(String user_no);
     List<ComCodeDTO> getUserList();
     List<ComCodeDTO> getProjUserList(String headCode);
-    LoginDTO getUserinfo(int emp_no);
-    EmpUserDTO getEmpUserInfo(int emp_no);
+    LoginDTO getUserinfo(@Param("emp_no") int emp_no, @Param("user_nm") String user_nm);
+    EmpUserDTO getEmpUserInfo(@Param("emp_no") int emp_no, @Param("user_nm") String user_nm);
 
     String getGwPjcode(@Param("proj_code") String proj_code);
     String getMstSeq();
@@ -42,7 +42,7 @@ public interface RentDAO {
     
     List<ComCodeDTO> getExistingCustomersDebug(String bizNo);
     
-    String getEmployeeName(String emp_no);
+    String getEmployeeName(@Param("emp_no") String emp_no, @Param("user_nm") String user_nm);
     
     // 임대차 계약 등록 관련 메서드들
     String getLeaseSeq();

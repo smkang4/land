@@ -245,69 +245,70 @@
             padding: 1rem 0.75rem;
         }
 
-        /* Custom Tooltip Styles */
-        .approval-card {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .approval-card .tooltip-content {
-            visibility: hidden;
-            position: absolute;
-            z-index: 1000;
-            top: 110%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #495057;
-            color: white;
-            text-align: center;
+        /* 결재 의견: 의견자별 구분 카드 */
+        .appr-remarks-section {
+            width: 100%;
+            margin-top: 0.75rem;
             padding: 0.75rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            white-space: normal;
-            min-width: 200px;
-            max-width: 400px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            background: #f1f3f5;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            border-left: 4px solid #0d6efd;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.65rem;
         }
 
-        .approval-card .tooltip-content::after {
-            content: "";
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            margin-left: -4px;
-            border-width: 4px;
-            border-style: solid;
-            border-color: transparent transparent #495057 transparent;
-        }
-
-        .approval-card:hover .tooltip-content {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .approval-card .tooltip-content.empty {
-            display: none;
-        }
-
-        .approval-card .tooltip-content .tooltip-header {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: #fff;
+        .appr-remarks-section .appr-remarks-heading {
             font-size: 0.8rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0;
         }
 
-        .approval-card .tooltip-content .tooltip-body {
-            line-height: 1.4;
-            color: #e9ecef;
+        .appr-remarks-section .appr-remark-item {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.75rem 1rem;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #212529;
+            word-break: break-word;
+        }
+
+        .appr-remarks-section .appr-remark-name {
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .appr-remarks-section .appr-remark-text {
             white-space: pre-wrap;
+            display: block;
+            margin-top: 0.35rem;
         }
 
-        .approval-card .tooltip-content .no-memo {
-            font-style: italic;
-            color: #adb5bd;
+        .appr-remarks-section .appr-remark-item .appr-remark-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .appr-remarks-section .appr-remark-item .appr-remark-head .appr-remark-who {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .appr-remarks-section a.btn-edit-my-remark {
+            flex-shrink: 0;
+            text-decoration: none;
         }
         /* 결재취소 Modal 스타일 */
         #cancelModal .modal-header {
@@ -381,19 +382,18 @@
 
     <div class="container-fluid">
         <hr>
+        <div class="row mb-2" id="ccListRow">
+            <div class="col-12 d-flex flex-wrap align-items-center gap-1">
+                <span class="badge bg-secondary">참조</span>
+                <span class="badge bg-light text-dark border"
+                      th:each="cc : ${cc_list}"
+                      th:text="${cc.empNm + ' ' + (cc.positionNm != null ? cc.positionNm : '')}"></span>
+                <span class="badge bg-light text-muted border" th:if="${cc_list == null or #lists.isEmpty(cc_list)}">없음</span>
+            </div>
+        </div>
         <div class="row">
             <div class="col col-auto" th:each="list, i : ${appr_list}">
-                <div class="card text-center w-20 approval-card" style="min-width:120px;" 
-                     th:attr="data-remarks=${list.appr_remarks}">
-                    <div class="tooltip-content" th:classappend="${list.appr_remarks == null or list.appr_remarks == '' ? 'empty' : ''}">
-                        <div th:if="${list.appr_remarks != null and list.appr_remarks != ''}">
-                            <div class="tooltip-header">의견</div>
-                            <div class="tooltip-body" th:text="${list.appr_remarks}" style="white-space: pre-wrap;"></div>
-                        </div>
-                        <div th:unless="${list.appr_remarks != null and list.appr_remarks != ''}">
-                            <div class="no-memo">메모가 없습니다</div>
-                        </div>
-                    </div>
+                <div class="card text-center w-20" style="min-width:120px;">
                     <div class="card-header">
                         <span th:text="${list.appr_position}"></span>
                     </div>
@@ -410,8 +410,25 @@
                     </div>
                 </div>
             </div>
-            <hr class="mt-3">
         </div>
+        <div class="appr-remarks-section"
+             th:if="${appr_list != null and !#lists.isEmpty(appr_list.?[appr_remarks != null and appr_remarks != ''])}">
+            <div class="appr-remarks-heading">결재 의견</div>
+            <div class="appr-remark-item" th:each="list : ${appr_list}"
+                 th:if="${list.appr_remarks != null and list.appr_remarks != ''}">
+                <div class="appr-remark-head">
+                    <span class="appr-remark-who">
+                        <span class="appr-remark-name" th:text="${list.appr_emp_nm}">결재자</span>
+                        <span class="text-muted small"> 의견</span>
+                    </span>
+                    <a href="#" class="btn btn-sm btn-outline-secondary btn-edit-my-remark"
+                       th:if="${list.appr_emp_no == #authentication.principal.empNo}"
+                       th:attr="data-d-seq=${list.d_seq}">수정</a>
+                </div>
+                <span class="appr-remark-text" th:text="${list.appr_remarks}"></span>
+            </div>
+        </div>
+        <hr class="mt-3">
 
         <!--부동산 정보 추가 시작-->
 
@@ -422,6 +439,12 @@
                      data-bs-toggle="modal" 
                      data-bs-target="#cancelModal">
                 <i class="bi bi-arrow-counterclockwise"></i> 결재취소
+            </button>
+            <button type="button" class="btn btn-action btn-outline-danger me-2"
+                    th:if="${can_admin_cancel_last_step} == 'T'"
+                    data-bs-toggle="modal"
+                    data-bs-target="#adminCancelModal">
+                <i class="bi bi-shield-exclamation"></i> 관리자 결재 1단계 취소
             </button>
             
             <button type="button" class="btn btn-action btn-outline-secondary" th:if="${last} == T"
@@ -737,7 +760,7 @@
 
         <!--부동산 정보 추가 끝-->
 
-        <div class="row">
+        <div class="row" th:if="${read_only} != 'T'">
             <div class="col col-auto" th:if="${admin_tg} == 'T'">
                 <button type="button" class="btn btn-action btn-primary" data-bs-toggle="collapse" data-bs-target="#nextTarget" aria-expanded="false" aria-controls="nextTarget">
                     <i class="bi bi-arrow-right-square"></i> 관리부서접수
@@ -784,6 +807,50 @@
             </div>
         </div>
         
+        <!-- 결재 의견 수정 Modal -->
+        <div class="modal fade" id="editRemarkModal" tabindex="-1" aria-labelledby="editRemarkModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="editRemarkModalLabel">결재 의견 수정</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="hidden" id="editRemarkDSeq" value="">
+                        <label for="editRemarkText" class="form-label small text-muted">의견</label>
+                        <textarea class="form-control" id="editRemarkText" rows="5" style="white-space: pre-wrap;"></textarea>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-primary" id="btnSaveRemarkEdit">저장</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 관리자: 결재 마지막 단계 1회 취소 Modal -->
+        <div class="modal fade" id="adminCancelModal" tabindex="-1" aria-labelledby="adminCancelModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title" id="adminCancelModalLabel">
+                            <i class="bi bi-shield-exclamation text-danger me-2"></i>
+                            관리자 결재 1단계 취소
+                        </h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="mb-0">현재 문서의 <strong>마지막 결재 단계</strong>를 한 단계 되돌립니다.</p>
+                        <small class="text-muted">ERP/거래처 탭 권한이 있는 관리자만 실행할 수 있습니다.</small>
+                    </div>
+                    <div class="modal-footer justify-content-center">
+                        <button type="button" class="btn btn-custom-secondary modal-btn" data-bs-dismiss="modal">닫기</button>
+                        <button type="button" class="btn btn-danger modal-btn" id="btnAdminCancelStep">실행</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- 결재취소 확인 Modal -->
         <div class="modal fade" id="cancelModal" tabindex="-1" aria-labelledby="cancelModalLabel" aria-hidden="true">
             <div class="modal-dialog modal-dialog-centered">
@@ -866,7 +933,7 @@
             document.body.removeChild(tempInput);
         }
 
-        $('button').on('click',function(){
+        $('#btnConfirm, #btnAddConfirm, #btnBan').on('click',function(){
 
             var admin_tag = [[${admin_tag}]];
 
@@ -881,14 +948,60 @@
             }else if(vId == 'btnBan'){
                 console.log("반려");
                 btnConfirmApply("F",appr_d_seq,appr_no,appr_num,emp_no,"F");
-            }else{
-                return false;
             }
+        });
+
+        $(document).on('click', 'a.btn-edit-my-remark', function (e) {
+            e.preventDefault();
+            var dseq = $(this).data('d-seq');
+            var text = $(this).closest('.appr-remark-item').find('.appr-remark-text').text();
+            $('#editRemarkDSeq').val(dseq);
+            $('#editRemarkText').val(text);
+            var modal = new bootstrap.Modal(document.getElementById('editRemarkModal'));
+            modal.show();
+        });
+
+        $('#btnSaveRemarkEdit').on('click', function () {
+            var dseq = $('#editRemarkDSeq').val();
+            var params = "appr_no=" + appr_no + "&d_seq=" + dseq + "&appr_remarks=" + encodeURIComponent($('#editRemarkText').val());
+            var vUrl = "/appr/update/remarks";
+            ufn_transaction(
+                vUrl,
+                "POST",
+                params,
+                "text",
+                function () { $("#btnSaveRemarkEdit").prop("disabled", true); },
+                function (response) {
+                    $("#btnSaveRemarkEdit").prop("disabled", false);
+                    try {
+                        var result = JSON.parse(response);
+                        if (result.success) {
+                            bootstrap.Modal.getInstance(document.getElementById('editRemarkModal')).hide();
+                            MsgBox.Alert(result.message || "저장되었습니다.", function () {
+                                if (window.opener && !window.opener.closed) {
+                                    window.opener.location.reload();
+                                }
+                                location.reload();
+                            });
+                        } else {
+                            MsgBox.Alert(result.message || "저장에 실패했습니다.");
+                        }
+                    } catch (err) {
+                        MsgBox.Alert("응답 처리 중 오류가 발생했습니다.");
+                    }
+                },
+                function () {
+                    $("#btnSaveRemarkEdit").prop("disabled", false);
+                    MsgBox.Alert("의견 저장 중 오류가 발생했습니다.");
+                },
+                ""
+            );
         });
 
         function btnConfirmApply(gubun,d_seq,appr_no,appr_num,appr_emp_no,last_chk){
 
         var next_emp_user = $("#next_emp_user").val();
+        var next_emp_nm = $("#next_emp_user option:selected").text() || "";
 
         var params = "";
         params += "gubun="+gubun;
@@ -897,6 +1010,7 @@
         params += "&appr_no="+appr_no;
         params += "&appr_num="+appr_num;
         params += "&next_emp_user="+next_emp_user;
+        params += "&next_emp_nm="+encodeURIComponent(next_emp_nm);
 
         if(gubun == "T"){
               params += "&banRemark="+encodeURIComponent($("#appr_add_remarks").val());
@@ -970,6 +1084,45 @@
                 $(".btn-conf").prop("disabled",false);
             }, //error
             "" // 성공 메시지
+        );
+    });
+
+    $("#btnAdminCancelStep").on("click", function () {
+        var params = "appr_no=" + appr_no;
+        var vUrl = "/appr/admin/cancel-last-step";
+        ufn_transaction(
+            vUrl,
+            "POST",
+            params,
+            "text",
+            function () {
+                $("#btnAdminCancelStep").prop("disabled", true);
+            },
+            function (response) {
+                $("#btnAdminCancelStep").prop("disabled", false);
+                try {
+                    var result = JSON.parse(response);
+                    if (result.success) {
+                        MsgBox.Alert(result.message || "처리되었습니다.", function () {
+                            var m = bootstrap.Modal.getInstance(document.getElementById("adminCancelModal"));
+                            if (m) { m.hide(); }
+                            if (window.opener && !window.opener.closed) {
+                                window.opener.location.reload();
+                            }
+                            location.reload();
+                        });
+                    } else {
+                        MsgBox.Alert(result.message || "취소에 실패했습니다.");
+                    }
+                } catch (e) {
+                    MsgBox.Alert("응답 처리 중 오류가 발생했습니다.");
+                }
+            },
+            function () {
+                $("#btnAdminCancelStep").prop("disabled", false);
+                MsgBox.Alert("요청 처리 중 오류가 발생했습니다.");
+            },
+            ""
         );
     });
 

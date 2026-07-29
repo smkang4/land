@@ -29,7 +29,6 @@
         }
         footer {
             padding: 1.5rem;
-
             margin-top: 3rem;
         }
         .main-content {
@@ -279,6 +278,98 @@
             width: 200px !important;
             margin: 5px;
         }
+
+        #noticeModal .modal-dialog {
+            max-width: 520px;
+        }
+
+        #noticeModal .modal-content {
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
+        }
+
+        #noticeModal .notice-modal-header {
+            background: #fff;
+            color: var(--text-color);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+        }
+
+        #noticeModal .notice-modal-header .modal-title {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #212529;
+        }
+
+        #noticeModal .notice-modal-header .modal-title i {
+            color: #1a73e8;
+        }
+
+        #noticeModal .notice-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            background: rgba(26, 115, 232, 0.1);
+            color: #1a73e8;
+            font-size: 0.8rem;
+            font-weight: 600;
+            padding: 0.35rem 0.75rem;
+            border-radius: 999px;
+            margin-bottom: 0.75rem;
+        }
+
+        #noticeModal .notice-feature-list {
+            margin: 0;
+            padding-left: 1.1rem;
+            color: var(--text-color);
+            line-height: 1.7;
+        }
+
+        #noticeModal .notice-feature-list li + li {
+            margin-top: 0.35rem;
+        }
+
+        #noticeModal .notice-highlight {
+            background: #f8f9fa;
+            border-left: 4px solid #1a73e8;
+            border-radius: 0 8px 8px 0;
+            padding: 0.85rem 1rem;
+            margin-top: 1rem;
+            font-size: 0.92rem;
+            color: #495057;
+        }
+
+        #noticeModal .notice-screenshot {
+            margin: 1rem auto;
+            max-width: 480px;
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            overflow: hidden;
+            background: #fff;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
+        }
+
+        #noticeModal .notice-screenshot img {
+            display: block;
+            width: 100%;
+            height: auto;
+        }
+
+        #noticeModal .notice-screenshot__caption {
+            padding: 0.5rem 0.75rem;
+            font-size: 0.8rem;
+            color: #6c757d;
+            background: #f8f9fa;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        #noticeModal .modal-footer {
+            border-top: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+        }
     </style>
 </head>
 <body>
@@ -353,9 +444,41 @@
 
     </main>
 
-    <footer class="my-5 pt-5 text-muted text-center text-small">
-        <small class="mb-1">©2025. Dong-Ah Geological Engineering Company Ltd. All Rights Reserved.</small>
-    </footer>
+    <div th:replace="~{fragments/footer.html :: site-footer}"></div>
+
+    <!-- 기능 안내 공지 Modal -->
+    <div class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true" data-bs-backdrop="static">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content">
+                <div class="modal-header notice-modal-header">
+                    <h5 class="modal-title" id="noticeModalLabel">
+                        <i class="bi bi-megaphone me-2"></i>기능 안내
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
+                </div>
+                <div class="modal-body px-4 py-4">
+                    <span class="notice-badge">
+                        <i class="bi bi-stars"></i> 신규 기능
+                    </span>
+                    <h6 class="fw-bold mb-2">결재 참조 기능 추가</h6>
+                    <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                        사전조사서 확인요청 처리 시 결재선과 함께 참조 대상자를 지정할 수 있습니다.
+                    </p>
+                    <figure class="notice-screenshot mb-0">
+                        <img th:src="@{/images/rent_notice_260601.png}" alt="확인 요청서 화면 — 결재선 및 참조자 추가 예시">
+                        <figcaption class="notice-screenshot__caption">확인 요청서 화면 예시 (결재자 · 참조자 추가)</figcaption>
+                    </figure>
+                </div>
+                <div class="modal-footer d-flex justify-content-between align-items-center">
+                    <div class="form-check mb-0">
+                        <input class="form-check-input" type="checkbox" id="noticeHideToday">
+                        <label class="form-check-label text-muted small" for="noticeHideToday">오늘 하루 보지 않기</label>
+                    </div>
+                    <button type="button" class="btn btn-primary px-4" id="noticeConfirmBtn">확인</button>
+                </div>
+            </div>
+        </div>
+    </div>
 
     <!-- Logout Modal -->
     <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
@@ -377,5 +500,48 @@
             </div>
         </div>
     </div>
+
+    <script>
+        (function () {
+            var STORAGE_KEY = 'rent_notice_approval_cc_hidden';
+            var noticeEl = document.getElementById('noticeModal');
+            if (!noticeEl) return;
+
+            function todayKey() {
+                var d = new Date();
+                return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0') + '-' + String(d.getDate()).padStart(2, '0');
+            }
+
+            function shouldShowNotice() {
+                try {
+                    return localStorage.getItem(STORAGE_KEY) !== todayKey();
+                } catch (e) {
+                    return true;
+                }
+            }
+
+            function hideNoticeForToday() {
+                try {
+                    localStorage.setItem(STORAGE_KEY, todayKey());
+                } catch (e) {}
+            }
+
+            function closeNoticeModal() {
+                var checkbox = document.getElementById('noticeHideToday');
+                if (checkbox && checkbox.checked) {
+                    hideNoticeForToday();
+                }
+                bootstrap.Modal.getOrCreateInstance(noticeEl).hide();
+            }
+
+            document.getElementById('noticeConfirmBtn').addEventListener('click', closeNoticeModal);
+
+            if (shouldShowNotice()) {
+                document.addEventListener('DOMContentLoaded', function () {
+                    bootstrap.Modal.getOrCreateInstance(noticeEl).show();
+                });
+            }
+        })();
+    </script>
 </body>
 </html>

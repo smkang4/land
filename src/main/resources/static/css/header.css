@@ -239,4 +239,14 @@ main {
     top: 50%;
     transform: translateY(-50%);
     font-size: 1rem;
-} 
+}
+
+footer .footer-manual-link {
+    font-size: 0.875rem;
+    transition: color 0.2s ease;
+}
+
+footer .footer-manual-link:hover {
+    color: #1a73e8 !important;
+    text-decoration: underline !important;
+}

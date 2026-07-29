@@ -56,6 +56,24 @@ public class ApprovalService {
         approvalDAO.updateApprovalDetail(ddto);
     }
 
+    /**
+     * 로그인 사용자 본인 행의 결재 의견만 수정 (승인/반려 상태·일시는 변경하지 않음)
+     */
+    @Transactional("mysqlTransactionManager")
+    public Map<String, Object> updateOwnApprovalRemarks(int appr_no, int d_seq, int appr_emp_no, String appr_remarks) {
+        Map<String, Object> result = new HashMap<>();
+        String remarks = appr_remarks != null ? appr_remarks : "";
+        int updated = approvalDAO.updateApprovalRemarksOnly(appr_no, d_seq, appr_emp_no, remarks);
+        if (updated == 1) {
+            result.put("success", true);
+            result.put("message", "의견이 저장되었습니다.");
+        } else {
+            result.put("success", false);
+            result.put("message", "수정할 수 없습니다. 본인 결재 건인지 확인해 주세요.");
+        }
+        return result;
+    }
+
     @Transactional("mysqlTransactionManager")
     public String getApprovalTag(@Param("appr_no") int appr_no){
         return approvalDAO.getApprovalTag(appr_no);
@@ -89,18 +107,7 @@ public class ApprovalService {
         // 각 직원번호에 대해 직원이름 조회 및 Oracle 상태 조회
         if (result != null && !result.isEmpty()) {
             for (ApprovalDTO dto : result) {
-                Integer empNo = dto.getEmp_no();
-                if (empNo != null && empNo > 0) {
-                    try {
-                        String employeeName = rentDAO.getEmployeeName(empNo.toString());
-                        dto.setUser_nm(employeeName);
-                    } catch (Exception e) {
-                        System.out.println("직원이름 조회 실패 - emp_no: " + empNo + ", 오류: " + e.getMessage());
-                        dto.setUser_nm(""); // 조회 실패 시 빈 문자열로 설정
-                    }
-                } else {
-                    dto.setUser_nm(""); // emp_no가 null이거나 0인 경우 빈 문자열로 설정
-                }
+                enrichEmployeeName(dto);
                 
                 // Oracle에서 상태 조회
                 String mstSeq = dto.getMst_seq();
@@ -138,18 +145,7 @@ public class ApprovalService {
         // 각 직원번호에 대해 직원이름 조회 및 Oracle 상태 조회
         if (result != null && !result.isEmpty()) {
             for (ApprovalDTO dto : result) {
-                Integer empNo = dto.getEmp_no();
-                if (empNo != null && empNo > 0) {
-                    try {
-                        String employeeName = rentDAO.getEmployeeName(empNo.toString());
-                        dto.setUser_nm(employeeName);
-                    } catch (Exception e) {
-                        System.out.println("직원이름 조회 실패 - emp_no: " + empNo + ", 오류: " + e.getMessage());
-                        dto.setUser_nm(""); // 조회 실패 시 빈 문자열로 설정
-                    }
-                } else {
-                    dto.setUser_nm(""); // emp_no가 null이거나 0인 경우 빈 문자열로 설정
-                }
+                enrichEmployeeName(dto);
                 
                 // Oracle에서 상태 조회
                 String mstSeq = dto.getMst_seq();
@@ -186,18 +182,7 @@ public class ApprovalService {
         // 각 직원번호에 대해 직원이름 조회 및 Oracle 상태 조회
         if (result != null && !result.isEmpty()) {
             for (ApprovalDTO dto : result) {
-                Integer empNo = dto.getEmp_no();
-                if (empNo != null && empNo > 0) {
-                    try {
-                        String employeeName = rentDAO.getEmployeeName(empNo.toString());
-                        dto.setUser_nm(employeeName);
-                    } catch (Exception e) {
-                        System.out.println("직원이름 조회 실패 - emp_no: " + empNo + ", 오류: " + e.getMessage());
-                        dto.setUser_nm(""); // 조회 실패 시 빈 문자열로 설정
-                    }
-                } else {
-                    dto.setUser_nm(""); // emp_no가 null이거나 0인 경우 빈 문자열로 설정
-                }
+                enrichEmployeeName(dto);
                 
                 // Oracle에서 상태 조회
                 String mstSeq = dto.getMst_seq();
@@ -257,25 +242,42 @@ public class ApprovalService {
 
     @Transactional("mysqlTransactionManager")
     public Map<String, Object> cancelApprovalAndCleanup(int appr_no, int appr_emp_no) {
+        return cancelApprovalAndCleanup(appr_no, appr_emp_no, false);
+    }
+
+    /**
+     * @param adminBypassLastApproverCheck true 이면 마지막 승인자 본인 여부를 검사하지 않음(ERP/거래처 권한 관리자 전용 API에서만 사용)
+     */
+    @Transactional("mysqlTransactionManager")
+    public Map<String, Object> cancelApprovalAndCleanup(int appr_no, int appr_emp_no, boolean adminBypassLastApproverCheck) {
         Map<String, Object> result = new HashMap<>();
 
         try {
-            // 1. 내 appr_num 확인
-            Map<String, Object> params = new HashMap<>();
-            params.put("appr_no", appr_no);
-            params.put("appr_emp_no", appr_emp_no);
-
-            Integer maxApprNum = approvalDAO.getMaxApprovalNumber(params);
-            if (maxApprNum == null) {
+            Integer maxApprNum = approvalDAO.getMaxApprovalNumber(appr_no);
+            if (maxApprNum == null || maxApprNum < 1) {
                 result.put("success", false);
-                result.put("message", "해당 결재 데이터를 찾을 수 없습니다.");
+                result.put("message", "취소할 결재 단계가 없습니다.");
                 return result;
+            }
+
+            if (approvalDAO.countApprovedAtMaxStep(appr_no) < 1) {
+                result.put("success", false);
+                result.put("message", "되돌릴 승인 완료된 마지막 단계가 없습니다.");
+                return result;
+            }
+
+            if (!adminBypassLastApproverCheck) {
+                int ok = approvalDAO.countLastApprovedStepByEmp(appr_no, appr_emp_no);
+                if (ok < 1) {
+                    result.put("success", false);
+                    result.put("message", "마지막으로 승인한 결재자만 결재취소할 수 있습니다.");
+                    return result;
+                }
             }
 
             System.out.println("--결재 취소-- appr_num: "+maxApprNum);
 
-            // 2. 내 appr_num보다 큰 데이터 삭제
-            params.put("appr_num", maxApprNum);
+            // 2. 해당 appr_num보다 큰 단계 삭제
             int deletedHigher = approvalDAO.deleteHigherApprovalNumbers(appr_no, maxApprNum);
 
             System.out.println("--결재 취소-- 이후 데이터 삭제 완료");
@@ -283,11 +285,14 @@ public class ApprovalService {
             // 3. 내 appr_num보다 큰 데이터가 있는지 확인
             int hasHigherNum = approvalDAO.checkHigherApprovalNumbers(appr_no, maxApprNum);
 
-            // 4. count가 0이라면 B그룹인 경우 삭제
+            // 4. count가 0이라면 B그룹인 경우 삭제 (해당 결재 단계의 결재자 기준 — 관리자 대리 취소 시에도 동작)
+            Integer empAtStep = approvalDAO.getApprEmpNoAtApprNum(appr_no, maxApprNum);
+            int empForBGroupDelete = empAtStep != null ? empAtStep : appr_emp_no;
+
             int deletedBGroup = 0;
             if (hasHigherNum == 0) {
                 System.out.println("--결재 취소-- 관리자 접수 삭제");
-                deletedBGroup = approvalDAO.deleteBGroupApproval(appr_no, appr_emp_no);
+                deletedBGroup = approvalDAO.deleteBGroupApproval(appr_no, empForBGroupDelete);
 
                 // 5. DELETE가 0보다 크면 approval_m에 appr_admin 업데이트
                 if (deletedBGroup > 0) {
@@ -334,19 +339,7 @@ public class ApprovalService {
         // 각 항목에 대해 직원이름과 Oracle 상태 조회
         if (result != null && !result.isEmpty()) {
             for (ApprovalDTO dto : result) {
-                // 직원이름 조회
-                Integer empNo = dto.getEmp_no();
-                if (empNo != null && empNo > 0) {
-                    try {
-                        String employeeName = rentDAO.getEmployeeName(empNo.toString());
-                        dto.setUser_nm(employeeName);
-                    } catch (Exception e) {
-                        System.out.println("직원이름 조회 실패 - emp_no: " + empNo + ", 오류: " + e.getMessage());
-                        dto.setUser_nm("");
-                    }
-                } else {
-                    dto.setUser_nm("");
-                }
+                enrichEmployeeName(dto);
                 
                 // Oracle에서 상태 조회
                 String mstSeq = dto.getMst_seq();
@@ -377,6 +370,27 @@ public class ApprovalService {
         return result;
     }
     
+    /**
+     * 직원이름 보강: draft.user_nm 우선, 없으면 Oracle 조회
+     */
+    private void enrichEmployeeName(ApprovalDTO dto) {
+        if (dto.getUser_nm() != null && !dto.getUser_nm().trim().isEmpty()) {
+            return;
+        }
+        Integer empNo = dto.getEmp_no();
+        if (empNo != null && empNo > 0) {
+            try {
+                String employeeName = rentService.getEmployeeName(String.valueOf(empNo), null);
+                dto.setUser_nm(employeeName != null ? employeeName : "");
+            } catch (Exception e) {
+                System.out.println("직원이름 조회 실패 - emp_no: " + empNo + ", 오류: " + e.getMessage());
+                dto.setUser_nm("");
+            }
+        } else {
+            dto.setUser_nm("");
+        }
+    }
+
     /**
      * 거래처 등록 시도 플래그 업데이트
      * @param draftId 기안서 ID

@@ -979,6 +979,7 @@
                             <strong>계약 ${index + 1}</strong>
                             <input type="hidden" class="contract-id" value="${contract.id || ''}">
                             <input type="hidden" class="contract-apprNo" value="${contract.appr_no || ''}">
+                            <input type="hidden" class="contract-contractSeq" value="${contract.contractSeq || ''}">
                             <input type="hidden" class="contract-rowNo" value="${contract.rowNo || index + 1}">
                             <input type="hidden" class="contract-type" value="${contract.type || ''}">
                             <input type="hidden" class="contract-rsrcCode" value="${contract.rsrcCode || ''}">
@@ -1358,31 +1359,56 @@
         bootstrap.Modal.getInstance(document.getElementById('editLessorModal')).hide();
     }
     
+    function stripModalNumber(value) {
+        return String(value || '').replace(/,/g, '');
+    }
+
+    function getEditContractField(card, visibleSelector, hiddenSelector) {
+        const visibleValue = card.find(visibleSelector).val();
+        if (visibleValue !== undefined && visibleValue !== null && String(visibleValue).trim() !== '') {
+            return visibleValue;
+        }
+        return card.find(hiddenSelector).val() || '';
+    }
+
     // 기안서 수정 저장
     function saveEditedDraft() {
-        const draftId = $('#editDraftId').val();
+        const draftId = parseInt($('#editDraftId').val(), 10);
+        const rentReason = $('#editRentReason').val().trim();
+
+        if (!draftId) {
+            alert('기안서 ID를 찾을 수 없습니다.');
+            return;
+        }
+
+        if (!rentReason) {
+            alert('임대차 계약 사유를 입력해주세요.');
+            $('#editRentReason').focus();
+            return;
+        }
         
         // 계약 상세 정보 수집
         const contractDetails = [];
         $('#editContractInfo .contract-card').each(function(index) {
             const card = $(this);
             const contractDetail = {
-                id: card.find('.contract-id').val(),
+                id: card.find('.contract-id').val() || null,
                 appr_no: card.find('.contract-apprNo').val(),
+                contractSeq: card.find('.contract-contractSeq').val() || null,
                 rowNo: card.find('.contract-rowNo').val() || (index + 1),
-                type: card.find('.contract-type').val(),
-                address: card.find('.contract-address').val(),
-                addressD: card.find('.contract-addressD').val(),
+                type: getEditContractField(card, '.contract-type-select', '.contract-type'),
+                address: getEditContractField(card, '.contract-address-input', '.contract-address'),
+                addressD: getEditContractField(card, '.contract-addressD-input', '.contract-addressD'),
                 postCode: card.find('.contract-postCode').val(),
                 rsrcCode: card.find('.contract-rsrcCode').val(),
-                area: card.find('.contract-area').val(),
-                contDate_s: card.find('.contract-contDate_s').val(),
-                contDate_e: card.find('.contract-contDate_e').val(),
+                area: getEditContractField(card, '.contract-area-input', '.contract-area'),
+                contDate_s: getEditContractField(card, '.contract-contDate_s-input', '.contract-contDate_s'),
+                contDate_e: getEditContractField(card, '.contract-contDate_e-input', '.contract-contDate_e'),
                 chk_3: card.find('.contract-chk_3').val(),
                 accu: card.find('.contract-accu').val(),
-                depositAmt: card.find('.contract-depositAmt').val(),
-                rentAmt: card.find('.contract-rentAmt').val(),
-                contAmt: card.find('.contract-contAmt').val(),
+                depositAmt: stripModalNumber(getEditContractField(card, '.contract-depositAmt-input', '.contract-depositAmt')),
+                rentAmt: stripModalNumber(getEditContractField(card, '.contract-rentAmt-input', '.contract-rentAmt')),
+                contAmt: stripModalNumber(getEditContractField(card, '.contract-contAmt-input', '.contract-contAmt')),
                 paymentDate: card.find('.contract-paymentDate').val(),
                 lessor: card.find('.contract-lessor').val(),
                 lessorName: card.find('.contract-lessorName').val(),
@@ -1396,11 +1422,9 @@
         
         const formData = {
             id: draftId,
-            proj_name: $('#editProjName').val(),
-            rent_reason: $('#editRentReason').val(),
+            rent_reason: rentReason,
             execution_budget: $('#editExecutionBudget').val(),
             rent_source: $('#editRentSource').val(),
-            attachment_list: attachmentList,
             contractDetails: contractDetails
         };
         

@@ -274,12 +274,66 @@
         dcd.cust_code as custCode,
         dcd.payment_date as paymentDate
         FROM contract_m m
-        , contract_d d
-        , approval_m am
-        LEFT JOIN draft_contract_detail dcd ON dcd.appr_no = am.appr_no
+        INNER JOIN contract_d d ON d.seq = m.seq
+        INNER JOIN approval_m am ON am.appr_no = m.appr_no
+        LEFT JOIN draft_contract_detail dcd ON dcd.contract_seq = m.seq
         WHERE m.appr_no = #{appr_no}
-        AND am.appr_no = m.appr_no
-        AND d.seq = m.seq
+    </select>
+
+    <!-- 기안서 작성 화면 전용: 이미 다른 기안서에 포함된 contract는 제외하여 반환 -->
+    <select id="getContractDetailForDraft" resultType="com.dage.rent.DTO.ContractDTO">
+        SELECT
+        m.seq,
+        m.emp_no,
+        m.user_nm,
+        CAST(m.proj_code AS CHAR) as proj_code,
+        m.proj_name,
+        m.appr_no,
+        d.cont_date,
+        d.cont_period,
+        d.move_date,
+        d.cont_amt,
+        d.deposit_amt,
+        d.rent_amt,
+        d.address,
+        d.address_d,
+        d.post_code,
+        d.res_type,
+        d.trans_type,
+        d.area,
+        d.crtdate,
+        d.accu,
+        d.accu_type,
+        d.source,
+        d.chk_1,
+        d.chk_2,
+        d.chk_3,
+        d.chk_4,
+        d.chk_5,
+        d.chk_reason_1,
+        d.chk_reason_2,
+        d.chk_reason_3,
+        d.chk_reason_4,
+        d.chk_reason_5,
+        d.real_estate_files,
+        d.credit_files,
+        dcd.lessor,
+        dcd.lessor_name as lessorName,
+        dcd.lessor_account as lessorAccount,
+        dcd.lessor_bank as lessorBank,
+        NULL as existingCustCode,
+        dcd.cust_code as custCode,
+        dcd.payment_date as paymentDate
+        FROM contract_m m
+        INNER JOIN contract_d d ON d.seq = m.seq
+        INNER JOIN approval_m am ON am.appr_no = m.appr_no
+        LEFT JOIN draft_contract_detail dcd ON dcd.contract_seq = m.seq
+        WHERE m.appr_no = #{appr_no}
+        AND m.seq NOT IN (
+            SELECT dcd2.contract_seq
+            FROM draft_contract_detail dcd2
+            WHERE dcd2.contract_seq IS NOT NULL
+        )
     </select>
 
     <select id="getContractDetailForReceipt" resultType="com.dage.rent.DTO.ContractDTO">
@@ -448,7 +502,7 @@
         FROM contract_m m
         JOIN contract_d d
         ON m.seq = d.seq
-        <if test="proj_code != null">
+        <if test="proj_code != null and proj_code != ''">
         AND m.proj_code = #{proj_code}
         </if>
         AND m.temp_flag = 'N'
@@ -457,14 +511,17 @@
         WHERE m.EMP_NO = #{user_no}
 
         <choose>
-            <when test="conf_tag == 999">
+            <when test='conf_tag == "999" or conf_tag == 999'>
                 AND a.appr_stat IS NULL
             </when>
-            <when test="conf_tag == 2">
-                AND a.appr_stat IN ('0','1', '2')
+            <when test='conf_tag == "2" or conf_tag == 2'>
+                AND a.appr_stat IN ('0','1','2')
             </when>
-            <when test="conf_tag != null">
-                AND a.appr_stat = #{conf_tag}
+            <when test='conf_tag == "3" or conf_tag == 3'>
+                AND a.appr_stat = '3'
+            </when>
+            <when test='conf_tag == "4" or conf_tag == 4'>
+                AND a.appr_stat = '4'
             </when>
         </choose>
         order by d.crtdate desc

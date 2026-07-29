@@ -34,6 +34,8 @@ public interface ContractDAO {
     List<ApprovalDTO> getApprAllM();
     List<ContractDTO> getContractDetailForAdmin(Integer seq);
     List<ContractDTO> getContractDetailForList(Integer appr_no);
+    /** 기안서 작성 화면 전용: 이미 다른 기안서에 포함된 contract는 제외 */
+    List<ContractDTO> getContractDetailForDraft(Integer appr_no);
     List<ContractDTO> getContractDetailForReceipt();
     void updateContractMasterApprNo(
             @Param("appr_no") int appr_no

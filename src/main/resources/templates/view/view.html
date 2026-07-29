@@ -140,68 +140,70 @@
             color: white;
         }
 
-        /* Custom Tooltip Styles */
-        .approval-card {
-            position: relative;
-            cursor: pointer;
-        }
-
-        .approval-card .tooltip-content {
-            visibility: hidden;
-            position: absolute;
-            z-index: 1000;
-            top: 110%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #495057;
-            color: white;
-            text-align: center;
+        /* 결재 의견: 의견자별 구분 카드 */
+        .appr-remarks-section {
+            width: 100%;
+            margin-top: 0.75rem;
             padding: 0.75rem 1rem;
-            border-radius: 6px;
-            font-size: 0.875rem;
-            white-space: normal;
-            min-width: 200px;
-            max-width: 400px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-            opacity: 0;
-            transition: opacity 0.2s ease;
+            background: #f1f3f5;
+            border: 1px solid #e9ecef;
+            border-radius: 8px;
+            border-left: 4px solid #0d6efd;
+            display: flex;
+            flex-direction: column;
+            align-items: stretch;
+            gap: 0.65rem;
         }
 
-        .approval-card .tooltip-content::after {
-            content: "";
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            margin-left: -4px;
-            border-width: 4px;
-            border-style: solid;
-            border-color: transparent transparent #495057 transparent;
-        }
-
-        .approval-card:hover .tooltip-content {
-            visibility: visible;
-            opacity: 1;
-        }
-
-        .approval-card .tooltip-content.empty {
-            display: none;
-        }
-
-        .approval-card .tooltip-content .tooltip-header {
-            font-weight: 600;
-            margin-bottom: 0.25rem;
-            color: #fff;
+        .appr-remarks-section .appr-remarks-heading {
             font-size: 0.8rem;
+            font-weight: 600;
+            color: #495057;
+            margin-bottom: 0;
         }
 
-        .approval-card .tooltip-content .tooltip-body {
-            line-height: 1.4;
-            color: #e9ecef;
+        .appr-remarks-section .appr-remark-item {
+            width: 100%;
+            box-sizing: border-box;
+            padding: 0.75rem 1rem;
+            background: #fff;
+            border: 1px solid #dee2e6;
+            border-radius: 8px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #212529;
+            word-break: break-word;
         }
 
-        .approval-card .tooltip-content .no-memo {
-            font-style: italic;
-            color: #adb5bd;
+        .appr-remarks-section .appr-remark-name {
+            font-weight: 600;
+            color: #343a40;
+        }
+
+        .appr-remarks-section .appr-remark-text {
+            white-space: pre-wrap;
+            display: block;
+            margin-top: 0.35rem;
+        }
+
+        .appr-remarks-section .appr-remark-item .appr-remark-head {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .appr-remarks-section .appr-remark-item .appr-remark-head .appr-remark-who {
+            font-weight: 600;
+            color: #212529;
+        }
+
+        .appr-remarks-section a.btn-edit-my-remark {
+            flex-shrink: 0;
+            text-decoration: none;
         }
 
         /* Approval Line Centering */
@@ -224,17 +226,7 @@
 <hr>
 <div class="row approval-line-container">
     <div class="col col-auto" th:each="list, i : ${appr_list}">
-        <div class="card text-center w-20 approval-card" style="min-width:120px;"
-             th:attr="data-remarks=${list.appr_remarks}">
-            <div class="tooltip-content" th:classappend="${list.appr_remarks == null or list.appr_remarks == '' ? 'empty' : ''}">
-                <div th:if="${list.appr_remarks != null and list.appr_remarks != ''}">
-                    <div class="tooltip-header">의견</div>
-                    <div class="tooltip-body" th:text="${list.appr_remarks}"></div>
-                </div>
-                <div th:unless="${list.appr_remarks != null and list.appr_remarks != ''}">
-                    <div class="no-memo">메모가 없습니다</div>
-                </div>
-            </div>
+        <div class="card text-center w-20" style="min-width:120px;">
             <div class="card-header">
                 <span th:text="${list.appr_position}"></span>
             </div>
@@ -251,8 +243,25 @@
             </div>
         </div>
     </div>
-    <hr class="mt-3">
 </div>
+<div class="appr-remarks-section"
+     th:if="${appr_list != null and !#lists.isEmpty(appr_list.?[appr_remarks != null and appr_remarks != ''])}">
+    <div class="appr-remarks-heading">결재 의견</div>
+    <div class="appr-remark-item" th:each="list : ${appr_list}"
+         th:if="${list.appr_remarks != null and list.appr_remarks != ''}">
+        <div class="appr-remark-head">
+            <span class="appr-remark-who">
+                <span class="appr-remark-name" th:text="${list.appr_emp_nm}">결재자</span>
+                <span class="text-muted small"> 의견</span>
+            </span>
+            <a href="#" class="btn btn-sm btn-outline-secondary btn-edit-my-remark"
+               th:if="${login_emp_no != null and login_emp_no > 0 and list.appr_emp_no == login_emp_no}"
+               th:attr="data-d-seq=${list.d_seq}">수정</a>
+        </div>
+        <span class="appr-remark-text" th:text="${list.appr_remarks}"></span>
+    </div>
+</div>
+<hr class="mt-3">
 
     <div class="detail-container" th:each="detail : ${contract}">
         
@@ -541,6 +550,27 @@
         </div>
     </div>
 
+    <!-- 결재 의견 수정 Modal -->
+    <div class="modal fade" id="editRemarkModal" tabindex="-1" aria-labelledby="editRemarkModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editRemarkModalLabel">결재 의견 수정</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <input type="hidden" id="editRemarkDSeq" value="">
+                    <label for="editRemarkText" class="form-label small text-muted">의견</label>
+                    <textarea class="form-control" id="editRemarkText" rows="5" style="white-space: pre-wrap;"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">닫기</button>
+                    <button type="button" class="btn btn-primary" id="btnSaveRemarkEdit">저장</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- 반려 사유 입력 모달 -->
     <div class="modal fade rejection-modal" id="rejectionModal" tabindex="-1">
         <div class="modal-dialog">
@@ -563,6 +593,9 @@
 
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        var viewApprNo = /*[[${appr_no}]]*/ 0;
+    </script>
     <script>
         function copyDraftLink(seq) {
             var baseUrl = window.location.origin;
@@ -589,6 +622,51 @@
             
             document.body.removeChild(tempInput);
         }
+
+        $(document).on('click', 'a.btn-edit-my-remark', function (e) {
+            e.preventDefault();
+            var dseq = $(this).data('d-seq');
+            var text = $(this).closest('.appr-remark-item').find('.appr-remark-text').text();
+            $('#editRemarkDSeq').val(dseq);
+            $('#editRemarkText').val(text);
+            var modal = new bootstrap.Modal(document.getElementById('editRemarkModal'));
+            modal.show();
+        });
+
+        $('#btnSaveRemarkEdit').on('click', function () {
+            var dseq = $('#editRemarkDSeq').val();
+            var body = new URLSearchParams();
+            body.set('appr_no', String(viewApprNo));
+            body.set('d_seq', String(dseq));
+            body.set('appr_remarks', $('#editRemarkText').val());
+            $('#btnSaveRemarkEdit').prop('disabled', true);
+            fetch('/appr/update/remarks', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+                body: body.toString()
+            }).then(function (res) {
+                return res.text().then(function (text) {
+                    try {
+                        return { ok: res.ok, json: JSON.parse(text) };
+                    } catch (e) {
+                        return { ok: false, json: { message: '응답을 처리할 수 없습니다.' } };
+                    }
+                });
+            }).then(function (result) {
+                $('#btnSaveRemarkEdit').prop('disabled', false);
+                if (result.ok && result.json && result.json.success) {
+                    var inst = bootstrap.Modal.getInstance(document.getElementById('editRemarkModal'));
+                    if (inst) { inst.hide(); }
+                    alert(result.json.message || '저장되었습니다.');
+                    location.reload();
+                } else {
+                    alert((result.json && result.json.message) ? result.json.message : '저장에 실패했습니다.');
+                }
+            }).catch(function () {
+                $('#btnSaveRemarkEdit').prop('disabled', false);
+                alert('의견 저장 중 오류가 발생했습니다.');
+            });
+        });
 
         // 파일 다운로드 이벤트 처리
         $(document).ready(function() {

@@ -547,9 +547,6 @@
                                 <h4 class="section-title required mb-1">2. 계약내용</h4>
                                 <small class="text-muted ms-2">* 강조된 항목을 입력해주세요. 기존 항목의 수정도 가능합니다.</small>
                             </div>
-                            <button type="button" class="btn btn-primary" onclick="addContractCard()">
-                                <i class="bi bi-plus-circle"></i> 계약 추가
-                            </button>
                         </div>
                         <div id="contractCardsContainer">
                             <!-- Thymeleaf로 기존 데이터 카드 생성 -->
@@ -725,6 +722,8 @@
                                         <input type="hidden" th:name="'custCode_' + ${iterStat.count}" th:value="${contractItem.custCode}">
                                         <input type="hidden" th:name="'existing_cust_code_' + ${iterStat.count}" th:value="${contractItem.existingCustCode}">
                                         <input type="hidden" th:name="'rsrc_code_' + ${iterStat.count}" th:value="${contractItem.rsrcCode}">
+                                        <input type="hidden" th:name="'contract_seq_' + ${iterStat.count}" th:value="${contractItem.seq}">
+                                        <input type="hidden" th:name="'appr_no_' + ${iterStat.count}" th:value="${contractItem.appr_no}">
                                     </div>
                                 </div>
                             </div>
@@ -1073,6 +1072,10 @@
             const contractDetail = {
                 rowNo: rowNo,
                 appr_no: row.find(`input[name="appr_no_${rowId}"]`).val() || apprNo, // 각 행의 appr_no 추가
+                contractSeq: (() => {
+                    const v = row.find(`input[name="contract_seq_${rowId}"]`).val();
+                    return v && v !== '' ? parseInt(v, 10) : null;
+                })(),
                 type: row.find(`select[name="type_${rowId}"]`).val() || '',
                 address: row.find(`input[name="address_${rowId}"]`).val() || '',
                 addressD: row.find(`input[name="address_d_${rowId}"]`).val() || '',
@@ -1328,6 +1331,7 @@
                         <input type="hidden" name="custCode_${cardId}" value="">
                         <input type="hidden" name="existing_cust_code_${cardId}" value="">
                         <input type="hidden" name="rsrc_code_${cardId}" value="">
+                        <input type="hidden" name="contract_seq_${cardId}" value="">
                     </div>
                 </div>
             </div>
@@ -1524,21 +1528,16 @@
                     rowCounter = rowId;
                 }
                 
-                // 각 행/카드에 appr_no 설정 (복수 선택 시 각각 다른 appr_no 할당)
+                // appr_no: 서버에서 contract_m.appr_no로 렌더된 값 우선, 없을 때만 fallback
                 let apprNoInput = row.querySelector(`input[name="appr_no_${rowId}"]`);
                 if (!apprNoInput) {
-                    // appr_no hidden input이 없으면 생성
                     apprNoInput = document.createElement('input');
                     apprNoInput.type = 'hidden';
                     apprNoInput.name = `appr_no_${rowId}`;
                     row.appendChild(apprNoInput);
                 }
-                
-                // 복수 선택된 경우 각 행/카드에 다른 appr_no 할당
-                // 중요: index를 사용하여 순서대로 appr_no 할당
-                if (selectedApprNos.length > 0) {
-                    const apprNo = selectedApprNos[index] || selectedApprNos[0];
-                    apprNoInput.value = apprNo;
+                if (!apprNoInput.value && selectedApprNos.length > 0) {
+                    apprNoInput.value = selectedApprNos[index] || selectedApprNos[0];
                 }
             }
         });
@@ -2431,23 +2430,18 @@
                                     console.log('data.contractDetails:', data.contractDetails);
                                     
                                     if (data.contractDetails && data.contractDetails.length > 0) {
-                                        // 각 계약의 appr_no별로 링크 생성
-                                        const allApprNos = data.contractDetails.map(c => c.appr_no);
-                                        console.log('모든 appr_no:', allApprNos);
-                                        
-                                        const uniqueApprNos = [...new Set(allApprNos.filter(a => a))];
-                                        console.log('중복 제거된 appr_no:', uniqueApprNos);
-                                        
-                                        if (uniqueApprNos.length > 0) {
-                                            const links = uniqueApprNos.map((apprNo, index) => 
-                                                `${index > 0 ? '<br>' : ''}<a href="http://rent.dage.co.kr/view=${apprNo}" target="_blank">http://rent.dage.co.kr/view=${apprNo}</a>`
-                                            ).join('');
-                                            console.log('생성된 링크:', links);
+                                        // 2. 계약내용과 동일하게 행 순서대로 링크 생성 (중복 제거하지 않음)
+                                        const links = data.contractDetails.map((detail, index) => {
+                                            const apprNo = detail.appr_no;
+                                            if (!apprNo) return '';
+                                            return `${index > 0 ? '<br>' : ''}${index + 1}. <a href="http://rent.dage.co.kr/view?seq=${apprNo}" target="_blank">http://rent.dage.co.kr/view?seq=${apprNo}</a>`;
+                                        }).filter(Boolean).join('');
+                                        if (links) {
                                             return links;
                                         }
                                     }
                                     console.log('기본 appr_no 사용:', data.appr_no);
-                                    return `<a href="http://rent.dage.co.kr/view=${data.appr_no || ''}" target="_blank">http://rent.dage.co.kr/view=${data.appr_no || ''}</a>`;
+                                    return `<a href="http://rent.dage.co.kr/view?seq=${data.appr_no || ''}" target="_blank">http://rent.dage.co.kr/view?seq=${data.appr_no || ''}</a>`;
                                 })()}
                             </div>
                         </div>

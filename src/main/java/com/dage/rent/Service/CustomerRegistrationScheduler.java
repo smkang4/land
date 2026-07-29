@@ -3,6 +3,7 @@ package com.dage.rent.Service;
 import com.dage.rent.Component.Mail;
 import com.dage.rent.DTO.ApprovalDTO;
 import com.dage.rent.DTO.DraftDTO;
+import com.dage.rent.DTO.LoginDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class CustomerRegistrationScheduler {
     
     @Autowired
     private RentService rentService;
+
+    @Autowired
+    private AdminService adminService;
 
     @Autowired
     private Mail mail;
@@ -156,9 +160,18 @@ public class CustomerRegistrationScheduler {
                         
                         if (erpData != null && erpData.get("custCode") != null) {
                             // 거래처 등록 프로시저 호출
-                            System.out.println("거래처 등록 프로시저 호출 - custCode: " + erpData.get("custCode"));
+                            String registeredCustCode = String.valueOf(erpData.get("custCode"));
+                            System.out.println("거래처 등록 프로시저 호출 - custCode: " + registeredCustCode);
                             rentService.callCustProjProcedure(erpData);
                             System.out.println("✅ 거래처 등록 프로시저 호출 성공!");
+
+                            // Oracle에 등록된 cust_code를 MySQL에 동기화
+                            if (detail.getId() != null) {
+                                adminService.updateDraftContractDetailCustCode(detail.getId(), registeredCustCode);
+                                detail.setCustCode(registeredCustCode);
+                                System.out.println("✅ MySQL cust_code 동기화: detailId=" + detail.getId() + ", custCode=" + registeredCustCode);
+                            }
+
                             hasNewCustomer = true; // 신규 거래처 등록됨
                         } else {
                             System.err.println("ERP 데이터 준비 실패 - custCode가 없습니다.");
@@ -176,6 +189,12 @@ public class CustomerRegistrationScheduler {
             }
             
             System.out.println("=== 스케줄러: 거래처 등록 프로시저 호출 완료 ===");
+
+            // Oracle 기준 cust_code 전체 동기화 (lessor별 조회로 불일치 보정)
+            if (draft.getMst_seq() != null && !draft.getMst_seq().trim().isEmpty()) {
+                int syncedCount = adminService.updateCustCodesAfterRegistration(draft.getMst_seq());
+                System.out.println("=== MySQL cust_code Oracle 동기화 완료: " + syncedCount + "건 ===");
+            }
             
             // 4. 신규 거래처가 등록되었고 실패가 없을 때만 메일 발송
             if (hasNewCustomer && !hasFailure) {
@@ -231,10 +250,24 @@ public class CustomerRegistrationScheduler {
             
             // custCode 생성 (Oracle에서 생성된 코드)
             String custCode = rentService.getCustCode();
+
+            // emp_no + user_nm으로 user_no 조회 (동일 사번 중복 계정 구분)
+            String crtUserNo = String.valueOf(draft.getEmp_no());
+            if (draft.getEmp_no() > 0) {
+                try {
+                    LoginDTO loginInfo = rentService.getUserinfo(draft.getEmp_no(), draft.getUser_nm());
+                    if (loginInfo != null && loginInfo.getUserNo() > 0) {
+                        crtUserNo = String.valueOf(loginInfo.getUserNo());
+                    }
+                } catch (Exception e) {
+                    System.err.println("⚠️ 거래처등록 crtUserNo 조회 실패: emp_no=" + draft.getEmp_no()
+                            + ", user_nm=" + draft.getUser_nm() + " - " + e.getMessage());
+                }
+            }
             
             // 기본 프로젝트 정보
             erpData.put("custCode", custCode);
-            erpData.put("crtUserNo", String.valueOf(draft.getEmp_no()));
+            erpData.put("crtUserNo", crtUserNo);
             erpData.put("reqEmpNo", String.valueOf(draft.getEmp_no()));
             erpData.put("projCode", draft.getProj_code());
             

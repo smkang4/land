@@ -2,6 +2,8 @@ package com.dage.rent.config;
 
 import com.dage.rent.DTO.LoginDTO;
 import com.dage.rent.Service.RentService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -16,6 +18,8 @@ import java.util.Collections;
 
 @Component
 public class CustomAuthenticationProvider implements AuthenticationProvider {
+
+    private static final Logger log = LoggerFactory.getLogger(CustomAuthenticationProvider.class);
 
     private final RentService rentService;
 
@@ -42,29 +46,29 @@ public class CustomAuthenticationProvider implements AuthenticationProvider {
             LoginDTO loginUser = rentService.login(userId);
             
             if (loginUser == null) {
-                System.out.println("사용자를 찾을 수 없음");
+                log.warn("로그인 실패: 사용자를 찾을 수 없음");
                 throw new BadCredentialsException("아이디 또는 비밀번호가 일치하지 않습니다.");
             }
 
-
             if (!"T".equalsIgnoreCase(loginUser.getUseFlag())) {
-                System.out.println("사용할 수 없는 계정");
+                log.warn("로그인 실패: 사용할 수 없는 계정");
                 throw new BadCredentialsException("사용할 수 없는 계정입니다.");
             }
 
             if (!loginUser.getUserPassword().equals(password)) {
-                System.out.println("비밀번호 불일치");
+                log.warn("로그인 실패: 비밀번호 불일치");
                 throw new BadCredentialsException("아이디 또는 비밀번호가 일치하지 않습니다.");
             }
 
-            System.out.println("로그인 성공");
             return new UsernamePasswordAuthenticationToken(
                 loginUser,
                 password,
                 Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
             );
+        } catch (AuthenticationException e) {
+            throw e;
         } catch (Exception e) {
-            e.printStackTrace();
+            log.warn("로그인 처리 중 오류: {}", e.getMessage());
             throw new BadCredentialsException("로그인 처리 중 오류가 발생했습니다.");
         }
     }
