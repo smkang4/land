@@ -68,15 +68,10 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
             .exceptionHandling()
                 .authenticationEntryPoint((request, response, authException) -> {
                     if (isApiOrAjaxRequest(request)) {
-                        System.out.println("미인증 API/AJAX 요청 차단(401): "
-                                + request.getMethod() + " " + request.getRequestURI());
                         response.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                         return;
                     }
-                    String loginUrl = buildLoginRedirectUrl(request);
-                    System.out.println("미인증 접근 → 로그인 리다이렉트: "
-                            + request.getMethod() + " " + request.getRequestURI() + " -> " + loginUrl);
-                    response.sendRedirect(loginUrl);
+                    response.sendRedirect(buildLoginRedirectUrl(request));
                 });
     }
 
