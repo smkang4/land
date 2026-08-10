@@ -8,14 +8,17 @@
             <span class="header-title">부동산 임차관리 플랫폼</span>
         </a>
         <div class="user-info">
-            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-            <span class="user-name"
-                  th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
+            <th:block th:if="${#authentication != null and #authentication.principal instanceof T(com.dage.rent.DTO.LoginDTO)}">
+                <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
+                <span class="user-name"
+                      th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
+            </th:block>
             <a th:if="${backUrl}" th:href="@{${backUrl}}" class="btn-back">
                 <i class="bi bi-arrow-left"></i>
                 <span th:text="${backText} ?: '이전화면'">이전화면</span>
             </a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
+            <form th:if="${#authentication != null and #authentication.principal instanceof T(com.dage.rent.DTO.LoginDTO)}"
+                  th:action="@{/logout}" method="post" class="d-inline">
                 <button type="submit" class="btn-action">로그아웃</button>
             </form>
         </div>
