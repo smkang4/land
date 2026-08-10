@@ -1,402 +1,15 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/head :: headFragment('계약서 수정', null)}"></th:block>
     <link rel="stylesheet" th:href="@{/css/detail.css}">
+    <link rel="stylesheet" th:href="@{/css/doc-desk.css}">
+    <link rel="stylesheet" th:href="@{/css/edit.css}">
     <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
-    <title>계약서 수정</title>
-    <style>
-        @charset "UTF-8";
-        body {
-            font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            padding: 20px;
-            margin: 0;
-        }
-        .detail-container {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .detail-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 20px;
-            padding: 30px;
-            margin-bottom: 20px;
-            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-        }
-        .detail-header {
-            border-bottom: 2px solid #eee;
-            padding-bottom: 20px;
-            margin-bottom: 30px;
-            position: relative;
-        }
-        .detail-title {
-            font-size: 1.8rem;
-            font-weight: bold;
-            margin-bottom: 15px;
-            color: #2c3e50;
-        }
-        .detail-info {
-            color: #666;
-            font-size: 0.95rem;
-            display: flex;
-            align-items: center;
-            gap: 15px;
-        }
-        .detail-info i {
-            color: #3498db;
-        }
-        .status-badge {
-            position: absolute;
-            top: 0;
-            right: 0;
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 0.9rem;
-            font-weight: 500;
-            color: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-        .detail-section {
-            margin-bottom: 30px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-        }
-        .detail-section-title {
-            font-weight: bold;
-            margin-bottom: 20px;
-            color: #2c3e50;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-        .detail-section-title i {
-            color: #3498db;
-        }
-        .detail-item {
-            display: flex;
-            margin-bottom: 15px;
-            padding: 10px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        
-        /* 체크리스트용 detail-item만 grid 사용 */
-        .detail-item.checklist-item {
-            display: grid;
-            grid-template-columns: 1fr auto;
-            gap: 15px;
-        }
-        .detail-label {
-            width: 120px;
-            color: #666;
-            font-weight: 500;
-            display: flex;
-            align-items: center;
-        }
-        
-        /* 체크리스트 라벨 스타일 */
-        .checklist-label {
-            width: auto;
-            flex: 1 0 50%;
-            white-space: normal;
-            word-wrap: break-word;
-            min-width: 0;
-        }
-        .detail-value {
-            flex: 1;
-            color: #2c3e50;
-        }
-        .detail-value.amount {
-            font-weight: bold;
-            color: #e74c3c;
-        }
-        
-        /* Form styles */
-        .form-input {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            transition: border-color 0.3s ease;
-        }
-        .form-input:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-        .form-select {
-            width: 100%;
-            padding: 8px 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 1rem;
-            background-color: white;
-        }
-        
-        /* Input group styles */
-        .input-group {
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            overflow: hidden;
-            display: flex;
-            flex-wrap: nowrap;
-        }
-        .input-group .form-input,
-        .input-group .form-control,
-        .input-group .form-select {
-            border: none;
-            border-radius: 0;
-            flex-shrink: 0;
-        }
-        .input-group .form-input:focus,
-        .input-group .form-control:focus,
-        .input-group .form-select:focus {
-            border: none;
-            box-shadow: none;
-        }
-        .input-group-text {
-            background-color: #f8f9fa;
-            border: none;
-            color: #495057;
-            font-weight: 500;
-            flex-shrink: 0;
-        }
-        
-        /* Checkbox styles */
-        .check-item {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-        .check-radio-group {
-            display: flex;
-            gap: 15px;
-        }
-        .check-radio {
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .check-radio input[type="radio"] {
-            margin: 0;
-        }
-        .check-reason-container {
-            width: 100%;
-            margin-top: 15px;
-            padding: 15px;
-            background: #f8f9fa;
-            border-radius: 8px;
-            border: 1px solid #e9ecef;
-            display: none;
-            grid-column: 1 / -1;
-            margin-left: 0;
-            margin-right: 0;
-        }
-        .check-reason-textarea {
-            width: 100%;
-            padding: 12px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            font-size: 0.95rem;
-            resize: vertical;
-            min-height: 80px;
-            transition: border-color 0.3s ease;
-            background: white;
-        }
-        .check-reason-textarea:focus {
-            border-color: #3498db;
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
-        }
-         .check-description {
-            font-size: 0.9rem;
-            color: #7f8c8d;
-            margin-bottom: 10px;
-            padding: 5px 0;
-            font-style: italic;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .check-description i {
-            color: #3498db;
-            font-size: 1rem;
-        }
-        
-        .bg-warning { background-color: #f1c40f; }
-        .bg-success { background-color: #2ecc71; }
-        .bg-danger { background-color: #e74c3c; }
-        .action-buttons {
-            display: flex;
-            gap: 15px;
-            margin-top: 30px;
-            padding-top: 20px;
-            border-top: 2px solid #eee;
-        }
-        .action-button {
-            flex: 1;
-            padding: 12px 24px;
-            border: none;
-            border-radius: 10px;
-            font-weight: 500;
-            font-size: 1rem;
-            cursor: pointer;
-            transition: all 0.3s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-        }
-        .save-button {
-            background-color: #3498db;
-            color: white;
-        }
-        .save-button:hover {
-            background-color: #2980b9;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(52, 152, 219, 0.2);
-        }
-        .cancel-button {
-            background-color: #95a5a6;
-            color: white;
-        }
-        .cancel-button:hover {
-            background-color: #7f8c8d;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(149, 165, 166, 0.2);
-        }
-        .action-button i {
-            font-size: 1.2rem;
-        }
-        .file-upload-container {
-            margin-top: 15px;
-            background: #f8f9fa;
-            border-radius: 15px;
-            padding: 20px;
-            border: 2px dashed #e9ecef;
-            transition: all 0.3s ease;
-        }
-        .file-upload-container:hover {
-            border-color: #3498db;
-            background: #f1f8ff;
-        }
-        .file-list {
-            margin-top: 15px;
-        }
-        .file-info {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 10px;
-            background: white;
-            border-radius: 10px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-        }
-        .file-info:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .file-icon {
-            color: #3498db;
-            font-size: 1.4rem;
-            background: #e3f2fd;
-            padding: 8px;
-            border-radius: 8px;
-        }
-        .file-name {
-            font-size: 0.95rem;
-            color: #2c3e50;
-            flex: 1;
-        }
-        .file-actions {
-            display: flex;
-            gap: 8px;
-        }
-        .file-actions .btn {
-            padding: 6px 12px;
-            font-size: 0.9rem;
-            border-radius: 8px;
-            transition: all 0.3s ease;
-        }
-        .file-actions .btn:hover {
-            transform: translateY(-1px);
-        }
-        .file-actions .btn-outline-primary {
-            color: #3498db;
-            border-color: #3498db;
-        }
-        .file-actions .btn-outline-primary:hover {
-            background: #3498db;
-            color: white;
-        }
-        .file-actions .btn-outline-danger {
-            color: #e74c3c;
-            border-color: #e74c3c;
-        }
-        .file-actions .btn-outline-danger:hover {
-            background: #e74c3c;
-            color: white;
-        }
-        .input-group {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .input-group .form-control {
-            border: none;
-            padding: 12px;
-            font-size: 0.95rem;
-        }
-        .input-group .btn {
-            padding: 12px 20px;
-            font-weight: 500;
-            border: none;
-            background: #3498db;
-            color: white;
-            transition: all 0.3s ease;
-        }
-        .input-group .btn:hover {
-            background: #2980b9;
-            transform: translateY(-1px);
-        }
-        .form-text {
-            color: #7f8c8d;
-            font-size: 0.85rem;
-            margin-top: 8px;
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        .form-text i {
-            color: #3498db;
-        }
-        .list-group-item {
-            border: none;
-            padding: 0;
-            margin-bottom: 10px;
-        }
-        .list-group-item:last-child {
-            margin-bottom: 0;
-        }
-        .amount-input, .area-input, .personnel-input {
-            text-align: right;
-        }
-    </style>
+
 </head>
-<body>
+<body class="app-shell--quiet">
+<main class="edit-desk">
     <div class="detail-container" th:each="detail : ${detail}">
         <form id="editForm" class="detail-card" th:action="@{/api/update}" method="post">
                 <input type="hidden" name="seq" th:value="${detail.seq}">
@@ -408,7 +21,7 @@
             <div class="detail-header">
                 <h2 class="detail-title">
                     <input type="text" name="proj_name" th:value="${detail.proj_name}"
-                           class="form-input" style="background: none; border: none; padding: 0; font-size: 1.2rem; font-weight: bold; color: #2c3e50; width: 100%;">
+                           class="form-input">
                 </h2>
                 <div class="detail-info">
                     <span><i class="bi bi-person"></i> <span th:text="${detail.user_nm}">작성자</span></span>
@@ -421,130 +34,107 @@
                 <div class="row g-3 mb-3">
                     <!-- 왼쪽: 기본정보 -->
                     <div class="col-md-6">
-                        <div class="detail-section h-100">
+                        <div class="detail-section edit-basics h-100">
                             <h3 class="detail-section-title"><i class="bi bi-info-circle"></i> 기본 정보</h3>
-                            <div class="row g-2">
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">주소</div>
-                                        <div class="detail-value">
-                                            <input type="text" name="address" th:value="${detail.address}" class="form-input" id="editAddress" readonly onclick="sample6_execDaumPostcode()" >
+
+                            <div class="edit-field-group">
+                                <div class="edit-field-group__label">위치</div>
+                                <div class="edit-fields">
+                                    <div class="edit-field edit-field--full">
+                                        <label class="edit-field__label" for="editAddress">주소</label>
+                                        <div class="edit-address">
+                                            <input type="text" name="address" th:value="${detail.address}" class="form-input" id="editAddress" readonly placeholder="주소를 검색하세요" onclick="sample6_execDaumPostcode()">
+                                            <button type="button" class="btn edit-address__btn" onclick="sample6_execDaumPostcode()">
+                                                <i class="bi bi-search"></i> 검색
+                                            </button>
                                             <input type="hidden" name="postCode" th:value="${detail.post_code}" id="editPostCode">
                                         </div>
                                     </div>
+                                    <div class="edit-field edit-field--full">
+                                        <label class="edit-field__label" for="editAddress2">상세주소</label>
+                                        <input type="text" name="address_d" th:value="${detail.address_d}" class="form-input" id="editAddress2" placeholder="동·호수 등">
+                                    </div>
                                 </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">상세주소</div>
-                                        <div class="detail-value">
-                                            <input type="text" name="address_d" th:value="${detail.address_d}" class="form-input" id="editAddress2">
+                            </div>
+
+                            <div class="edit-field-group">
+                                <div class="edit-field-group__label">일정 · 금액</div>
+                                <div class="edit-fields edit-fields--2">
+                                    <div class="edit-field">
+                                        <label class="edit-field__label">계약일</label>
+                                        <input type="date" name="cont_date" th:value="${detail.cont_date}" class="form-input">
+                                    </div>
+                                    <div class="edit-field">
+                                        <label class="edit-field__label">이사일</label>
+                                        <input type="date" name="move_date" th:value="${detail.move_date}" class="form-input">
+                                    </div>
+                                    <div class="edit-field" th:if="${detail.cont_period != null and detail.cont_period != ''}">
+                                        <label class="edit-field__label">계약기간</label>
+                                        <div class="edit-unit">
+                                            <input type="number" name="cont_period" th:value="${detail.cont_period}" class="form-input personnel-input" min="1">
+                                            <span class="edit-unit__suffix">개월</span>
+                                        </div>
+                                    </div>
+                                    <div class="edit-field">
+                                        <label class="edit-field__label" for="depositAmt">보증금</label>
+                                        <div class="edit-unit">
+                                            <input type="number" class="form-input amount-input" id="depositAmt" name="deposit_amt" th:value="${detail.deposit_amt}" required>
+                                            <span class="edit-unit__suffix">만원</span>
+                                        </div>
+                                    </div>
+                                    <div class="edit-field">
+                                        <label class="edit-field__label" for="rentAmt">월세</label>
+                                        <div class="edit-unit">
+                                            <input type="number" class="form-input amount-input" id="rentAmt" name="rent_amt" th:value="${detail.rent_amt}" required>
+                                            <span class="edit-unit__suffix">만원</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">계약일</div>
-                                        <div class="detail-value">
-                                            <input type="date" name="cont_date" th:value="${detail.cont_date}" class="form-input">
-                                        </div>
+                            </div>
+
+                            <div class="edit-field-group">
+                                <div class="edit-field-group__label">물건</div>
+                                <div class="edit-fields edit-fields--2">
+                                    <div class="edit-field">
+                                        <label class="edit-field__label">주거유형</label>
+                                        <select name="res_type" class="form-select">
+                                            <option value="">선택하세요</option>
+                                            <option value="아파트" th:selected="${detail.res_type == '아파트'}">아파트</option>
+                                            <option value="빌라" th:selected="${detail.res_type == '빌라'}">빌라</option>
+                                            <option value="원룸" th:selected="${detail.res_type == '원룸'}">원룸</option>
+                                            <option value="오피스텔" th:selected="${detail.res_type == '오피스텔'}">오피스텔</option>
+                                        </select>
                                     </div>
-                                </div>
-                                <div class="col-12" th:if="${detail.cont_period != null and detail.cont_period != ''}">
-                                    <div class="detail-item">
-                                        <div class="detail-label">계약기간</div>
-                                        <div class="detail-value">
-                                            <div class="input-group">
-                                                <input type="number" name="cont_period" th:value="${detail.cont_period}" class="form-input" min="1" style="width: 82%;">
-                                                <span class="input-group-text" style="width: 18%;">개월</span>
-                                            </div>
-                                        </div>
+                                    <div class="edit-field">
+                                        <label class="edit-field__label">거래유형</label>
+                                        <select name="trans_type" class="form-select">
+                                            <option value="">선택하세요</option>
+                                            <option value="전세" th:selected="${detail.trans_type == '전세'}">전세</option>
+                                            <option value="월세" th:selected="${detail.trans_type == '월세'}">월세</option>
+                                            <option value="매매" th:selected="${detail.trans_type == '매매'}">매매</option>
+                                        </select>
                                     </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">이사일</div>
-                                        <div class="detail-value">
-                                            <input type="date" name="move_date" th:value="${detail.move_date}" class="form-input">
+                                    <div class="edit-field">
+                                        <label class="edit-field__label" for="zip">전용면적</label>
+                                        <div class="edit-unit">
+                                            <input type="number" class="form-input area-input" id="zip" placeholder="면적" name="area"
+                                                   th:value="${detail != null and detail.area != 0 ? detail.area : ''}">
+                                            <span class="edit-unit__suffix">m²</span>
                                         </div>
+                                        <small class="edit-field__hint pyeong-value"></small>
                                     </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">보증금</div>
-                                        <div class="detail-value">
-                                            <div class="input-group">
-                                                <input type="number" class="form-input" id="depositAmt" name="deposit_amt" th:value="${detail.deposit_amt}" required style="width: 82%;">
-                                                <span class="input-group-text" style="width: 18%;">만원</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">월세</div>
-                                        <div class="detail-value">
-                                            <div class="input-group">
-                                                <input type="number" class="form-input" id="rentAmt" name="rent_amt" th:value="${detail.rent_amt}" required style="width: 82%;">
-                                                <span class="input-group-text" style="width: 18%;">만원</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">주거유형</div>
-                                        <div class="detail-value">
-                                            <select name="res_type" class="form-select">
-                                                <option value="">선택하세요</option>
-                                                <option value="아파트" th:selected="${detail.res_type == '아파트'}">아파트</option>
-                                                <option value="빌라" th:selected="${detail.res_type == '빌라'}">빌라</option>
-                                                <option value="원룸" th:selected="${detail.res_type == '원룸'}">원룸</option>
-                                                <option value="오피스텔" th:selected="${detail.res_type == '오피스텔'}">오피스텔</option>
+                                    <div class="edit-field">
+                                        <label class="edit-field__label" for="accu">사용인원</label>
+                                        <div class="edit-unit edit-unit--split">
+                                            <select class="form-select" id="accu_type" name="accu_type" th:if="${detail.accu_type != null and detail.accu_type != ''}">
+                                                <option value="">직급</option>
+                                                <option value="임원" th:selected="${detail.accu_type == '임원'}">임원</option>
+                                                <option value="관리직" th:selected="${detail.accu_type == '관리직'}">관리직</option>
+                                                <option value="기능직" th:selected="${detail.accu_type == '기능직'}">기능직</option>
+                                                <option value="비정규직" th:selected="${detail.accu_type == '비정규직'}">비정규직</option>
                                             </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">거래유형</div>
-                                        <div class="detail-value">
-                                            <select name="trans_type" class="form-select">
-                                                <option value="">선택하세요</option>
-                                                <option value="전세" th:selected="${detail.trans_type == '전세'}">전세</option>
-                                                <option value="월세" th:selected="${detail.trans_type == '월세'}">월세</option>
-                                                <option value="매매" th:selected="${detail.trans_type == '매매'}">매매</option>
-                                            </select>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">전용면적</div>
-                                        <div class="detail-value">
-                                            <div class="input-group">
-                                                <input type="number" class="form-input" id="zip" placeholder="면적" name="area"
-                                                       th:value="${detail != null and detail.area != 0 ? detail.area : ''}" style="width: 82%;">
-                                                <span class="input-group-text" style="width: 18%;">m²</span>
-                                            </div>
-                                            <small class="form-text text-muted pyeong-value"></small>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-12">
-                                    <div class="detail-item">
-                                        <div class="detail-label">사용인원</div>
-                                        <div class="detail-value">
-                                            <div class="input-group">
-                                                <select class="form-select" id="accu_type" name="accu_type" style="max-width: 120px;" th:if="${detail.accu_type != null and detail.accu_type != ''}">
-                                                    <option value="">직급선택</option>
-                                                    <option value="임원" th:selected="${detail.accu_type == '임원'}">임원</option>
-                                                    <option value="관리직" th:selected="${detail.accu_type == '관리직'}">관리직</option>
-                                                    <option value="기능직" th:selected="${detail.accu_type == '기능직'}">기능직</option>
-                                                    <option value="비정규직" th:selected="${detail.accu_type == '비정규직'}">비정규직</option>
-                                                </select>
-                                                <input type="number" class="form-input" id="accu" placeholder="인원" name="accu" style="width:50%"
-                                                       th:value="${detail != null and detail.accu != 0 ? detail.accu : ''}">
-                                            </div>
+                                            <input type="number" class="form-input personnel-input" id="accu" placeholder="인원" name="accu"
+                                                   th:value="${detail != null and detail.accu != 0 ? detail.accu : ''}">
                                         </div>
                                     </div>
                                 </div>
@@ -641,46 +231,57 @@
                                 </div>
                             </div>
                             <!-- 부동산정보 파일 섹션 -->
-                            <div id="file-section-4" class="mt-2">
-                                <div class="file-upload-container">
-                                    <div class="input-group">
-                                        <input type="file" class="form-control file-upload-4" multiple>
-                                        <button class="btn upload-btn-4" type="button">
-                                            <i class="bi bi-cloud-upload"></i> 업로드
-                                        </button>
+                            <div id="file-section-4" class="edit-file-section">
+                                <div class="file-attach">
+                                    <div class="file-attach__head">
+                                        <div>
+                                            <h6 class="file-attach__title">부동산명함 및 정보</h6>
+                                            <p class="file-attach__desc">공인중개사 명함·사무소 정보 등 관련 자료</p>
+                                        </div>
                                     </div>
-                                    <div class="form-text">
-                                        <i class="bi bi-info-circle"></i> 최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.
+                                    <div class="file-attach__panel">
+                                        <input type="file" id="edit-file-input-4" class="file-attach__input file-upload-4" multiple>
+                                        <label for="edit-file-input-4" class="file-attach__zone" data-zone-for="4">
+                                            <span class="file-attach__zone-icon" aria-hidden="true">
+                                                <i class="bi bi-cloud-arrow-up"></i>
+                                            </span>
+                                            <span class="file-attach__zone-title">클릭하거나 파일을 놓으면 바로 업로드됩니다</span>
+                                            <span class="file-attach__zone-meta">PDF, 이미지, 문서 · 최대 5개 · 각 10MB</span>
+                                            <span class="file-attach__zone-status" hidden>업로드 중…</span>
+                                        </label>
+                                        <button type="button" class="upload-btn-4 visually-hidden" tabindex="-1" aria-hidden="true">업로드</button>
                                     </div>
-                                    <div class="file-list">
-                                        <div class="list-group file-list-4">
-                                            <div class="list-group-item" th:each="file : ${detail.realEstateFileList != null ? detail.realEstateFileList : T(java.util.Collections).emptyList()}">
-                                                <div class="file-info">
-                                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                                    <span class="file-name" th:text="${file.originalFilename}">파일명</span>
-                                                    <div class="file-actions">
-                                                        <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-outline-primary" th:download="${file.originalFilename}" target="_blank">
-                                                            <i class="bi bi-download"></i>
-                                                        </a>
-                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${file.id}" data-section="4">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </div>
+                                    <div class="list-group file-list-4 file-attach__list">
+                                        <div class="list-group-item file-attach__item" th:each="file : ${detail.realEstateFileList != null ? detail.realEstateFileList : T(java.util.Collections).emptyList()}">
+                                            <div class="file-attach__item-main">
+                                                <span class="file-attach__item-icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+                                                <div class="file-attach__item-meta">
+                                                    <span class="file-name file-attach__item-name" th:text="${file.originalFilename}">파일명</span>
                                                 </div>
                                             </div>
-                                            <div class="list-group-item" th:each="fileId : ${(detail.realEstateFileList == null or detail.realEstateFileList.isEmpty()) and detail.real_estate_files != null and detail.real_estate_files != '' ? #strings.arraySplit(detail.real_estate_files, ';') : T(java.util.Collections).emptyList()}">
-                                                <div class="file-info">
-                                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                                    <span class="file-name" th:text="${fileId}">파일명</span>
-                                                    <div class="file-actions">
-                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-outline-primary" th:download="${fileId}" target="_blank">
-                                                            <i class="bi bi-download"></i>
-                                                        </a>
-                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${fileId}" data-section="4">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </div>
+                                            <div class="file-actions file-attach__item-actions">
+                                                <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-sm btn-outline-secondary" th:download="${file.originalFilename}" target="_blank" title="다운로드">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn" th:data-file-id="${file.id}" data-section="4" title="삭제">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item file-attach__item" th:each="fileId : ${(detail.realEstateFileList == null or detail.realEstateFileList.isEmpty()) and detail.real_estate_files != null and detail.real_estate_files != '' ? #strings.arraySplit(detail.real_estate_files, ';') : T(java.util.Collections).emptyList()}">
+                                            <div class="file-attach__item-main">
+                                                <span class="file-attach__item-icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+                                                <div class="file-attach__item-meta">
+                                                    <span class="file-name file-attach__item-name" th:text="${fileId}">파일명</span>
                                                 </div>
+                                            </div>
+                                            <div class="file-actions file-attach__item-actions">
+                                                <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-sm btn-outline-secondary" th:download="${fileId}" target="_blank" title="다운로드">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn" th:data-file-id="${fileId}" data-section="4" title="삭제">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -709,46 +310,57 @@
                                 </div>
                             </div>
                             <!-- 등기부등본 파일 섹션 -->
-                            <div id="file-section-5" class="mt-2">
-                                <div class="file-upload-container">
-                                    <div class="input-group">
-                                        <input type="file" class="form-control file-upload-5" multiple>
-                                        <button class="btn upload-btn-5" type="button">
-                                            <i class="bi bi-cloud-upload"></i> 업로드
-                                        </button>
+                            <div id="file-section-5" class="edit-file-section">
+                                <div class="file-attach">
+                                    <div class="file-attach__head">
+                                        <div>
+                                            <h6 class="file-attach__title">등기부등본</h6>
+                                            <p class="file-attach__desc">권리관계 확인을 위한 등기부등본</p>
+                                        </div>
                                     </div>
-                                    <div class="form-text">
-                                        <i class="bi bi-info-circle"></i> 최대 5개 파일, 각 파일 최대 10MB까지 업로드 가능합니다.
+                                    <div class="file-attach__panel">
+                                        <input type="file" id="edit-file-input-5" class="file-attach__input file-upload-5" multiple>
+                                        <label for="edit-file-input-5" class="file-attach__zone" data-zone-for="5">
+                                            <span class="file-attach__zone-icon" aria-hidden="true">
+                                                <i class="bi bi-cloud-arrow-up"></i>
+                                            </span>
+                                            <span class="file-attach__zone-title">클릭하거나 파일을 놓으면 바로 업로드됩니다</span>
+                                            <span class="file-attach__zone-meta">PDF, 이미지, 문서 · 최대 5개 · 각 10MB</span>
+                                            <span class="file-attach__zone-status" hidden>업로드 중…</span>
+                                        </label>
+                                        <button type="button" class="upload-btn-5 visually-hidden" tabindex="-1" aria-hidden="true">업로드</button>
                                     </div>
-                                    <div class="file-list">
-                                        <div class="list-group file-list-5">
-                                            <div class="list-group-item" th:each="file : ${detail.creditFileList != null ? detail.creditFileList : T(java.util.Collections).emptyList()}">
-                                                <div class="file-info">
-                                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                                    <span class="file-name" th:text="${file.originalFilename}">파일명</span>
-                                                    <div class="file-actions">
-                                                        <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-outline-primary" th:download="${file.originalFilename}" target="_blank">
-                                                            <i class="bi bi-download"></i>
-                                                        </a>
-                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${file.id}" data-section="5">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </div>
+                                    <div class="list-group file-list-5 file-attach__list">
+                                        <div class="list-group-item file-attach__item" th:each="file : ${detail.creditFileList != null ? detail.creditFileList : T(java.util.Collections).emptyList()}">
+                                            <div class="file-attach__item-main">
+                                                <span class="file-attach__item-icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+                                                <div class="file-attach__item-meta">
+                                                    <span class="file-name file-attach__item-name" th:text="${file.originalFilename}">파일명</span>
                                                 </div>
                                             </div>
-                                            <div class="list-group-item" th:each="fileId : ${(detail.creditFileList == null or detail.creditFileList.isEmpty()) and detail.credit_files != null and detail.credit_files != '' ? #strings.arraySplit(detail.credit_files, ';') : T(java.util.Collections).emptyList()}">
-                                                <div class="file-info">
-                                                    <i class="bi bi-file-earmark-text file-icon"></i>
-                                                    <span class="file-name" th:text="${fileId}">파일명</span>
-                                                    <div class="file-actions">
-                                                        <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-outline-primary" th:download="${fileId}" target="_blank">
-                                                            <i class="bi bi-download"></i>
-                                                        </a>
-                                                        <button type="button" class="btn btn-outline-danger delete-btn" th:data-file-id="${fileId}" data-section="5">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </div>
+                                            <div class="file-actions file-attach__item-actions">
+                                                <a th:href="@{'/api/download-file/' + ${file.id}}" class="btn btn-sm btn-outline-secondary" th:download="${file.originalFilename}" target="_blank" title="다운로드">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn" th:data-file-id="${file.id}" data-section="5" title="삭제">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
+                                            </div>
+                                        </div>
+                                        <div class="list-group-item file-attach__item" th:each="fileId : ${(detail.creditFileList == null or detail.creditFileList.isEmpty()) and detail.credit_files != null and detail.credit_files != '' ? #strings.arraySplit(detail.credit_files, ';') : T(java.util.Collections).emptyList()}">
+                                            <div class="file-attach__item-main">
+                                                <span class="file-attach__item-icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+                                                <div class="file-attach__item-meta">
+                                                    <span class="file-name file-attach__item-name" th:text="${fileId}">파일명</span>
                                                 </div>
+                                            </div>
+                                            <div class="file-actions file-attach__item-actions">
+                                                <a th:href="@{'/api/download-file/' + ${fileId}}" class="btn btn-sm btn-outline-secondary" th:download="${fileId}" target="_blank" title="다운로드">
+                                                    <i class="bi bi-download"></i>
+                                                </a>
+                                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn" th:data-file-id="${fileId}" data-section="5" title="삭제">
+                                                    <i class="bi bi-trash"></i>
+                                                </button>
                                             </div>
                                         </div>
                                     </div>
@@ -759,22 +371,19 @@
                 </div>
 
                 <!-- 버튼 영역 -->
-                <div class="row mt-4">
-                    <div class="col-12 text-end">
-                        <button type="button" class="btn btn-secondary me-2" id="backButton" onclick="history.back()">
-                            <i class="bi bi-arrow-left"></i> 돌아가기
-                        </button>
-                        <button type="submit" class="btn btn-primary" id="saveButton">
-                            <i class="bi bi-check-lg"></i> 저장하기
-                        </button>
-                    </div>
+                <div class="edit-actions">
+                    <button type="button" class="btn btn-secondary" id="backButton" onclick="history.back()">
+                        <i class="bi bi-arrow-left"></i> 돌아가기
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="saveButton">
+                        <i class="bi bi-check-lg"></i> 저장하기
+                    </button>
                 </div>
             </div>
         </form>
     </div>
+</main>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         // Daum Postcode API 함수
         function sample6_execDaumPostcode() {
@@ -1001,66 +610,81 @@
 
             // 파일 목록에 파일 추가
             function addFileToList(file, fileList) {
+                const sizeLabel = file.size ? `<span class="file-attach__item-size">${formatFileSize(file.size)}</span>` : '';
                 const fileItem = `
-                    <div class="list-group-item" data-file-id="${file.id}" data-section="${file.section}">
-                        <div class="d-flex align-items-center justify-content-between">
-                            <div class="file-info">
-                                <i class="bi bi-file-earmark-text file-icon"></i>
-                                <span class="file-name">${file.originalName}</span>
+                    <div class="list-group-item file-attach__item" data-file-id="${file.id}" data-section="${file.section}">
+                        <div class="file-attach__item-main">
+                            <span class="file-attach__item-icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+                            <div class="file-attach__item-meta">
+                                <span class="file-name file-attach__item-name">${file.originalName}</span>
+                                ${sizeLabel}
                             </div>
-                            <div class="file-actions">
-                                <a href="/api/download-file/${file.id}" 
-                                   class="btn btn-sm btn-outline-primary"
-                                   download="${file.originalName}"
-                                   target="_blank">
-                                    <i class="bi bi-download"></i> 다운로드
-                                </a>
-                                <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
-                                        data-file-id="${file.id}"
-                                        data-section="${file.section}">
-                                    <i class="bi bi-trash"></i> 삭제
-                                </button>
-                            </div>
+                        </div>
+                        <div class="file-actions file-attach__item-actions">
+                            <a href="/api/download-file/${file.id}"
+                               class="btn btn-sm btn-outline-secondary"
+                               download="${file.originalName}"
+                               target="_blank"
+                               title="다운로드">
+                                <i class="bi bi-download"></i>
+                            </a>
+                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                                    data-file-id="${file.id}"
+                                    data-section="${file.section}"
+                                    title="삭제">
+                                <i class="bi bi-trash"></i>
+                            </button>
                         </div>
                     </div>
                 `;
+                fileList.find('.text-muted').remove();
                 fileList.append(fileItem);
             }
 
-            // 파일 업로드 버튼 클릭 이벤트
-            $(document).on('click', '.upload-btn-4, .upload-btn-5', function() {
-                const sectionId = $(this).attr('class').split(' ').find(cls => cls.startsWith('upload-btn-')).split('-')[2];
+            function setUploadZoneBusy(sectionId, busy) {
+                const zone = document.querySelector(`[data-zone-for="${sectionId}"]`);
+                if (!zone) return;
+                zone.classList.toggle('is-uploading', !!busy);
+                const status = zone.querySelector('.file-attach__zone-status');
+                const title = zone.querySelector('.file-attach__zone-title');
+                const meta = zone.querySelector('.file-attach__zone-meta');
+                const icon = zone.querySelector('.file-attach__zone-icon i');
+                if (status) status.hidden = !busy;
+                if (title) title.hidden = !!busy;
+                if (meta) meta.hidden = !!busy;
+                if (icon) icon.className = busy ? 'bi bi-arrow-repeat file-attach__spin' : 'bi bi-cloud-arrow-up';
+            }
+
+            function uploadFilesForSection(sectionId, fileListOverride) {
                 const fileInput = $(`.file-upload-${sectionId}`)[0];
-                const files = fileInput.files;
+                const files = fileListOverride || (fileInput && fileInput.files);
+                if (!files || files.length === 0) {
+                    return;
+                }
                 const fileList = $(`.file-list-${sectionId}`);
                 const section = sectionId === '4' ? 'real_estate' : 'credit';
 
-                if (files.length === 0) {
-                    alert('파일을 선택해주세요.');
-                    return;
-                }
-
                 if (uploadedFiles.length + files.length > MAX_FILES) {
                     alert(`최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
+                    if (fileInput) fileInput.value = '';
                     return;
                 }
 
-                // 파일 크기 체크
                 for (let file of files) {
                     if (file.size > MAX_FILE_SIZE) {
                         alert(`파일 크기는 최대 10MB까지 가능합니다.\n문제 파일: ${file.name}`);
+                        if (fileInput) fileInput.value = '';
                         return;
                     }
                 }
 
-                // FormData 생성
                 const formData = new FormData();
                 for (let file of files) {
                     formData.append('files', file);
                 }
                 formData.append('section', section);
 
-                // 업로드 진행
+                setUploadZoneBusy(sectionId, true);
                 $.ajax({
                     url: '/api/upload-files',
                     type: 'POST',
@@ -1069,13 +693,11 @@
                     contentType: false,
                     success: function(response) {
                         if (response.success) {
-                            // 업로드된 파일 목록에 추가
                             response.files.forEach(file => {
                                 uploadedFiles.push(file);
                                 addFileToList(file, fileList);
                             });
-                            // 파일 입력 초기화
-                            fileInput.value = '';
+                            if (fileInput) fileInput.value = '';
                         } else {
                             alert('파일 업로드 실패: ' + response.message);
                         }
@@ -1083,15 +705,47 @@
                     error: function(xhr, status, error) {
                         console.error('Upload error:', error);
                         alert('파일 업로드 중 오류가 발생했습니다.');
+                    },
+                    complete: function() {
+                        setUploadZoneBusy(sectionId, false);
                     }
                 });
+            }
+
+            // 파일 선택 시 바로 업로드
+            $(document).on('change', '.file-upload-4, .file-upload-5', function() {
+                const sectionId = $(this).hasClass('file-upload-4') ? '4' : '5';
+                uploadFilesForSection(sectionId);
+            });
+
+            // 드래그 앤 드롭
+            $(document).on('dragover dragenter', '.file-attach__zone', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).addClass('is-dragover');
+            });
+            $(document).on('dragleave dragend drop', '.file-attach__zone', function(e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $(this).removeClass('is-dragover');
+            });
+            $(document).on('drop', '.file-attach__zone', function(e) {
+                const sectionId = String($(this).data('zone-for'));
+                const dt = e.originalEvent.dataTransfer;
+                if (!dt || !dt.files || !dt.files.length) return;
+                uploadFilesForSection(sectionId, dt.files);
+            });
+
+            // 숨김 업로드 버튼(호환)
+            $(document).on('click', '.upload-btn-4, .upload-btn-5', function() {
+                const sectionId = $(this).attr('class').split(' ').find(cls => cls.startsWith('upload-btn-')).split('-')[2];
+                uploadFilesForSection(sectionId);
             });
 
             // 파일 삭제
             $(document).on('click', '.delete-btn', function() {
                 const fileId = $(this).data('file-id');
                 const fileItem = $(this).closest('.list-group-item');
-                const section = $(this).data('section');
 
                 if (!fileId) {
                     alert('파일 ID가 없습니다.');
@@ -1104,15 +758,8 @@
                         type: 'DELETE',
                         success: function(response) {
                             if (response.success) {
-                                // 파일 목록에서 제거
                                 uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
                                 fileItem.remove();
-                                
-                                // 파일이 없는 경우 메시지 표시
-                                const fileList = $(`.file-list-${section}`);
-                                if (fileList.children().length === 0) {
-                                    fileList.append('<div class="text-muted p-3">첨부된 파일이 없습니다.</div>');
-                                }
                             } else {
                                 alert('파일 삭제 실패: ' + response.message);
                             }
@@ -1120,18 +767,10 @@
                         error: function(xhr, status, error) {
                             console.error('Delete error:', error);
                             
-                            // 400 오류인 경우 (파일이 이미 삭제된 경우) UI에서만 제거
                             if (xhr.status === 400) {
                                 console.log('파일이 이미 삭제되어 있음. UI에서만 제거합니다.');
-                                // 파일 목록에서 제거
                                 uploadedFiles = uploadedFiles.filter(f => f.id !== fileId);
                                 fileItem.remove();
-                                
-                                // 파일이 없는 경우 메시지 표시
-                                const fileList = $(`.file-list-${section}`);
-                                if (fileList.children().length === 0) {
-                                    fileList.append('<div class="text-muted p-3">첨부된 파일이 없습니다.</div>');
-                                }
                             } else {
                                 let errorMessage = '파일 삭제 중 오류가 발생했습니다.';
                                 try {

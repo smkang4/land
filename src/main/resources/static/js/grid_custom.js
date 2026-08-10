@@ -1,60 +1,60 @@
 var Grid = tui.Grid;
-Grid.setLanguage('ko'); // set Korean
+Grid.setLanguage('ko');
 Grid.applyTheme('custom', {
     selection: {
-        background: 'rgba(25, 118, 210, 0.08)',
-        border: '#1976d2'
+        background: 'rgba(26, 86, 219, 0.08)',
+        border: '#1a56db'
     },
     scrollbar: {
-        background: '#f5f5f5',
-        thumb: '#bdbdbd',
-        active: '#9e9e9e'
+        background: '#f1f5f9',
+        thumb: '#cbd5e1',
+        active: '#94a3b8'
     },
     row: {
         even: {
-            background: '#ffffff'
+            background: '#f8fafc'
         },
         hover: {
-            background: '#f5f5f5'
+            background: 'rgba(26, 86, 219, 0.04)'
         }
     },
     cell: {
         normal: {
             background: '#ffffff',
-            border: 'rgba(0,0,0,0.08)',
-            showVerticalBorder: true,
-            text: '#333333'
+            border: '#e2e8f0',
+            showVerticalBorder: false,
+            text: '#0b1424'
         },
         header: {
-            background: '#ffffff',
-            border: 'rgba(0,0,0,0.08)',
-            showVerticalBorder: true,
-            text: '#1a1a1a'
+            background: '#f8fafc',
+            border: '#e2e8f0',
+            showVerticalBorder: false,
+            text: '#334155'
         },
         rowHeader: {
-            border: 'rgba(0,0,0,0.08)',
-            showVerticalBorder: true,
-            text: '#757575'
+            border: '#e2e8f0',
+            showVerticalBorder: false,
+            text: '#94a3b8'
         },
         editable: {
             background: '#ffffff'
         },
         selectedHeader: {
-            background: 'rgba(25, 118, 210, 0.08)'
+            background: 'rgba(26, 86, 219, 0.08)'
         },
         focused: {
-            border: '#1976d2'
+            border: '#1a56db'
         },
         disabled: {
-            text: '#9e9e9e'
+            text: '#94a3b8'
         }
     },
     pagination: {
         background: '#ffffff',
-        border: 'rgba(0,0,0,0.08)',
-        text: '#424242'
+        border: '#e2e8f0',
+        text: '#334155'
     }
-}); // Call API of static method
+});
 
 function setDefaultFilterCondition(grid, columnName, condition = 'contain') {
    grid.filter(columnName, [{ code: condition, value: '' }]);
@@ -70,22 +70,10 @@ $(document).ready(function(){
             const filterInput = document.querySelector('.tui-grid-filter-input');
             if (filterInput) {
                 filterInput.focus();
-                
-                // 필터 입력 필드 스타일 개선
-                filterInput.style.transition = 'all 0.2s ease';
-                filterInput.style.border = '1px solid rgba(0,0,0,0.12)';
-                filterInput.style.borderRadius = '4px';
+                filterInput.style.border = '1px solid #e2e8f0';
+                filterInput.style.borderRadius = '8px';
                 filterInput.style.padding = '8px';
                 filterInput.style.fontSize = '0.875rem';
-                
-                filterInput.addEventListener('keydown', function(e) {
-                    if (e.key === "Enter") {
-                        const closeButton = document.querySelector('.tui-grid-btn-close');
-                        if (closeButton) {
-                            closeButton.click();
-                        }
-                    }
-                });
             }
         }, 100);
     });

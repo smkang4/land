@@ -1,453 +1,82 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
-
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-MrcW6ZMFYlzcLA8Nl+NtUVF0sA7MsXsP1UyJoMp4YLEuNSfAP+JcXn/tWtIaxVXM" crossorigin="anonymous"></script>
-
-    <style>
-        :root {
-            --primary-color: #0d6efd;
-            --secondary-color: #0a58ca;
-            --accent-color: #0d6efd;
-            --background-color: #f5f7fa;
-            --text-color: #495057;
-            --border-color: #e9ecef;
-        }
-
-        html {
-           height : 1%;
-        }
-        footer {
-            padding: 1.5rem;
-            margin-top: 3rem;
-        }
-        .main-content {
-            max-width: 1200px;
-            margin: 1.5rem auto;
-            padding: 0 1rem;
-        }
-
-                .welcome-section {
-            background: transparent;
-            color: var(--text-color);
-            padding: 3rem 2rem;
-            text-align: center;
-            position: relative;
-        }
-
-        .welcome-section h1 {
-            font-size: 2rem;
-            font-weight: 700;
-            margin-top: 1rem;
-            margin-bottom: 1rem;
-            color: #1a73e8;
-            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            opacity: 0;
-            transform: translateY(20px);
-            animation: titleSlideIn 1.5s ease-out forwards;
-        }
-
-        .welcome-section .welcome-subtitle {
-            font-size: 1.3rem;
-            font-weight: 500;
-            color: var(--text-color);
-            opacity: 0.9;
-        }
-
-        @keyframes titleSlideIn {
-            0% { 
-                opacity: 0;
-                transform: translateY(20px);
-            }
-            100% { 
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
-        .welcome-section .welcome-description {
-            font-size: 1.1rem;
-            color: var(--text-color);
-            opacity: 0.8;
-            margin: 0;
-            line-height: 1.6;
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        .menu-container {
-            display: flex;
-            flex-direction: column;
-            gap: 2rem;
-            margin: 2rem auto;
-            padding: 0 1rem;
-            padding: 0 1rem;
-        }
-
-        .menu-section {
-            border-radius: 16px;
-            padding: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-        }
-
-        .menu-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .menu-item {
-            display: flex;
-            align-items: center;
-            padding: 3rem 1.2rem;
-            background: rgba(248, 249, 250, 0.5);
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(233, 236, 239, 0.3);
-            border-radius: 12px;
-            text-decoration: none;
-            color: #212529;
-            transition: all 0.3s ease;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .menu-item:hover {
-            background: rgba(255, 255, 255, 0.7);
-            transform: translateY(-3px) scale(1.02);
-            box-shadow: 0 8px 25px rgba(var(--menu-color-rgb), 0.1);
-        }
-
-        .menu-item::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-           // background: linear-gradient(135deg, var(--menu-color), rgba(var(--menu-color-rgb), 0.7));
-            border-radius: 12px;
-            opacity: 0;
-            transition: all 0.4s ease;
-            transform: scale(0.8);
-        }
-
-        .menu-item:hover::before {
-            opacity: 0.1;
-            transform: scale(1);
-        }
-
-        .menu-icon {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 40px;
-            height: 40px;
-            border-radius: 8px;
-            background: var(--menu-color);
-            color: white;
-            font-size: 1.2rem;
-            margin-right: 1rem;
-            flex-shrink: 0;
-        }
-
-        .menu-text {
-            font-weight: 500;
-            font-size: 0.95rem;
-            line-height: 1.3;
-        }
-
-        /* 각 메뉴별 색상 */
-        .menu-blue {
-            --menu-color: #1a73e8;
-            --menu-color-rgb: 26, 115, 232;
-        }
-
-        .menu-purple {
-            --menu-color: #7c3aed;
-            --menu-color-rgb: 124, 58, 237;
-        }
-
-        .menu-green {
-            --menu-color: #059669;
-            --menu-color-rgb: 5, 150, 105;
-        }
-
-        .menu-orange {
-            --menu-color: #ea580c;
-            --menu-color-rgb: 234, 88, 12;
-        }
-
-        .menu-red {
-            --menu-color: #dc2626;
-            --menu-color-rgb: 220, 38, 38;
-        }
-
-        /* 반응형 디자인 */
-        @media (max-width: 768px) {
-            .welcome-section {
-                padding: 2.5rem 1.5rem;
-                margin-bottom: 1.5rem;
-            }
-
-            .welcome-section h1 {
-                font-size: 1.8rem;
-            }
-
-            .welcome-section .welcome-subtitle {
-                font-size: 1.2rem;
-            }
-
-            .welcome-section .welcome-description {
-                font-size: 1rem;
-            }
-
-            .menu-container {
-                max-width: 100%;
-                margin: 1.5rem auto;
-            }
-
-            .menu-section {
-                padding: 1.5rem;
-            }
-
-            .menu-grid {
-                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-                gap: 0.8rem;
-            }
-
-            .menu-item {
-                padding: 0.8rem 1rem;
-            }
-
-            .menu-icon {
-                width: 35px;
-                height: 35px;
-                font-size: 1.1rem;
-                margin-right: 0.8rem;
-            }
-
-            .menu-text {
-                font-size: 0.9rem;
-            }
-        }
-
-        @media (max-width: 480px) {
-            .menu-section {
-                padding: 1rem;
-            }
-
-            .menu-grid {
-                grid-template-columns: 1fr;
-                gap: 0.6rem;
-            }
-
-            .menu-item {
-                padding: 0.7rem 0.8rem;
-            }
-
-            .menu-icon {
-                width: 32px;
-                height: 32px;
-                font-size: 1rem;
-                margin-right: 0.7rem;
-            }
-
-            .menu-text {
-                font-size: 0.85rem;
-            }
-        }
-        .page-header {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            margin-bottom: 20px;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .btn-fixed-width {
-            width: 200px !important;
-            margin: 5px;
-        }
-
-        #noticeModal .modal-dialog {
-            max-width: 520px;
-        }
-
-        #noticeModal .modal-content {
-            border: 1px solid var(--border-color);
-            border-radius: 16px;
-            overflow: hidden;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08);
-        }
-
-        #noticeModal .notice-modal-header {
-            background: #fff;
-            color: var(--text-color);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem 1.25rem;
-        }
-
-        #noticeModal .notice-modal-header .modal-title {
-            font-weight: 600;
-            font-size: 1.05rem;
-            color: #212529;
-        }
-
-        #noticeModal .notice-modal-header .modal-title i {
-            color: #1a73e8;
-        }
-
-        #noticeModal .notice-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.35rem;
-            background: rgba(26, 115, 232, 0.1);
-            color: #1a73e8;
-            font-size: 0.8rem;
-            font-weight: 600;
-            padding: 0.35rem 0.75rem;
-            border-radius: 999px;
-            margin-bottom: 0.75rem;
-        }
-
-        #noticeModal .notice-feature-list {
-            margin: 0;
-            padding-left: 1.1rem;
-            color: var(--text-color);
-            line-height: 1.7;
-        }
-
-        #noticeModal .notice-feature-list li + li {
-            margin-top: 0.35rem;
-        }
-
-        #noticeModal .notice-highlight {
-            background: #f8f9fa;
-            border-left: 4px solid #1a73e8;
-            border-radius: 0 8px 8px 0;
-            padding: 0.85rem 1rem;
-            margin-top: 1rem;
-            font-size: 0.92rem;
-            color: #495057;
-        }
-
-        #noticeModal .notice-screenshot {
-            margin: 1rem auto;
-            max-width: 480px;
-            border: 1px solid var(--border-color);
-            border-radius: 12px;
-            overflow: hidden;
-            background: #fff;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.06);
-        }
-
-        #noticeModal .notice-screenshot img {
-            display: block;
-            width: 100%;
-            height: auto;
-        }
-
-        #noticeModal .notice-screenshot__caption {
-            padding: 0.5rem 0.75rem;
-            font-size: 0.8rem;
-            color: #6c757d;
-            background: #f8f9fa;
-            border-top: 1px solid var(--border-color);
-            text-align: center;
-        }
-
-        #noticeModal .modal-footer {
-            border-top: 1px solid var(--border-color);
-            padding: 1rem 1.5rem;
-        }
-    </style>
+    <th:block th:replace="~{fragments/head :: headFragment('부동산 임차관리 플랫폼', null)}"></th:block>
 </head>
 <body>
-    <header class="main-header">
-        <div class="header-content">
-            <div class="logo-container">
-                <img src="/images/dongah.gif" alt="로고" class="logo">
-                <span class="header-title">부동산 임차관리 플랫폼</span>
-            </div>
-            <div class="user-info">
-                <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-                <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
-                <form th:action="@{/logout}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-action">로그아웃</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
 
-    <main class="main-content">
-        <section class="welcome-section">
-            <h1>부동산 임차관리 플랫폼</h1>
-            <div class="welcome-subtitle">
-                <span th:text="${#authentication.principal.userName}"></span> 님 환영합니다
-            </div>
-<!--            <div class="welcome-description">-->
-<!--                부동산 임차관리 플랫폼에서는 부동산 사전조사서 작성, 결재 등을 수행할 수 있습니다.-->
-<!--            </div>-->
+    <main class="app-shell app-main">
+        <section class="welcome-block">
+            <p class="welcome-block__eyebrow">동아지질</p>
+            <h1 class="welcome-block__title text-balance">부동산 임차관리 플랫폼</h1>
+            <p class="welcome-block__sub">
+                <span th:text="${#authentication.principal.userName}">사용자</span> 님, 오늘 처리할 업무를 선택하세요
+            </p>
         </section>
 
-        <div class="menu-container">
-            <div class="menu-section">
-                <div class="menu-grid">
-                    <a href="/request" class="menu-item menu-blue">
-                        <div class="menu-icon">
-                            <i class="bi bi-house-door"></i>
-                        </div>
-                        <div class="menu-text">부동산 물건<br>사전조사서 작성</div>
-                    </a>
-                    <a href="/list" class="menu-item menu-purple">
-                        <div class="menu-icon">
-                            <i class="bi bi-clipboard-check"></i>
-                        </div>
-                        <div class="menu-text">작성 조사서<br>확인 및 요청</div>
-                    </a>
-                    <a href="/appr_list" class="menu-item menu-green">
-                        <div class="menu-icon">
-                            <i class="bi bi-inbox"></i>
-                        </div>
-                        <div class="menu-text">결재함</div>
-                    </a>
-                    <a href="/draft_list" class="menu-item menu-red" >
-                        <div class="menu-icon">
-                            <i class="bi bi-file-earmark-plus"></i>
-                        </div>
-                        <div class="menu-text">기안서 작성 및 관리</div>
-                    </a>
-                </div>
+        <section class="hub-section">
+            <div class="hub-section__label">
+                <h2>업무 메뉴</h2>
             </div>
-
-            <div class="menu-section" th:if="${admin == 'Y'}">
-                 <div class="menu-grid">
-                    <a href="/admin" class="menu-item menu-orange">
-                        <div class="menu-icon">
-                            <i class="bi bi-person-gear"></i>
-                        </div>
-                        <div class="menu-text">관리자</div>
-                    </a>
-                </div>
+            <div class="hub-grid">
+                <a href="/request" class="hub-card">
+                    <span class="hub-card__icon" aria-hidden="true"><i class="bi bi-house-door"></i></span>
+                    <span class="hub-card__body">
+                        <span class="hub-card__title">사전조사서 작성</span>
+                        <span class="hub-card__desc">부동산 물건 사전조사서를 작성합니다</span>
+                    </span>
+                    <i class="bi bi-arrow-right hub-card__chevron" aria-hidden="true"></i>
+                </a>
+                <a href="/list" class="hub-card">
+                    <span class="hub-card__icon" aria-hidden="true"><i class="bi bi-clipboard-check"></i></span>
+                    <span class="hub-card__body">
+                        <span class="hub-card__title">조사서 확인 및 요청</span>
+                        <span class="hub-card__desc">작성 건을 확인하고 결재를 요청합니다</span>
+                    </span>
+                    <i class="bi bi-arrow-right hub-card__chevron" aria-hidden="true"></i>
+                </a>
+                <a href="/appr_list" class="hub-card">
+                    <span class="hub-card__icon" aria-hidden="true"><i class="bi bi-inbox"></i></span>
+                    <span class="hub-card__body">
+                        <span class="hub-card__title">결재함</span>
+                        <span class="hub-card__desc">대기·진행 중인 결재를 처리합니다</span>
+                    </span>
+                    <i class="bi bi-arrow-right hub-card__chevron" aria-hidden="true"></i>
+                </a>
+                <a href="/draft_list" class="hub-card">
+                    <span class="hub-card__icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+                    <span class="hub-card__body">
+                        <span class="hub-card__title">기안서 작성 및 관리</span>
+                        <span class="hub-card__desc">임대차 기안서를 작성하고 관리합니다</span>
+                    </span>
+                    <i class="bi bi-arrow-right hub-card__chevron" aria-hidden="true"></i>
+                </a>
             </div>
-        </div>
+        </section>
 
+        <section class="hub-section" th:if="${admin == 'Y'}">
+            <div class="hub-section__label">
+                <h2>관리</h2>
+            </div>
+            <div class="hub-grid">
+                <a href="/admin" class="hub-card">
+                    <span class="hub-card__icon" aria-hidden="true"><i class="bi bi-sliders"></i></span>
+                    <span class="hub-card__body">
+                        <span class="hub-card__title">관리자</span>
+                        <span class="hub-card__desc">전체 현황과 설정을 관리합니다</span>
+                    </span>
+                    <i class="bi bi-arrow-right hub-card__chevron" aria-hidden="true"></i>
+                </a>
+            </div>
+        </section>
     </main>
 
     <div th:replace="~{fragments/footer.html :: site-footer}"></div>
 
-    <!-- 기능 안내 공지 Modal (관리자 ON일 때만) -->
-    <div th:if="${noticeModalEnabled}" class="modal fade" id="noticeModal" tabindex="-1" aria-labelledby="noticeModalLabel" aria-hidden="true" data-bs-backdrop="static">
+    <div th:if="${noticeModalEnabled}" class="modal fade" id="noticeModal" tabindex="-1"
+         aria-labelledby="noticeModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
             <div class="modal-content">
                 <div class="modal-header notice-modal-header">
@@ -457,16 +86,17 @@
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
                 </div>
                 <div class="modal-body px-4 py-4">
-                    <span class="notice-badge">
-                        <i class="bi bi-stars"></i> 신규 기능
-                    </span>
+                    <span class="notice-badge">신규 기능</span>
                     <h6 class="fw-bold mb-2">결재 참조 기능 추가</h6>
-                    <p class="text-muted mb-0" style="font-size: 0.95rem;">
+                    <p class="text-muted mb-0 text-pretty" style="font-size: 0.95rem;">
                         사전조사서 확인요청 처리 시 결재선과 함께 참조 대상자를 지정할 수 있습니다.
                     </p>
                     <figure class="notice-screenshot mb-0">
-                        <img th:src="@{/images/rent_notice_260601.png}" alt="확인 요청서 화면 — 결재선 및 참조자 추가 예시">
-                        <figcaption class="notice-screenshot__caption">확인 요청서 화면 예시 (결재자 · 참조자 추가)</figcaption>
+                        <img th:src="@{/images/rent_notice_260601.png}"
+                             alt="확인 요청서 화면 — 결재선 및 참조자 추가 예시">
+                        <figcaption class="notice-screenshot__caption">
+                            확인 요청서 화면 예시 (결재자 · 참조자 추가)
+                        </figcaption>
                     </figure>
                 </div>
                 <div class="modal-footer d-flex justify-content-between align-items-center">
@@ -475,27 +105,6 @@
                         <label class="form-check-label text-muted small" for="noticeHideToday">오늘 하루 보지 않기</label>
                     </div>
                     <button type="button" class="btn btn-primary px-4" id="noticeConfirmBtn">확인</button>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Logout Modal -->
-    <div class="modal fade" id="logoutModal" tabindex="-1" aria-labelledby="logoutModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="logoutModalLabel">로그아웃</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    로그아웃하시겠습니까?
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">취소</button>
-                    <form th:action="@{/logout}" method="post">
-                        <button type="submit" class="btn btn-primary">로그아웃</button>
-                    </form>
                 </div>
             </div>
         </div>

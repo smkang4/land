@@ -1,41 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>부동산 임차관리 플랫폼</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/head :: headFragment('사전조사서 작성', null)}"></th:block>
     <link href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" rel="stylesheet" />
-    <link rel="stylesheet" href="/css/index.css">
-    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
     <link href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-
-    <link rel="stylesheet" th:href="@{/css/header.css}">
     <link rel="stylesheet" th:href="@{/css/index.css}">
-
-
+    <script src="//t1.daumcdn.net/mapjsapi/bundle/postcode/prod/postcode.v2.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
-<body>
-<header class="main-header">
-    <div class="header-content">
-        <div class="logo-container">
-            <img src="/images/dongah.gif" alt="로고" class="logo">
-            <span class="header-title">부동산 임차관리 플랫폼</span>
-        </div>
-        <div class="user-info">
-            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-            <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
-            <a href="/main" class="btn btn-back me-2">
-                <i class="bi bi-arrow-left"></i> 메인
-            </a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-action">로그아웃</button>
-            </form>
-        </div>
-    </div>
-</header>
+<body class="app-shell--quiet">
+<th:block th:with="backUrl=@{/main}, backText='메인'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
 <style>
     html {
      height: 1%;
@@ -47,25 +23,24 @@
 
     .styled-number {
         display: inline-block;
-        background: linear-gradient(45deg, #007bff, #0056b3);
+        background: #1a56db;
         color: white;
         padding: 2px 8px;
-        border-radius: 12px;
+        border-radius: 8px;
         font-size: 0.7rem;
         font-weight: bold;
         margin-right: 8px;
-        box-shadow: 0 1px 3px rgba(0,0,0,0.2);
         min-width: 24px;
         text-align: center;
     }
 
     .title-design {
-        color: #2c3e50;
+        color: #0b1424;
         font-weight: 700;
         font-size: 2.2rem;
         margin-bottom: 0;
         padding-bottom: 15px;
-        border-bottom: 3px solid #3498db;
+        border-bottom: 3px solid #1a56db;
         display: inline-block;
         position: relative;
     }
@@ -430,19 +405,27 @@
                                       th:text="${temp != null ? temp.chk_reason_4 : (contract != null ? contract.chk_reason_4 : '')}"></textarea>
                         </li>
                         <li class="file-section" id="file-section-4">
-                            <h6 class="mb-2">부동산명함 및 정보 첨부(필수)</h6>
-                            <div class="file-upload-container">
-                                <div class="input-group">
-                                    <input type="file" class="form-control file-upload-4" multiple>
-                                    <button class="btn btn-outline-primary upload-btn-4" type="button">
-                                        <i class="bi bi-upload"></i> 업로드
-                                    </button>
-                                </div>
-                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 1000MB까지 업로드 가능합니다.</div>
-                                <div class="file-list">
-                                    <div class="list-group file-list-4">
-                                        <!-- 업로드된 파일 목록이 여기에 표시됩니다 -->
+                            <div class="file-attach">
+                                <div class="file-attach__head">
+                                    <div>
+                                        <h6 class="file-attach__title">부동산명함 및 정보</h6>
+                                        <p class="file-attach__desc">공인중개사 명함·사무소 정보 등 관련 자료를 첨부하세요</p>
                                     </div>
+                                    <span class="status-chip status-chip--accent">필수</span>
+                                </div>
+                                <div class="file-attach__panel">
+                                    <input type="file" id="file-input-4" class="file-attach__input file-upload-4" multiple>
+                                    <label for="file-input-4" class="file-attach__zone" data-zone-for="4">
+                                        <span class="file-attach__zone-icon" aria-hidden="true">
+                                            <i class="bi bi-cloud-arrow-up"></i>
+                                        </span>
+                                        <span class="file-attach__zone-title">클릭하거나 파일을 놓으면 바로 업로드됩니다</span>
+                                        <span class="file-attach__zone-meta">PDF, 이미지, 문서 · 최대 5개 · 각 1000MB</span>
+                                        <span class="file-attach__zone-status" hidden>업로드 중…</span>
+                                    </label>
+                                </div>
+                                <div class="file-list">
+                                    <div class="list-group file-list-4 file-attach__list"></div>
                                 </div>
                             </div>
                         </li>
@@ -482,19 +465,27 @@
                                       th:text="${temp != null ? temp.chk_reason_5 : (contract != null ? contract.chk_reason_5 : '')}"></textarea>
                         </li>
                         <li class="file-section" id="file-section-5">
-                            <h6 class="mb-2">등기부등본 첨부(필수)</h6>
-                            <div class="file-upload-container">
-                                <div class="input-group">
-                                    <input type="file" class="form-control file-upload-5" multiple>
-                                    <button class="btn btn-outline-primary upload-btn-5" type="button">
-                                        <i class="bi bi-upload"></i> 업로드
-                                    </button>
-                                </div>
-                                <div class="form-text mt-2">최대 5개 파일, 각 파일 최대 1000MB까지 업로드 가능합니다.</div>
-                                <div class="file-list">
-                                    <div class="list-group file-list-5">
-                                        <!-- 업로드된 파일 목록이 여기에 표시됩니다 -->
+                            <div class="file-attach">
+                                <div class="file-attach__head">
+                                    <div>
+                                        <h6 class="file-attach__title">등기부등본</h6>
+                                        <p class="file-attach__desc">권리관계 확인을 위한 등기부등본을 첨부하세요</p>
                                     </div>
+                                    <span class="status-chip status-chip--accent">필수</span>
+                                </div>
+                                <div class="file-attach__panel">
+                                    <input type="file" id="file-input-5" class="file-attach__input file-upload-5" multiple>
+                                    <label for="file-input-5" class="file-attach__zone" data-zone-for="5">
+                                        <span class="file-attach__zone-icon" aria-hidden="true">
+                                            <i class="bi bi-cloud-arrow-up"></i>
+                                        </span>
+                                        <span class="file-attach__zone-title">클릭하거나 파일을 놓으면 바로 업로드됩니다</span>
+                                        <span class="file-attach__zone-meta">PDF, 이미지, 문서 · 최대 5개 · 각 1000MB</span>
+                                        <span class="file-attach__zone-status" hidden>업로드 중…</span>
+                                    </label>
+                                </div>
+                                <div class="file-list">
+                                    <div class="list-group file-list-5 file-attach__list"></div>
                                 </div>
                             </div>
                         </li>
@@ -586,34 +577,51 @@
     </div>
 
     <!-- 임시저장 확인 모달 -->
-    <div class="modal fade" id="tempSaveConfirmModal" tabindex="-1" aria-labelledby="tempSaveConfirmModalLabel" aria-hidden="true">
+    <div class="modal fade" id="tempSaveConfirmModal" tabindex="-1" aria-labelledby="tempSaveConfirmModalLabel" aria-hidden="true" data-bs-backdrop="static">
         <div class="modal-dialog modal-dialog-centered">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title" id="tempSaveConfirmModalLabel">임시저장 파일 확인</h5>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="alert alert-info mb-3">
-                        <i class="bi bi-info-circle"></i>
-                        임시저장된 데이터가 있습니다.
+            <div class="modal-content temp-resume-modal">
+                <div class="temp-resume-modal__hero">
+                    <span class="temp-resume-modal__icon" aria-hidden="true">
+                        <i class="bi bi-journal-bookmark"></i>
+                    </span>
+                    <div>
+                        <p class="temp-resume-modal__eyebrow">임시저장</p>
+                        <h5 class="modal-title temp-resume-modal__title" id="tempSaveConfirmModalLabel">이어서 작성할까요?</h5>
                     </div>
-                    <p>이전에 작성하던 내용을 불러와서 이어서 작성하시겠습니까?</p>
-                    <small class="text-muted">
-                        • 확인: 임시저장 데이터를 불러와서 이어서 작성<br>
-                        • 임시저장파일 삭제: 기존 데이터를 삭제하고 새로 작성
-                    </small>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-danger" id="deleteTempSave">임시저장파일 삭제</button>
-                    <button type="button" class="btn btn-primary" id="loadTempSave">확인</button>
+                <div class="modal-body temp-resume-modal__body">
+                    <p class="temp-resume-modal__lead">이전에 작성하던 사전조사서가 있습니다. 불러오면 이어서 작성할 수 있습니다.</p>
+                    <div class="temp-resume-card">
+                        <div class="temp-resume-card__row" th:if="${temp != null and temp.address != null and !#strings.isEmpty(temp.address)}">
+                            <span class="temp-resume-card__label">주소</span>
+                            <span class="temp-resume-card__value" th:text="${temp.address}">-</span>
+                        </div>
+                        <div class="temp-resume-card__row" th:if="${temp != null and temp.res_type != null and !#strings.isEmpty(temp.res_type)}">
+                            <span class="temp-resume-card__label">주거형태</span>
+                            <span class="temp-resume-card__value" th:text="${temp.res_type}">-</span>
+                        </div>
+                        <div class="temp-resume-card__row" th:if="${temp != null and temp.trans_type != null and !#strings.isEmpty(temp.trans_type)}">
+                            <span class="temp-resume-card__label">거래방식</span>
+                            <span class="temp-resume-card__value" th:text="${temp.trans_type}">-</span>
+                        </div>
+                        <div class="temp-resume-card__row" th:if="${temp != null and temp.crtdate != null}">
+                            <span class="temp-resume-card__label">저장일시</span>
+                            <span class="temp-resume-card__value" th:text="${temp.crtdate}">-</span>
+                        </div>
+                        <div class="temp-resume-card__empty"
+                             th:if="${temp == null or ((temp.address == null or #strings.isEmpty(temp.address)) and (temp.res_type == null or #strings.isEmpty(temp.res_type)))}">
+                            저장된 초안 내용을 불러올 수 있습니다.
+                        </div>
+                    </div>
+                    <div class="temp-resume-actions">
+                        <button type="button" class="btn temp-resume-actions__secondary" id="deleteTempSave">삭제 후 새로 작성</button>
+                        <button type="button" class="btn btn-primary temp-resume-actions__primary" id="loadTempSave">이어서 작성</button>
+                    </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 
 
@@ -750,30 +758,148 @@
 
         // 파일 목록에 파일 추가
         function addFileToList(file, fileList) {
+            const sizeLabel = file.size ? `<span class="file-attach__item-size">${formatFileSize(file.size)}</span>` : '';
             const fileItem = `
-                <div class="list-group-item" data-file-id="${file.id}" data-section="${file.section}">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div class="file-info">
-                            <i class="bi bi-file-earmark-text file-icon"></i>
-                            <span class="file-name">${file.originalName}</span>
+                <div class="list-group-item file-attach__item" data-file-id="${file.id}" data-section="${file.section}">
+                    <div class="file-attach__item-main">
+                        <span class="file-attach__item-icon" aria-hidden="true"><i class="bi bi-file-earmark-text"></i></span>
+                        <div class="file-attach__item-meta">
+                            <span class="file-name file-attach__item-name">${file.originalName}</span>
+                            ${sizeLabel}
                         </div>
-                        <div class="file-actions">
-                            <a href="/api/download-file/${file.id}" 
-                               class="btn btn-sm btn-outline-primary"
-                               download="${file.originalName}"
-                               target="_blank">
-                                <i class="bi bi-download"></i> 다운로드
-                            </a>
-                            <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
-                                    data-file-id="${file.id}"
-                                    data-section="${file.section}">
-                                <i class="bi bi-trash"></i> 삭제
-                            </button>
-                        </div>
+                    </div>
+                    <div class="file-actions file-attach__item-actions">
+                        <a href="/api/download-file/${file.id}"
+                           class="btn btn-sm btn-outline-secondary"
+                           download="${file.originalName}"
+                           target="_blank"
+                           title="다운로드">
+                            <i class="bi bi-download"></i>
+                        </a>
+                        <button type="button" class="btn btn-sm btn-outline-danger delete-btn"
+                                data-file-id="${file.id}"
+                                data-section="${file.section}"
+                                title="삭제">
+                            <i class="bi bi-trash"></i>
+                        </button>
                     </div>
                 </div>
             `;
             fileList.append(fileItem);
+        }
+
+        function updateSelectedLabel(sectionId, files) {
+            // kept for compatibility — selection now auto-uploads
+        }
+
+        function setUploadZoneBusy(sectionId, busy) {
+            const zone = document.querySelector(`[data-zone-for="${sectionId}"]`);
+            if (!zone) return;
+            zone.classList.toggle('is-uploading', !!busy);
+            const status = zone.querySelector('.file-attach__zone-status');
+            const title = zone.querySelector('.file-attach__zone-title');
+            const meta = zone.querySelector('.file-attach__zone-meta');
+            const icon = zone.querySelector('.file-attach__zone-icon i');
+            if (status) status.hidden = !busy;
+            if (title) title.hidden = !!busy;
+            if (meta) meta.hidden = !!busy;
+            if (icon) icon.className = busy ? 'bi bi-arrow-repeat file-attach__spin' : 'bi bi-cloud-arrow-up';
+            const input = document.querySelector(`.file-upload-${sectionId}`);
+            if (input) input.disabled = !!busy;
+        }
+
+        function startUpload(sectionId, fileListLike) {
+            const files = fileListLike ? Array.from(fileListLike) : [];
+            const fileInput = document.querySelector(`.file-upload-${sectionId}`);
+            const fileList = $(`.file-list-${sectionId}`);
+            const section = sectionId === '4' ? 'real_estate' : 'credit';
+
+            if (!files.length) {
+                alert('파일을 선택해주세요.');
+                return;
+            }
+
+            const sectionKey = section;
+            const existingCount = uploadedFiles.filter(f =>
+                (sectionKey === 'real_estate' && (f.section === 'real_estate' || f.section === '부동산정보')) ||
+                (sectionKey === 'credit' && (f.section === 'credit' || f.section === '채권순위'))
+            ).length;
+
+            if (existingCount + files.length > MAX_FILES) {
+                alert(`최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
+                return;
+            }
+
+            for (let file of files) {
+                if (file.size > MAX_FILE_SIZE) {
+                    alert(`파일 크기는 최대 1000MB까지 가능합니다.\n문제 파일: ${file.name}`);
+                    return;
+                }
+            }
+
+            let totalBytes = 0;
+            for (let i = 0; i < files.length; i++) totalBytes += files[i].size;
+
+            setUploadZoneBusy(sectionId, true);
+
+            function doUpload(retryCount) {
+                const formData = new FormData();
+                formData.append('section', section);
+                for (let file of files) {
+                    const safeName = file.name.replace(/,/g, '_');
+                    const fileToSend = safeName !== file.name
+                        ? new File([file], safeName, { type: file.type, lastModified: file.lastModified })
+                        : file;
+                    formData.append('files', fileToSend);
+                }
+                $.ajax({
+                    url: '/api/upload-files',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    beforeSend: function(xhr) {
+                        const token = $("meta[name='_csrf']").attr("content");
+                        const header = $("meta[name='_csrf_header']").attr("content");
+                        if (token && header) {
+                            xhr.setRequestHeader(header, token);
+                        }
+                    },
+                    success: function(response) {
+                        setUploadZoneBusy(sectionId, false);
+                        if (response.success) {
+                            response.files.forEach(file => {
+                                const sectionFiles = uploadedFiles.filter(f =>
+                                    (section === 'real_estate' && (f.section === 'real_estate' || f.section === '부동산정보')) ||
+                                    (section === 'credit' && (f.section === 'credit' || f.section === '채권순위'))
+                                );
+                                if (sectionFiles.length >= MAX_FILES) {
+                                    alert(`해당 섹션에는 최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
+                                    return;
+                                }
+                                uploadedFiles.push(file);
+                                addFileToList(file, fileList);
+                            });
+                            if (fileInput) fileInput.value = '';
+                        } else {
+                            alert('파일 업로드 실패: ' + response.message);
+                        }
+                    },
+                    error: function(xhr, status, error) {
+                        if (xhr.status === 413 && (retryCount || 0) === 0) {
+                            return doUpload(1);
+                        }
+                        setUploadZoneBusy(sectionId, false);
+                        let errorMessage = '파일 업로드 중 오류가 발생했습니다.';
+                        try {
+                            const res = JSON.parse(xhr.responseText);
+                            if (res.message) errorMessage = res.message;
+                        } catch (e) {}
+                        alert(errorMessage);
+                    }
+                });
+            }
+            doUpload(0);
         }
 
         function loadExistingFiles() {
@@ -919,103 +1045,41 @@
             // 기존 파일 목록 로드
             loadExistingFiles();
 
-            // 파일 업로드 버튼 클릭 이벤트 (아이콘 클릭 시에도 버튼 기준으로 섹션 판단)
-            $(document).on('click', '.upload-btn-4, .upload-btn-5', function(e) {
-                const $btn = $(e.currentTarget).closest('[class*="upload-btn-"]');
-                const match = ($btn.attr('class') || '').split(' ').find(c => c.startsWith('upload-btn-'));
-                const sectionId = match ? match.split('-')[2] : '';
-                const fileInput = $(`.file-upload-${sectionId}`)[0];
-                const files = fileInput && fileInput.files ? fileInput.files : [];
-                const fileList = $(`.file-list-${sectionId}`);
-                const section = sectionId === '4' ? 'real_estate' : 'credit';
+            // 파일 선택/드롭 시 즉시 업로드
+            ['4', '5'].forEach(function(sectionId) {
+                const input = document.querySelector(`.file-upload-${sectionId}`);
+                const zone = document.querySelector(`[data-zone-for="${sectionId}"]`);
+                if (!input || !zone) return;
 
-                if (files.length === 0) {
-                    alert('파일을 선택해주세요.');
-                    return;
-                }
+                input.addEventListener('change', function() {
+                    if (!input.files || !input.files.length) return;
+                    startUpload(sectionId, input.files);
+                });
 
-                if (uploadedFiles.length + files.length > MAX_FILES) {
-                    alert(`최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
-                    return;
-                }
-
-                // 파일 크기 체크
-                for (let file of files) {
-                    if (file.size > MAX_FILE_SIZE) {
-                        alert(`파일 크기는 최대 1000MB까지 가능합니다.\n문제 파일: ${file.name}`);
-                        return;
-                    }
-                }
-
-                let totalBytes = 0;
-                for (let i = 0; i < files.length; i++) totalBytes += files[i].size;
-
-                // 요청 전 콘솔 로그
-                const uploadUrl = window.location.origin + '/api/upload-files';
-                console.log('[업로드 요청] URL=', uploadUrl, '| section=', section, '| 파일 수=', files.length, '| 총 크기=', totalBytes, 'bytes');
-                for (let i = 0; i < files.length; i++) {
-                    console.log('  파일' + (i + 1) + ':', files[i].name, files[i].size, 'bytes');
-                }
-
-                // 업로드 진행 (413 시 1회 자동 재시도. 재시도 시 FormData 새로 생성)
-                function doUpload(retryCount) {
-                    const formData = new FormData();
-                    formData.append('section', section);
-                    for (let file of files) {
-                        const safeName = file.name.replace(/,/g, '_');
-                        const fileToSend = safeName !== file.name ? new File([file], safeName, { type: file.type, lastModified: file.lastModified }) : file;
-                        formData.append('files', fileToSend);
-                    }
-                    $.ajax({
-                        url: '/api/upload-files',
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        beforeSend: function(xhr) {
-                            const token = $("meta[name='_csrf']").attr("content");
-                            const header = $("meta[name='_csrf_header']").attr("content");
-                            if (token && header) {
-                                xhr.setRequestHeader(header, token);
-                            }
-                        },
-                        success: function(response) {
-                            if (response.success) {
-                                response.files.forEach(file => {
-                                    const sectionFiles = uploadedFiles.filter(f => (section === 'real_estate' && (f.section === 'real_estate' || f.section === '부동산정보')) || (section === 'credit' && (f.section === 'credit' || f.section === '채권순위')));
-                                    if (sectionFiles.length >= MAX_FILES) {
-                                        alert(`해당 섹션에는 최대 ${MAX_FILES}개까지만 파일을 업로드할 수 있습니다.`);
-                                        return;
-                                    }
-                                    uploadedFiles.push(file);
-                                    addFileToList(file, fileList);
-                                });
-                                if (response.dbFileNames) console.log('DB 저장용 파일명 문자열:', response.dbFileNames);
-                                fileInput.value = '';
-                            } else {
-                                alert('파일 업로드 실패: ' + response.message);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            if (xhr.status === 413 && (retryCount || 0) === 0) {
-                                console.warn('[업로드] 413 발생, 1회 재시도합니다.');
-                                return doUpload(1);
-                            }
-                            console.error('[업로드 실패] HTTP status=', xhr.status, 'status=', status, 'error=', error);
-                            if (xhr.status === 413) {
-                                console.error('[업로드 실패] 413 = 요청 크기 초과. Nginx/프록시에서 차단됐을 수 있음. section=', section, '총 크기=', totalBytes, 'bytes');
-                            }
-                            console.error('Response:', xhr.responseText);
-                            let errorMessage = '파일 업로드 중 오류가 발생했습니다.';
-                            try {
-                                const res = JSON.parse(xhr.responseText);
-                                if (res.message) errorMessage = res.message;
-                            } catch (e) {}
-                            alert(errorMessage);
-                        }
+                ['dragenter', 'dragover'].forEach(function(evt) {
+                    zone.addEventListener(evt, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        zone.classList.add('is-dragover');
                     });
-                }
-                doUpload(0);
+                });
+                ['dragleave', 'drop'].forEach(function(evt) {
+                    zone.addEventListener(evt, function(e) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        zone.classList.remove('is-dragover');
+                    });
+                });
+                zone.addEventListener('drop', function(e) {
+                    const files = e.dataTransfer && e.dataTransfer.files;
+                    if (!files || !files.length) return;
+                    try {
+                        const dt = new DataTransfer();
+                        Array.prototype.forEach.call(files, function(f) { dt.items.add(f); });
+                        input.files = dt.files;
+                    } catch (err) {}
+                    startUpload(sectionId, files);
+                });
             });
 
             // 파일 다운로드
@@ -1408,10 +1472,10 @@
 
             // 임시저장 파일 불러오기 버튼 클릭
             $("#loadTempSave").on("click", function() {
-                // 임시저장된 데이터 불러오기
                 loadTempData();
-                // 모달 닫기
-                $('#tempSaveConfirmModal').modal('hide');
+                const modalEl = document.getElementById('tempSaveConfirmModal');
+                const modal = bootstrap.Modal.getInstance(modalEl) || bootstrap.Modal.getOrCreateInstance(modalEl);
+                modal.hide();
             });
         });
 

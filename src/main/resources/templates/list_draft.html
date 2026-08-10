@@ -2,393 +2,84 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('기안서 작성 및 관리', 'grid')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/checkbox.css}">
     <link rel="stylesheet" th:href="@{/css/grid.css}">
-
-    <!-- Select2   -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-
-    <!-- Toast Grid CSS -->
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-    <!-- Toast Grid 대체 CSS -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/tui-grid@4.21.16/dist/tui-grid.css" />
-    <style>
-        @charset "UTF-8";
-        .container-fluid {
-          height: 92%;
-        }
-
-                 /* 포커스 상태일 때 생기는 테두리 제거 */
-         .tui-grid-cell.tui-grid-cell-has-focus {
-           outline: none !important;
-           box-shadow: none !important;
-           border: none !important;
-         }
-
-         /* 혹시 생길 수 있는 내부 엘리먼트 포커스도 제거 */
-         .tui-grid-cell-content:focus {
-           outline: none !important;
-           box-shadow: none !important;
-           border: none !important;
-         }
-
-         /* 탭 컨테 있너 */
-         .tab-container {
-             background: #fff;
-             border-radius: 16px;
-             box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-             overflow: hidden;
-             border: 1px solid #e9ecef;
-         }
-
-         /* 탭 네비게이션 */
-         .tab-navigation {
-             display: flex;
-             background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-             position: relative;
-         }
-
-         .tab-btn {
-             flex: 1;
-             display: flex;
-             align-items: center;
-             justify-content: center;
-             gap: 10px;
-             padding: 16px 24px;
-             border: none;
-             background: transparent;
-             font-weight: 600;
-             font-size: 15px;
-             color: #6c757d;
-             cursor: pointer;
-             transition: all 0.3s ease;
-             border-bottom: 3px solid transparent;
-         }
-
-         .tab-btn:hover {
-             background: rgba(0,123,255,0.05);
-             color: #495057;
-         }
-
-         .tab-btn.active {
-             background: #fff;
-             color: #007bff;
-             border-bottom-color: #007bff;
-         }
-
-         .tab-btn.active {
-             background: #fff;
-             color: #007bff;
-             border-bottom-color: #007bff;
-         }
-
-         /* 탭 콘텐츠 */
-         .tab-content-wrapper {
-             padding: 2rem;
-             min-height: calc(100vh - 200px);
-             background: #fff;
-         }
-
-         .tab-pane {
-             display: none;
-         }
-
-         .tab-pane.active {
-             display: block;
-         }
-
-         /* 그리드 컨테이너 */
-         .grid-container {
-             height: 100%;
-             display: flex;
-             flex-direction: column;
-         }
-         
-         /* 그리드 컨테이너 높이 강제 설정 */
-         #pendingGrid, #incompleteGrid, #completedGrid {
-             min-height: 400px;
-             height: 100% !important;
-         }
-         
-         /* Toast Grid 래퍼 스타일 */
-         .tui-grid-container {
-             height: 100% !important;
-         }
-
-         /* 버튼 스타일 개선 */
-         .btn {
-             transition: all 0.2s ease;
-         }
-
-         .btn:disabled {
-             opacity: 0.6;
-             cursor: not-allowed;
-         }
-
-         /* 선택 카운터 스타일 */
-         .text-muted.small {
-             font-size: 0.875rem;
-         }
-
-         /* 반응형 디자인 */
-         @media (max-width: 768px) {
-             .tab-btn {
-                 padding: 12px 16px;
-                 font-size: 14px;
-             }
-             
-             .tab-content-wrapper {
-                 padding: 1rem;
-             }
-         }
-
-         /* 로딩 스피너 */
-         .spinner-border-sm {
-             width: 1rem;
-             height: 1rem;
-         }
-
-         /* 성공/오류 메시지 */
-         .alert {
-             border-radius: 8px;
-             border: none;
-         }
-
-         /* 그리드 헤더 스타일 */
-         .tui-grid-header {
-             background: #f8f9fa;
-             border-bottom: 2px solid #dee2e6;
-         }
-
-         /* 커스텀 스크롤바 */
-         ::-webkit-scrollbar {
-             width: 8px;
-         }
-
-         ::-webkit-scrollbar-track {
-             background: #f1f1f1;
-             border-radius: 4px;
-         }
-
-         ::-webkit-scrollbar-thumb {
-             background: #c1c1c1;
-             border-radius: 4px;
-         }
-
-         ::-webkit-scrollbar-thumb:hover {
-             background: #a8a8a8;
-         }
-         
-         /* 탭 설명 스타일 */
-         .tab-description {
-             border-radius: 12px;
-             border: none;
-             box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-         }
-         
-         .tab-description .alert-info {
-             background: linear-gradient(135deg, #e3f2fd 0%, #bbdefb 100%);
-             border: 1px solid #90caf9;
-             color: #1565c0;
-         }
-         
-         .tab-description .alert-warning {
-             background: linear-gradient(135deg, #fff3e0 0%, #ffcc02 100%);
-             border: 1px solid #ffb74d;
-             color: #e65100;
-         }
-         
-         .tab-description .alert-success {
-             background: linear-gradient(135deg, #e8f5e8 0%, #c8e6c9 100%);
-             border: 1px solid #81c784;
-             color: #2e7d32;
-         }
-         
-         .tab-description i {
-             font-size: 1.2rem;
-         }
-         
-         .tab-description strong {
-             font-weight: 600;
-         }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/list-desk.css}">
+    <link rel="stylesheet" th:href="@{/css/draft-desk.css}">
 </head>
-<body>
-    <header class="main-header">
-        <div class="header-container">
-            <div class="header-content">
-                <div class="logo-container">
-                    <img src="/images/dongah.gif" alt="로고" class="logo">
-                    <span class="header-title">부동산임차관리 플랫폼</span>
+<body class="app-shell--quiet">
+    <th:block th:with="backUrl=@{/main}, backText='메인화면'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
+
+<main class="list-desk draft-desk-page app-main">
+    <div class="list-desk__shell">
+        <header class="list-desk__head">
+            <div class="list-desk__titles">
+                <p class="list-desk__eyebrow">기안서</p>
+                <h1 class="list-desk__title text-balance">작성 및 관리</h1>
+                <p class="list-desk__lead text-pretty">결재 완료 건으로 기안서를 작성·업로드하고, 완료된 기안을 확인합니다</p>
+            </div>
+            <div class="list-desk__actions" id="pendingHeadActions">
+                <button type="button" class="btn btn-primary list-desk__btn" id="createDraftBtn" disabled>
+                    <i class="bi bi-file-earmark-plus" aria-hidden="true"></i> 기안서 작성
+                </button>
+            </div>
+        </header>
+
+        <section class="list-desk__panel draft-desk">
+            <nav class="draft-tabs" role="tablist" aria-label="기안서 단계">
+                <button class="tab-btn active" id="pending-tab" type="button" role="tab" aria-selected="true">
+                    <i class="bi bi-pencil-square" aria-hidden="true"></i>
+                    <span>기안서 작성</span>
+                </button>
+                <button class="tab-btn" id="incomplete-tab" type="button" role="tab" aria-selected="false">
+                    <i class="bi bi-cloud-upload" aria-hidden="true"></i>
+                    <span>기안서 업로드</span>
+                </button>
+                <button class="tab-btn" id="completed-tab" type="button" role="tab" aria-selected="false">
+                    <i class="bi bi-check2-all" aria-hidden="true"></i>
+                    <span>기안완료</span>
+                </button>
+            </nav>
+
+            <div class="draft-tab-body">
+                <div class="tab-pane draft-tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+                    <div class="draft-toolbar">
+                        <div class="draft-toolbar__left">
+                            <button type="button" class="btn draft-quiet-btn" id="selectAllBtn">
+                                <i class="bi bi-check-all" aria-hidden="true"></i> 전체선택
+                            </button>
+                            <button type="button" class="btn draft-quiet-btn" id="deselectAllBtn">
+                                <i class="bi bi-x-circle" aria-hidden="true"></i> 전체해제
+                            </button>
+                        </div>
+                        <p class="draft-toolbar__meta mb-0">선택 <strong id="selectedCount">0</strong>개</p>
+                    </div>
+                    <div class="draft-grid-wrap">
+                        <div id="pendingGrid" class="list-desk__grid"></div>
+                    </div>
                 </div>
-                <div class="user-info">
-                    <span class="user-name" th:text="${#authentication.principal.userName + '님'}"></span>
-                    <span class="user-position" th:text="${#authentication.principal.deptName}"></span>
-                    <a href="/main" class="btn btn-back me-2">
-                        <i class="bi bi-arrow-left"></i> 메인
-                    </a>
-                    <form th:action="@{/logout}" method="post" class="d-inline">
-                        <button type="submit" class="btn btn-action">로그아웃</button>
-                    </form>
+
+                <div class="tab-pane draft-tab-pane fade" id="incomplete" role="tabpanel" aria-labelledby="incomplete-tab">
+                    <p class="draft-hint">작성된 기안서를 확인하고 그룹웨어로 업로드합니다.</p>
+                    <div class="draft-grid-wrap">
+                        <div id="incompleteGrid" class="list-desk__grid"></div>
+                    </div>
+                </div>
+
+                <div class="tab-pane draft-tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+                    <p class="draft-hint">그룹웨어 업로드가 완료된 기안을 확인합니다.</p>
+                    <div class="draft-grid-wrap">
+                        <div id="completedGrid" class="list-desk__grid"></div>
+                    </div>
                 </div>
             </div>
-        </div>
-    </header>
-
-<main>
-    <div class="container-fluid">
-       <div class="row mb-4">
-           <h3>기안서 관리</h3>
-           <span>결재 완료된 요청서를 선택하여 기안서를 작성, 업로드 후 완료된 기안서를 확인할 수 있습니다.</span>
-       </div>
-       <div class="row mb-4 process-steps">
-           <div style="display: flex; align-items: center; gap: 12px; font-size: 14px; color: #495057;">
-               <div style="display: flex; align-items: center; gap: 6px;">
-                   <div style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #007bff; color: white; border-radius: 50%; font-weight: 600; font-size: 12px;">1</div>
-                   <strong style="font-weight: 500;">기안서 작성</strong>
-               </div>
-               <i class="bi bi-arrow-right" style="color: #adb5bd;"></i>
-               <div style="display: flex; align-items: center; gap: 6px;">
-                   <div style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #007bff; color: white; border-radius: 50%; font-weight: 600; font-size: 12px;">2</div>
-                   <strong style="font-weight: 500;">기안서 업로드(그룹웨어 결재)</strong>
-               </div>
-               <i class="bi bi-arrow-right" style="color: #adb5bd;"></i>
-               <div style="display: flex; align-items: center; gap: 6px;">
-                   <div style="display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; background: #007bff; color: white; border-radius: 50%; font-weight: 600; font-size: 12px;">3</div>
-                   <strong style="font-weight: 500;">완료기안 확인</strong>
-               </div>
-           </div>
-       </div>
-
-                          <!-- 탭 컨테이너 -->
-         <div class="tab-container">
-             <!-- 탭 네비게이션 -->
-             <div class="tab-navigation">
-                 <button class="tab-btn active" id="pending-tab" type="button">
-                     <i class="bi bi-pencil-square"></i>
-                     <span>기안서 작성</span>
-                 </button>
-                 <button class="tab-btn" id="incomplete-tab" type="button">
-                     <i class="bi bi-cloud-upload"></i>
-                     <span>기안서 업로드</span>
-                 </button>
-                 <button class="tab-btn" id="completed-tab" type="button">
-                     <i class="bi bi-check2-all"></i>
-                     <span>기안완료</span>
-                 </button>
-             </div>
-
-             <!-- 탭 콘텐츠 -->
-             <div class="tab-content-wrapper">
-                 <!-- 기안 미작성 탭 -->
-                 <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
-                     <!-- 탭 설명 -->
-                     <div class="row mb-3">
-                         <div class="col-12">
-                             <div class="alert alert-info d-flex align-items-center tab-description">
-                                 <i class="bi bi-pencil-square me-2"></i>
-                                 <div>
-                                     <strong>기안서작성</strong> - 결재가 완료된 사전조사서 중 기안서를 작성하지 않은 항목들을 확인할 수 있습니다.
-                                     필요한 항목을 선택하여 기안서를 작성하세요.
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                     
-                     <!-- 기안서 작성 버튼과 다중선택 기능 -->
-                     <div class="row mb-3">
-                         <div class="col-12">
-                             <div class="d-flex flex-column">
-                                 <div class="mb-2">
-                                     <button type="button" class="btn btn-primary" id="createDraftBtn" disabled>
-                                         <i class="bi bi-file-earmark-plus"></i> 기안서 작성
-                                     </button>
-                                     <span class="ms-2 text-muted small">선택된 항목: <span id="selectedCount">0</span>개</span>
-                                 </div>
-                                 <div>
-                                     <button type="button" class="btn btn-outline-secondary btn-sm" id="selectAllBtn">
-                                         <i class="bi bi-check-all"></i> 전체선택
-                                     </button>
-                                     <button type="button" class="btn btn-outline-secondary btn-sm ms-2" id="deselectAllBtn">
-                                         <i class='bi bi-x-circle'></i> 전체해제
-                                     </button>
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                     
-                     <div class="row" style="height: calc(100vh - 600px);">
-                         <div class="col col-12" id="pendingGrid" style="height: 100%;"></div>
-                     </div>
-                 </div>
-                 
-                 <!-- 기안 미완료 탭 -->
-                 <div class="tab-pane fade" id="incomplete" role="tabpanel" aria-labelledby="incomplete-tab">
-                     <!-- 탭 설명 -->
-                     <div class="row mb-3">
-                         <div class="col-12">
-                             <div class="alert alert-warning d-flex align-items-center tab-description">
-                                 <i class="bi bi-cloud-upload me-2"></i>
-                                 <div>
-                                     <strong>기안서 업로드</strong> -  작성된 기안서를 확인하여 그룹웨어로 업로드 할 수 있습니다.
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                     
-                     <div class="row" style="height: calc(100vh - 600px);">
-                         <div class="col col-12" id="incompleteGrid" style="height: 100%;"></div>
-                     </div>
-                 </div>
-                 
-                 <!-- 기안완료 탭 -->
-                 <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
-                     <!-- 탭 설명 -->
-                     <div class="row mb-3">
-                         <div class="col-12">
-                             <div class="alert alert-success d-flex align-items-center tab-description">
-                                 <i class="bi bi-check2-all me-2"></i>
-                                 <div>
-                                     <strong>기안완료</strong> - 그룹웨어에 업로드가 완료된 항목들을 확인할 수 있습니다.
-                                 </div>
-                             </div>
-                         </div>
-                     </div>
-                     
-                     <div class="row" style="height: calc(100vh - 600px);">
-                         <div class="col col-12" id="completedGrid" style="height: 100%;"></div>
-                     </div>
-                 </div>
-             </div>
-         </div>
-            </div>
-        </div>
+        </section>
     </div>
+</main>
 
-    <!-- jQuery (먼저 로드) -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <!-- 부트스트랩 JS 번들 -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Select2 -->
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- Toast Grid 의존성 -->
-    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-    <!-- Toast Grid 메인 라이브러리 -->
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-    <!-- 로컬 그리드 커스텀 설정 -->
-    <script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
-    
     <!-- Approver Integration -->
     <script th:src="@{/js/approval-integration.js}"></script>
 
@@ -412,16 +103,20 @@
         { header: '결재번호', name: 'appr_no', width: 70, align: 'center', sortable: true, hidden: true },
         { header: '결재자', name: 'appr_emp_no', width: 70, align: 'center', sortable: true, hidden: true },
         { header: '현장코드', name: 'proj_code', sortable: true, filter: 'text', hidden: true },
-        { header: '현장명', name: 'proj_name', width: 300, sortable: true, filter: { type: 'text' } },
+        { header: '현장명', name: 'proj_name', width: 320, sortable: true, filter: { type: 'text' }, align: 'left', valign: 'middle' },
         { header: 'mst_seq', name: 'mst_seq', width: 100, align: 'center', sortable: true, hidden: true },
         { 
             header: '주소', 
             name: 'address', 
-            width: 500, 
+            width: 420, 
             sortable: true, 
             filter: { type: 'text' },
+            align: 'left',
+            valign: 'middle',
+            escapeHTML: false,
             formatter: function(e) {
-                return '<a href="#">' + e.value + '</a>';
+                var t = e.value == null ? '' : String(e.value);
+                return '<button type="button" class="grid-addr" title="지도 보기">' + t + '</button>';
             }
         },
     ];
@@ -430,26 +125,25 @@
     const statusColumn = { 
         header: '결재상태', 
         name: 'conf_status_name', 
-        width: 100, 
-        align: 'center', 
+        width: 96, 
+        align: 'center',
+        valign: 'middle',
         sortable: true,
+        escapeHTML: false,
         formatter: function(e) {
             const status = e.row.conf_status;
             const statusName = e.value || '미전송';
-            
-            // 상태에 따른 배지 색상 설정
-            let badgeClass = 'badge bg-secondary';
+            let cls = 'list-status--idle';
             switch(status) {
-                case '00': badgeClass = 'badge bg-secondary'; break; // 미전송
-                case '40': badgeClass = 'badge bg-danger'; break;     // 반려
-                case '99': badgeClass = 'badge bg-dark'; break;       // 삭제
-                case '10': badgeClass = 'badge bg-warning'; break;    // 결재중
-                case '20': badgeClass = 'badge bg-info'; break;       // 보류
-                case '30': badgeClass = 'badge bg-success'; break;    // 완료
-                default: badgeClass = 'badge bg-secondary'; break;
+                case '00': cls = 'list-status--idle'; break;
+                case '40': cls = 'list-status--reject'; break;
+                case '99': cls = 'list-status--idle'; break;
+                case '10': cls = 'list-status--progress'; break;
+                case '20': cls = 'list-status--wait'; break;
+                case '30': cls = 'list-status--ok'; break;
+                default: cls = 'list-status--idle'; break;
             }
-            
-            return '<span class="' + badgeClass + '">' + statusName + '</span>';
+            return '<span class="list-status ' + cls + '">' + statusName + '</span>';
         }
     };
 
@@ -468,12 +162,13 @@
                 name: 'appr_date',
                 width: 120,
                 align: 'center',
+                valign: 'middle',
                 sortable: true,
                 defaultValue: '',
+                escapeHTML: false,
                 formatter: function(e) {
                     if (e.value) {
-                        // YYYY-MM-DD 형식으로 표시
-                        return e.value.substring(0, 10);
+                        return '<span class="grid-num">' + e.value.substring(0, 10) + '</span>';
                     }
                     return '';
                 }
@@ -484,15 +179,17 @@
             const confirmColumn = {
                 header: '확인', 
                 name: 'confirm', 
-                width: 70, 
-                align: 'center', 
+                width: 56, 
+                align: 'center',
+                valign: 'middle',
                 sortable: false, 
                 hidden: false,
+                escapeHTML: false,
                 formatter: function(e) {
                     if (e.row.appr_stat == '999' || e.row.appr_stat == '4') {
                         return '';
                     } else {
-                        return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>';
+                        return '<button type="button" class="grid-act grid-act--appr" title="확인" aria-label="확인"><i class="bi bi-clipboard-check" aria-hidden="true"></i></button>';
                     }
                 }
             };
@@ -504,14 +201,16 @@
             const confirmColumn = {
                 header: '확인', 
                 name: 'confirm', 
-                width: 70, 
-                align: 'center', 
+                width: 56, 
+                align: 'center',
+                valign: 'middle',
                 sortable: false, 
                 hidden: false,
+                escapeHTML: false,
                 formatter: function(e) {
                     // draft_id가 있으면 확인 버튼 표시 (draft_id 우선)
                     if (e.row.draft_id || e.row.mst_seq) {
-                        return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>';
+                        return '<button type="button" class="grid-act grid-act--appr" title="확인" aria-label="확인"><i class="bi bi-clipboard-check" aria-hidden="true"></i></button>';
                     } else {
                         return '';
                     }
@@ -523,14 +222,16 @@
             const editColumn = {
                 header: '수정', 
                 name: 'edit', 
-                width: 70, 
-                align: 'center', 
+                width: 56, 
+                align: 'center',
+                valign: 'middle',
                 sortable: false, 
                 hidden: false,
+                escapeHTML: false,
                 formatter: function(e) {
                     // draft_id가 있으면 수정 버튼 표시
                     if (e.row.draft_id) {
-                        return '<button class="btn btn-sm btn-primary"><i class="bi bi-pencil"></i></button>';
+                        return '<button type="button" class="grid-act grid-act--edit" title="수정" aria-label="수정"><i class="bi bi-pencil" aria-hidden="true"></i></button>';
                     } else {
                         return '';
                     }
@@ -542,41 +243,61 @@
             const uploadColumn = {
                 header: '업로드', 
                 name: 'upload', 
-                width: 120, 
-                align: 'center', 
+                width: 64, 
+                align: 'center',
+                valign: 'middle',
                 sortable: false, 
                 hidden: false,
+                escapeHTML: false,
                 formatter: function(e) {
-                    return '<button class="btn btn-primary" data-draft-id="' + (e.row.draft_id || e.row.id || '') + '">' +
-                           '<i class="bi bi-cloud-upload"></i> 업로드' +
+                    return '<button type="button" class="grid-act grid-act--appr" title="업로드" aria-label="업로드" data-draft-id="' + (e.row.draft_id || e.row.id || '') + '">' +
+                           '<i class="bi bi-cloud-upload" aria-hidden="true"></i>' +
                            '</button>';
                 }
             };
             columns.push(uploadColumn);
             columns.push(statusColumn); // 결재상태 맨 뒤에 추가
         } else {
-            // 기안완료 탭: 확인 버튼 추가
-            
-            // 확인 버튼 컬럼
-            const confirmColumn = {
-                header: '확인', 
-                name: 'confirm', 
-                width: 70, 
-                align: 'center', 
-                sortable: false, 
+            // 기안완료 탭: 컬럼 보강 + 주소가 남은 너비 채움
+            columns = columns.map(function(col) {
+                if (col.name === 'address') {
+                    var addr = Object.assign({}, col);
+                    delete addr.width;
+                    addr.minWidth = 360;
+                    return addr;
+                }
+                if (col.name === 'proj_name') {
+                    return Object.assign({}, col, { width: 400, minWidth: 280 });
+                }
+                return col;
+            });
+
+            columns.push({
+                header: '기안자',
+                name: 'user_nm',
+                width: 96,
+                align: 'center',
+                valign: 'middle',
+                sortable: true
+            });
+
+            columns.push({
+                header: '확인',
+                name: 'confirm',
+                width: 56,
+                align: 'center',
+                valign: 'middle',
+                sortable: false,
                 hidden: false,
+                escapeHTML: false,
                 formatter: function(e) {
                     if (e.row.mst_seq) {
-                        return '<button class="btn btn-sm btn-primary"><i class="bi bi-file-text"></i></button>';
-                    } else {
-                        return '';
+                        return '<button type="button" class="grid-act" title="확인" aria-label="확인"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></button>';
                     }
+                    return '';
                 }
-            }; 
-            
-             // 확인 버튼을 마지막에 추가
-             columns.push(confirmColumn);
-             columns.push(statusColumn); // 결재상태 맨 뒤에 추가
+            });
+            columns.push(statusColumn);
          }
          
          const containerElement = document.getElementById(containerId);
@@ -595,8 +316,9 @@
         
         const gridOptions = {
             el: containerElement,
-            bodyHeight: 400, // 고정 높이로 설정
-            rowHeight: 50,
+            bodyHeight: 'fitToParent',
+            rowHeight: 44,
+            minRowHeight: 44,
             selection: {
                 type: 'row',
                 showCheckbox: showCheckbox,
@@ -604,12 +326,12 @@
             },
             focus: false,
             rowHeaders: showCheckbox ? [
-                { type: 'checkbox', width: 50, align: 'center', valign: 'middle' },
-                { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
+                { type: 'rowNum', width: 48, align: 'center', valign: 'middle' },
+                { type: 'checkbox', width: 40, align: 'center', valign: 'middle' }
             ] : [
-                { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
+                { type: 'rowNum', width: 48, align: 'center', valign: 'middle' }
             ],
-            header: { height: 50 },
+            header: { height: 40 },
             hideLoadingBar: false,
             pageOptions: {
                 useClient: true,
@@ -809,9 +531,9 @@
         const isAllSelected = selectableRows.length > 0 && checkedRows.length === selectableRows.length;
         
         if (isAllSelected) {
-            selectAllBtn.className = 'btn btn-outline-primary btn-sm';
+            selectAllBtn.className = 'btn draft-quiet-btn is-on';
         } else {
-            selectAllBtn.className = 'btn btn-outline-secondary btn-sm';
+            selectAllBtn.className = 'btn draft-quiet-btn';
         }
     }
 
@@ -1595,8 +1317,13 @@
     // 탭 전환 함수
     function switchTab(tabName) {
         // 모든 탭 비활성화
-        document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.remove('active');
+            btn.setAttribute('aria-selected', 'false');
+        });
         document.querySelectorAll('.tab-pane').forEach(pane => pane.classList.remove('show', 'active'));
+
+        const headActions = document.getElementById('pendingHeadActions');
         
         if (tabName === 'pending') {
             // 기안 미작성 탭
@@ -1604,7 +1331,9 @@
             
             // 탭 활성화
             document.getElementById('pending-tab').classList.add('active');
+            document.getElementById('pending-tab').setAttribute('aria-selected', 'true');
             document.getElementById('pending').classList.add('show', 'active');
+            if (headActions) headActions.style.display = '';
             
             // 선택 상태 초기화
             selectedRows.clear();
@@ -1617,7 +1346,9 @@
             
             // 탭 활성화
             document.getElementById('incomplete-tab').classList.add('active');
+            document.getElementById('incomplete-tab').setAttribute('aria-selected', 'true');
             document.getElementById('incomplete').classList.add('show', 'active');
+            if (headActions) headActions.style.display = 'none';
             
             // 기안서 업로드 탭 활성화 완료
         } else if (tabName === 'completed') {
@@ -1626,7 +1357,9 @@
             
             // 탭 활성화
             document.getElementById('completed-tab').classList.add('active');
+            document.getElementById('completed-tab').setAttribute('aria-selected', 'true');
             document.getElementById('completed').classList.add('show', 'active');
+            if (headActions) headActions.style.display = 'none';
         }
     }
 
@@ -1714,6 +1447,9 @@
                 
                 // Toast Grid는 resetData 메서드를 사용
                 completedGrid.resetData(response);
+                setTimeout(function() {
+                    if (completedGrid) completedGrid.refreshLayout();
+                }, 50);
             },
             error: function(xhr, status, error) {
                 // 오류 처리

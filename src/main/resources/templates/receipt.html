@@ -2,239 +2,85 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('접수함', 'grid')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/checkbox.css}">
     <link rel="stylesheet" th:href="@{/css/grid.css}">
-
-    <!-- Select2   -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-    <link rel="stylesheet" th:href="@{/css/approval-cc-select.css}">
-
-    <!-- Toast Grid-->
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-
-    <title>부동산 임차관리 플랫폼</title>
-    <style>
-        @charset "UTF-8";
-
-         .action-bar {
-            margin-bottom: 20px;
-        }
-
-        .btn-approve {
-            background: #2ecc71;
-        }
-        .btn-approve:hover {
-            background: #27ae60;
-            box-shadow: 0 5px 15px rgba(46, 204, 113, 0.3);
-        }
-        .btn-reject {
-            background: #e74c3c;
-        }
-        .btn-reject:hover {
-            background: #c0392b;
-            box-shadow: 0 5px 15px rgba(231, 76, 60, 0.3);
-        }
-
-
-        .status-badge {
-            padding: 3px 8px;
-            border-radius: 10px;
-            font-size: 0.8rem;
-            font-weight: 500;
-            color: white;
-        }
-        .status-pending {
-            background-color: #f39c12;
-        }
-        .status-approved {
-            background-color: #2ecc71;
-        }
-        .status-rejected {
-            background-color: #e74c3c;
-        }
-        .content-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
-            padding: 20px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-        .no-data {
-            text-align: center;
-            padding: 50px 0;
-            color: #7f8c8d;
-        }
-        .table-container {
-            background: white;
-            border-radius: 10px;
-            overflow: hidden;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.05);
-        }
-        .table {
-            margin-bottom: 0;
-        }
-        .table th {
-            background-color: #f8f9fa;
-            border-top: none;
-            font-weight: 600;
-            color: #495057;
-        }
-        .table td {
-            vertical-align: middle;
-        }
-        .detail-link {
-            color: #3498db;
-            text-decoration: none;
-            font-weight: 500;
-        }
-        .detail-link:hover {
-            color: #2980b9;
-            text-decoration: underline;
-        }
-        .pagination-container {
-            display: flex;
-            justify-content: center;
-            margin-top: 20px;
-        }
-        .search-box {
-            position: relative;
-        }
-        .search-box .form-control {
-            padding-left: 40px;
-            border-radius: 20px;
-        }
-        .search-box i {
-            position: absolute;
-            left: 15px;
-            top: 10px;
-            color: #adb5bd;
-        }
-        .form-check-input:checked {
-            background-color: #3498db;
-            border-color: #3498db;
-        }
-          .filter-section {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/list-desk.css}">
 </head>
+<body class="app-shell--quiet">
+<th:block th:with="backUrl=@{/main}, backText='메인화면'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
 
-<body>
-
-<header class="main-header">
-    <div class="header-content">
-        <a href="/" class="logo-container" >
-            <img src="/images/dongah.gif" alt="로고" class="logo">
-            <span class="header-title">부동산 임차관리 플랫폼</span>
-        </a>
-        <div class="user-info">
-            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-            <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
-            <a href="/admin" class="btn btn-back me-2">
-                <i class="bi bi-arrow-left"></i> 관리자
-            </a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-action">로그아웃</button>
-            </form>
-        </div>
-    </div>
-</header>
-
-<main>
-
-    <div class="container-fluid">
-        <div class="row mb-4">
-            <h3>관리자 접수함</h3>
-            <span>관리자에게 들어온 사전조사서를 조회하여 다음 요청처리를 할 수 있습니다</span>
-        </div>
-
-
-        <div class="row mb-2">
-
-            <div class="col col-12 col-sm-12">
-                <form id="search_form" method="get">
-                    <div class="row mb-1 bg-style-search">
-                        <div class="col-sm-5">
-                            <select id="sel_proj" name="proj_code" class="form-select form-select-sm"  style="width:100%"></select>
-                        </div>
-                        <input type="hidden" name="appr_group" value="A">
-                        <input type="hidden" name="last_tag" value="T">
-                        <div class="col-auto">
-                            <button type="button" class="btn btn-sm btn-danger btn_s" id="searchBtn"><i class="bi bi-search"></i> 조회</button>
-                        </div>
-                    </div>
-                </form>
+<main class="list-desk app-main">
+    <div class="list-desk__shell">
+        <header class="list-desk__head">
+            <div class="list-desk__titles">
+                <p class="list-desk__eyebrow">관리</p>
+                <h1 class="list-desk__title text-balance">접수함</h1>
+                <p class="list-desk__lead text-pretty">접수 대기 건을 확인하고 관리부서로 전달합니다</p>
             </div>
-        </div>
-        <div class="row mb-1">
-            <div class="col col-12">
-                <button type="button" class="btn btn-sm btn-primary"  id="btnSelectConfirm">
-                    <i class="bi bi-arrow-right-square"></i> 관리부서접수
+            <div class="list-desk__actions">
+                <button type="button" class="btn btn-primary list-desk__btn" id="btnSelectConfirm">
+                    <i class="bi bi-arrow-right-square" aria-hidden="true"></i> 관리부서접수
                 </button>
-                <button class="btn btn-sm btn-danger" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan"><i class="bi bi-slash-square"></i> 반려</button>
+                <button type="button" class="btn list-desk__btn list-desk__btn--danger" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
+                    <i class="bi bi-slash-square" aria-hidden="true"></i> 반려
+                </button>
             </div>
-        </div>
-        <div class="row" style="height: calc(100vh - 250px);">
-            <div class="col col-12" id="grid" style="height: 100%;"></div>
-        </div>
+        </header>
+
+        <section class="list-desk__panel">
+            <form id="search_form" method="get" class="list-desk__filters">
+                <div class="list-desk__filter-field list-desk__filter-field--proj">
+                    <label class="list-desk__label" for="sel_proj">현장</label>
+                    <select id="sel_proj" name="proj_code" class="form-select" style="width:100%"></select>
+                </div>
+                <input type="hidden" name="appr_group" value="A">
+                <input type="hidden" name="last_tag" value="T">
+                <button type="button" class="btn btn-primary list-desk__btn" id="searchBtn" style="display:none" aria-hidden="true">조회</button>
+            </form>
+
+            <div class="collapse" id="apprBan">
+                <div class="px-3 py-2 border-bottom bg-light">
+                    <label class="form-label small text-muted mb-1" for="banRemark">반려 사유</label>
+                    <textarea class="form-control" id="banRemark" rows="3" placeholder="반려 사유를 입력하세요"></textarea>
+                </div>
+            </div>
+
+            <div class="list-desk__grid-wrap">
+                <div id="grid" class="list-desk__grid"></div>
+            </div>
+        </section>
     </div>
 
-
-    <!-- 결재라인 Modal -->
-    <div id="remark_popup" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" >
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content rounded-3 shadow">
-                <div class="modal-header p-4 text-center">
-                    <h5>관리부서 접수</h5>
+    <!-- 관리부서 접수 Modal -->
+    <div id="remark_popup" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3">
+                <div class="modal-header py-3">
+                    <h6 class="modal-title mb-0">관리부서 접수</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
                 </div>
-
-                <div class="modal-body p-4 text-center">
-                    <select class="form-control btn-conf mb-2" id="next_emp_user"></select>
-                    <label class="form-label small text-start w-100 mb-1">참조(통보) — 여러 명 선택 가능</label>
-                    <div class="approval-cc-select-wrap w-100 text-start mb-2">
+                <div class="modal-body">
+                    <label class="form-label small text-muted mb-1" for="next_emp_user">다음확인자</label>
+                    <select class="form-control btn-conf mb-3" id="next_emp_user"></select>
+                    <label class="form-label small text-muted mb-1" for="receipt_cc_users">참조(통보) — 여러 명 선택 가능</label>
+                    <div class="approval-cc-select-wrap w-100 mb-3">
                         <select class="form-control btn-conf approval-cc-select" id="receipt_cc_users" multiple style="width:100%"></select>
                     </div>
-                    <textarea class="form-control mt-2" placeholder="Comments" id="txtApprRemarks" style="height: 100px"></textarea>
+                    <label class="form-label small text-muted mb-1" for="txtApprRemarks">의견</label>
+                    <textarea class="form-control" placeholder="의견을 입력하세요" id="txtApprRemarks" rows="4"></textarea>
                 </div>
-
-                <div class="modal-footer flex-nowrap p-0" id="">
-                    <button type="button" id="appr_confirm_yes" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0 border-end" data-bs-dismiss=""><strong>확인</strong></button>
-                    <button type="button" id="appr_confirm_no" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0" data-bs-dismiss="">취소</button>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="appr_confirm_no">취소</button>
+                    <button type="button" class="btn btn-primary" id="appr_confirm_yes"><strong>확인</strong></button>
                 </div>
-
             </div>
         </div>
     </div>
-
 </main>
 
-
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<!-- Toast Grid  -->
-<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-<script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
-<!-- Custom   -->
-<script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
 <script th:inline="javascript">
 
      var user_no = [[${#authentication.principal.userNo}]];
@@ -244,16 +90,30 @@
 
      ufn_select2_getData(proj_url,"#sel_proj","현장",dept_code,function(){});
 
-
     const grid = new Grid({
-      el: document.getElementById('grid'), // Container element
-      //data: dataSource,
+      el: document.getElementById('grid'),
       bodyHeight: 'fitToParent',
-      rowHeight: 20,
+      rowHeight: 44,
+      minRowHeight: 44,
+      selection: {
+          type: 'row',
+          showCheckbox: true,
+          enableCellSelection: false
+      },
+      focus: false,
+      rowClassName: function(args) {
+          var s = String(args.row.appr_stat == null ? '' : args.row.appr_stat);
+          if (s === '3') return 'row-status-ok';
+          if (s === '4') return 'row-status-reject';
+          return 'row-status-wait';
+      },
       rowHeaders: [
-        { type: 'rowNum', width: 30, align: 'right', valign: 'middle' },
+        { type: 'rowNum', width: 48, align: 'center', valign: 'middle' },
         {
             type: 'checkbox',
+            width: 40,
+            align: 'center',
+            valign: 'middle',
             header:
             `<label for="all-checkbox" class="checkbox">
             <input type="checkbox" id="all-checkbox" class="hidden-input" name="_checked" />
@@ -265,7 +125,7 @@
         }
       ],
       header:{
-          height: 50,
+          height: 40,
           complexColumns: [
           {
             header: '고용허가기간',
@@ -285,43 +145,48 @@
         { header: '결재순번',name: 'appr_num',width: 70, align: 'center',sortable: true ,hidden: true},
         { header: '결재번호',name: 'appr_no',width: 70, align: 'center',sortable: true ,hidden: true},
         { header: '확인자',name: 'appr_emp_no',width: 70, align: 'center',sortable: true ,hidden: true},
-        { header: '확인상태',name: 'appr_stat',width: 90, align: 'center',sortable: true ,hidden: false
+        { header: '확인상태',name: 'appr_stat',width: 96, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
             ,formatter: function (e) {
-                return decode(e.value,'3','완료','4','반려','요청')
+                var v = e.value;
+                var label = decode(v,'3','완료','4','반려','요청');
+                var cls = 'list-status--wait';
+                if (v === '3' || v === 3) cls = 'list-status--ok';
+                else if (v === '4' || v === 4) cls = 'list-status--reject';
+                return '<span class="list-status ' + cls + '">' + label + '</span>';
             }
         },
-        { header: '확인',name: 'confirm',width: 70, align: 'center',sortable: false
+        { header: '확인',name: 'confirm',width: 56, align: 'center', valign: 'middle', sortable: false, escapeHTML: false
             ,formatter:function(e){
                 if(e.row.appr_stat == '999'){
                     return '';
-                }else{
-                    return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
                 }
+                return '<button type="button" class="grid-act grid-act--appr" title="확인" aria-label="확인"><i class="bi bi-clipboard-check" aria-hidden="true"></i></button>';
             }
         },
 
         { header: '현장코드',name: 'proj_code',sortable: true, filter: 'text' , hidden: true},
-        { header: '현장명',name: 'proj_name',width: 300, sortable: true, filter:{type:'text'}},
+        { header: '현장명',name: 'proj_name',width: 220, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle'},
 
-        { header: '현장숙소 주소',name: 'address',width: 500, sortable: true, filter:{type:'text'}
+        { header: '현장숙소 주소',name: 'address',width: 420, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle', escapeHTML: false
             ,formatter:function(e){
-                return '<a href="#">'+e.value+'</a>'
+                var t = e.value == null ? '' : String(e.value);
+                return '<button type="button" class="grid-addr" title="지도 보기">' + t + '</button>';
             }
         },
 
-        { header: '요청자',name: 'first_appr_emp_nm',width: 100, align: 'center', sortable: true},
-        { header: '요청일',name: 'first_appr_date',width: 100, align: 'center', sortable: true
+        { header: '요청자',name: 'first_appr_emp_nm',width: 88, align: 'center', valign: 'middle', sortable: true},
+        { header: '요청일',name: 'first_appr_date',width: 104, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
             ,formatter: function (e) {
-                return toStringByFormatting(e.value)
+                return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
             }
         },
 
-        { header: '다음확인자',name: 'next_appr_emp_nm',width: 100, align: 'center', sortable: true},
+        { header: '다음확인자',name: 'next_appr_emp_nm',width: 96, align: 'center', valign: 'middle', sortable: true},
 
-        { header: '최종확인자',name: 'last_appr_emp_nm',width: 100, align: 'center', sortable: true},
-        { header: '최종확인일',name: 'last_appr_date',width: 100, align: 'center', sortable: true
+        { header: '최종확인자',name: 'last_appr_emp_nm',width: 96, align: 'center', valign: 'middle', sortable: true},
+        { header: '최종확인일',name: 'last_appr_date',width: 104, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
             ,formatter: function (e) {
-                return toStringByFormatting(e.value)
+                return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
             }
         },
       ],
@@ -374,9 +239,6 @@
     });
 
     grid.on('dblclick', (ev) => {
-        //console.log(ev.rowKey+"//"+ev.columnName);
-        //var vData = grid.getValue(ev.rowKey, ev.columnName);
-        //console.log(vData);
     });
 
     grid.on('check', (ev) => {
@@ -398,6 +260,10 @@
     });
 
     $("#searchBtn").on("click",function(e){
+        G_load(grid,"/appr/list/admin","search_form");
+    });
+
+    $("#sel_proj").on("select2:select select2:clear", function() {
         G_load(grid,"/appr/list/admin","search_form");
     });
 
@@ -434,25 +300,21 @@
                 success: function(data) {
                     console.log(data);
                     const formattedData = data.map(item => {
-                            console.log("각 아이템:", item);  // 각 아이템의 구조 확인
+                            console.log("각 아이템:", item);
                             return {
                                 id: item.emp_no,
                                 text: item.name
                             };
                         });
 
-                        // 기존 select2가 있다면 제거
                         if ($('#next_emp_user').data('select2')) {
                             $('#next_emp_user').select2('destroy');
                         }
 
-                        // select 초기화
                         $('#next_emp_user').empty();
 
-                        // 기본 옵션 추가
                         $('#next_emp_user').append('<option value=""></option>');
 
-                        // 데이터를 직접 option으로 추가
                         data.forEach(function(item) {
                             $('#next_emp_user').append(
                                 $('<option></option>')
@@ -461,12 +323,10 @@
                             );
                         });
 
-                        // Select2 초기화 전에 기존 인스턴스 제거
                         if ($('#next_emp_user').data('select2')) {
                             $('#next_emp_user').select2('destroy');
                         }
 
-                        // Select2 초기화
                         $('#next_emp_user').select2({
                             allowClear: true,
                             theme: "bootstrap-5",
@@ -514,13 +374,12 @@
 
      var receiptTotalCount = 0;
      var receiptCompletedCount = 0;
-     var receiptReloadFlag = false; // 중복 실행 방지 플래그
+     var receiptReloadFlag = false;
 
      $("#appr_confirm_yes").on("click",function(){
         var grdData = grid.getCheckedRows();
         var appr_remarks = $("#txtApprRemarks").val();
         
-        // 카운터 초기화
         receiptTotalCount = grdData.length;
         receiptCompletedCount = 0;
         receiptReloadFlag = false;
@@ -566,8 +425,8 @@
             ,"POST"
             ,params
             ,"text"
-            ,function(){} //before
-            ,function(){ //success
+            ,function(){}
+            ,function(){
                 receiptCompletedCount++;
                 
                 if(receiptCompletedCount >= receiptTotalCount && !receiptReloadFlag){
@@ -583,7 +442,7 @@
                     }, 300);
                 }
             }
-            ,function(){ //error
+            ,function(){
                 receiptCompletedCount++;
                 
                 if(receiptCompletedCount >= receiptTotalCount && !receiptReloadFlag){
@@ -598,8 +457,8 @@
                         }, 500);
                     }, 300);
                 }
-            }, //error
-            "" // 성공 메시지
+            },
+            ""
         );
     }
 
@@ -609,7 +468,6 @@
 
     document.addEventListener('DOMContentLoaded', init);
 
-
 </script>
 </body>
-</html> 
+</html>

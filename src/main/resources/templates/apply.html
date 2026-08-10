@@ -2,60 +2,28 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('결재함', 'grid')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/checkbox.css}">
     <link rel="stylesheet" th:href="@{/css/grid.css}">
-
-    <!-- Select2   -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-
-    <!-- Toast Grid-->
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
     <style>
         @charset "UTF-8";
         .container-fluid {
           height: 92%;
         }
-
     </style>
 </head>
-
-
-<body>
-<header class="main-header">
-    <div class="header-content">
-        <div class="logo-container">
-            <img src="/images/dongah.gif" alt="로고" class="logo">
-            <span class="header-title">부동산 임차관리 플랫폼</span>
-        </div>
-        <div class="user-info">
-            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-            <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
-            <a href="/admin" class="btn btn-back me-2">
-                <i class="bi bi-arrow-left"></i> 관리자
-            </a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-action">로그아웃</button>
-            </form>
-        </div>
-    </div>
-</header>
+<body class="app-shell--quiet">
+<th:block th:with="backUrl=@{/main}, backText='메인화면'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
 
 <main>
 
     <div class="container-fluid">
-        <div class="row mb-4">
-            <h3>관리자 결재함</h3>
-            <span>본인에게 들어온 사전조사서를 조회하여 확인처리를 할 수 있습니다</span>
-        </div>
+        <div class="work-page-head">
+           <h3 class="text-balance">관리자 결재함</h3>
+           <p class="text-pretty">본인에게 들어온 사전조사서를 조회하여 확인처리할 수 있습니다</p>
+       </div>
 
 
         <div class="row mb-2">
@@ -114,17 +82,7 @@
 
 </main>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<!-- Toast Grid  -->
-<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-<script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
-<!-- Custom   -->
-<script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
+
 <script th:inline="javascript">
 
     var user_no = [[${#authentication.principal.userNo}]];

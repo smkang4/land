@@ -1,24 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="_csrf" th:content="${_csrf?.token}"/>
     <meta name="_csrf_header" th:content="${_csrf?.headerName}"/>
-    <title>기안서 작성</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('기안서 작성', null)}"></th:block>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/css/bootstrap-datepicker.min.css">
-
-    <!-- jQuery -->
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-    <!-- Bootstrap Datepicker -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.ko.min.js"></script>
-
     <style>
+
         /* Datepicker 커스텀 스타일 */
         .datepicker {
             border: none !important;
@@ -31,13 +21,13 @@
         .datepicker table tr td.active:hover,
         .datepicker table tr td.active.disabled,
         .datepicker table tr td.active.disabled:hover {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%) !important;
+            background: #1a56db !important;
             border-radius: 8px !important;
             box-shadow: 0 2px 8px rgba(52, 152, 219, 0.3) !important;
         }
         
         .datepicker table tr td.today {
-            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%) !important;
+            background: #eef1f6 !important;
             border-radius: 8px !important;
             color: #495057 !important;
             font-weight: 600 !important;
@@ -203,12 +193,12 @@
             }
         }
         html {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #eef1f6;
             min-height: 100vh;
         }
 
         body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #eef1f6;
             font-family: 'Spoqa Han Sans Neo', 'sans-serif';
             min-height: 100vh;
             color: #1a202c;
@@ -216,7 +206,7 @@
 
         main {
             min-height: 100vh;
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: #eef1f6;
         }
 
         .main-container {
@@ -482,28 +472,14 @@
             border-color: #ADD8E6 !important;
         }
 
+    
     </style>
 </head>
-<body>
+<body class="app-shell--quiet">
     <!-- 헤더 -->
-    <header class="main-header">
-        <div class="header-content">
-            <div class="logo-container">
-                <img src="/images/dongah.gif" alt="로고" class="logo">
-                <span class="header-title">부동산 임차관리 플랫폼</span>
-            </div>
-            <div class="user-info">
-                <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-                <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
-                <a href="/draft_list" class="btn btn-back me-2">
-                    <i class="bi bi-arrow-left"></i> 기안서 목록
-                </a>
-                <form th:action="@{/logout}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-action">로그아웃</button>
-                </form>
-            </div>
-        </div>
-    </header>
+    <th:block th:with="backUrl=@{/draft_list}, backText='목록'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
 
     <main>
         <div class="main-container">
@@ -777,7 +753,6 @@
         </div>
     </main>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/js/bootstrap-datepicker.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap-datepicker@1.9.0/dist/locales/bootstrap-datepicker.ko.min.js"></script>
     <script src="js/approval-integration.js" th:src="@{/js/approval-integration.js}"></script>

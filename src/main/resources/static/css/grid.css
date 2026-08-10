@@ -1,411 +1,212 @@
-/* Font Import */
-@import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&display=swap');
+/* Toast Grid — data typography (SUIT) + modern business tokens */
 
-/* Toast Grid Custom Styles */
-.tui-grid {
-    border: none !important;
-    background-color: #ffffff;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
-    border-radius: 12px;
-    overflow: hidden;
-    margin: 16px;
+.tui-grid,
+.tui-grid-container,
+.tui-grid-content-area,
+.tui-grid-table,
+.tui-grid-cell,
+.tui-grid-cell-content,
+.tui-grid-header-area,
+.tui-grid-header-content,
+.tui-grid-row-header,
+.tui-grid-row-header-cell,
+.tui-grid-filter-dropdown,
+.tui-grid-filter-input,
+.tui-pagination,
+.tui-pagination .tui-page-btn {
+    font-family: var(--font-data, "SUIT", "Pretendard", sans-serif) !important;
+    font-feature-settings: "tnum" 1, "ss01" 0;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
 }
 
-/* Header Area */
+.tui-grid {
+    border: 1px solid var(--line, #e2e8f0) !important;
+    background-color: var(--surface, #fff);
+    box-shadow: none;
+    border-radius: 12px;
+    overflow: hidden;
+    margin: 0;
+    font-size: 13px;
+    letter-spacing: -0.015em;
+}
+
 .tui-grid-header-area {
-    background-color: #ffffff !important;
-    border-bottom: 1px solid rgba(0,0,0,0.08) !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.04);
+    background-color: #f8fafc !important;
+    border-bottom: 1px solid var(--line, #e2e8f0) !important;
+    box-shadow: none !important;
 }
 
 .tui-grid-header-area .tui-grid-cell {
-    background-color: #ffffff !important;
-    font-weight: 500 !important;
-    color: #1a1a1a !important;
-    border-right: 1px solid rgba(0,0,0,0.08) !important;
-    padding: 8px !important;
-    font-size: 0.875rem !important;
-    letter-spacing: -0.01em !important;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    background-color: #f8fafc !important;
+    font-weight: 600 !important;
+    color: #64748b !important;
+    border-right: none !important;
+    border-left: none !important;
+    padding: 0 8px !important;
+    font-size: 12px !important;
     text-align: center !important;
-}
-
-/* Body Area */
-.tui-grid-body-area .tui-grid-cell {
-    border-right: 1px solid rgba(0,0,0,0.08) !important;
-    border-bottom: 1px solid rgba(0,0,0,0.08) !important;
-    padding: 5px !important;
-    font-size: 0.875rem !important;
-    color: #333333 !important;
-    transition: all 0.2s ease !important;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    letter-spacing: -0.02em !important;
     vertical-align: middle !important;
 }
 
-/* Row Styles */
+.tui-grid-body-area .tui-grid-cell {
+    border-right: none !important;
+    border-left: none !important;
+    border-bottom: 1px solid #eef2f7 !important;
+    padding: 0 8px !important;
+    font-size: 13px !important;
+    font-weight: 500 !important;
+    color: var(--ink, #0b1424) !important;
+    vertical-align: middle !important;
+    line-height: 1.3 !important;
+    letter-spacing: -0.015em !important;
+    height: 44px !important;
+    box-sizing: border-box !important;
+}
+
+.tui-grid-cell-content {
+    font-family: inherit !important;
+    font-size: inherit !important;
+    font-weight: inherit !important;
+    letter-spacing: inherit !important;
+    display: flex !important;
+    align-items: center !important;
+    height: 100% !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+}
+
+.tui-grid-cell[data-column-name="detail"] .tui-grid-cell-content,
+.tui-grid-cell[data-column-name="confirm"] .tui-grid-cell-content,
+.tui-grid-cell[data-column-name="rewrite"] .tui-grid-cell-content,
+.tui-grid-cell[data-column-name="appr_stat"] .tui-grid-cell-content,
+.tui-grid-row-header-cell .tui-grid-cell-content {
+    justify-content: center !important;
+}
+
+.tui-grid-cell[data-column-name="deposit_amt"] .tui-grid-cell-content,
+.tui-grid-cell[data-column-name="rent_amt"] .tui-grid-cell-content {
+    justify-content: flex-end !important;
+}
+
 .tui-grid-row.odd .tui-grid-cell {
-    background-color: #ffffff !important;
+    background-color: #fff !important;
 }
 
 .tui-grid-row.even .tui-grid-cell {
-    background-color: #fafafa !important;
+    background-color: #f8fafc !important;
 }
 
 .tui-grid-row:hover .tui-grid-cell {
-    background-color: #f5f5f5 !important;
-    transition: all 0.2s ease !important;
+    background-color: rgba(26, 86, 219, 0.045) !important;
 }
 
-/* Selected Cell */
 .tui-grid-cell-selected {
-    background-color: rgba(25, 118, 210, 0.08) !important;
-    color: #1976d2 !important;
-    font-weight: 500 !important;
+    background-color: rgba(26, 86, 219, 0.1) !important;
+    color: var(--accent, #1a56db) !important;
+    font-weight: 600 !important;
 }
 
-/* Header Content */
 .tui-grid-header-content {
     white-space: normal !important;
-    word-break: break-word !important;
-    line-height: 1.5 !important;
-    font-weight: 700 !important;
-    padding: 4px 0 !important;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    word-break: keep-all !important;
+    line-height: 1.35 !important;
+    font-weight: 600 !important;
+    padding: 2px 0 !important;
 }
 
-/* Scrollbar */
 .tui-grid-scrollbar {
-    background-color: #f5f5f5 !important;
+    background-color: #f1f5f9 !important;
 }
 
 .tui-grid-scrollbar-thumb {
-    background-color: #bdbdbd !important;
+    background-color: #cbd5e1 !important;
     border-radius: 8px !important;
-    transition: all 0.2s ease !important;
 }
 
 .tui-grid-scrollbar-thumb:hover {
-    background-color: #9e9e9e !important;
+    background-color: #94a3b8 !important;
 }
 
-/* Row Header */
 .tui-grid-row-header {
-    background-color: #ffffff !important;
-    border-right: 1px solid rgba(0,0,0,0.08) !important;
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
+    background-color: #fff !important;
+    border-right: 1px solid #eef2f7 !important;
 }
 
 .tui-grid-row-header-cell {
-    color: #757575 !important;
-    font-size: 0.813rem !important;
-    font-weight: 500 !important;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    color: #94a3b8 !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
     text-align: center !important;
-    padding: 8px !important;
+    font-variant-numeric: tabular-nums;
+    padding: 0 !important;
+    vertical-align: middle !important;
+    height: 44px !important;
+    box-sizing: border-box !important;
 }
 
-/* Checkbox Column */
-.tui-grid-cell[data-column-name="checkbox"] {
-    width: 60px !important;
-    min-width: 60px !important;
-    max-width: 60px !important;
-    text-align: center !important;
-    padding: 8px !important;
+.tui-grid-lside-area .tui-grid-body-area .tui-grid-cell,
+.tui-grid-rside-area .tui-grid-body-area .tui-grid-cell {
+    height: 44px !important;
 }
 
-.tui-grid-cell[data-column-name="checkbox"] .checkbox {
-    display: flex !important;
-    justify-content: center !important;
-    align-items: center !important;
-}
-
-/* Checkbox Styles */
-.tui-grid-cell[data-column-name="checkbox"] .checkbox .custom-input {
-    border: 2px solid #0d6efd !important;
-    background-color: #ffffff !important;
-    transition: all 0.2s ease !important;
-}
-
-.tui-grid-cell[data-column-name="checkbox"] .checkbox .custom-input:hover {
-    border-color: #0b5ed7 !important;
-    background-color: #f8f9fa !important;
-}
-
-.tui-grid-cell[data-column-name="checkbox"] .checkbox input:checked + .custom-input {
-    background-color: #0d6efd !important;
-    border-color: #0d6efd !important;
-}
-
-.tui-grid-cell[data-column-name="checkbox"] .checkbox input:checked + .custom-input::after {
-    border-color: #ffffff !important;
-}
-
-.tui-grid-cell[data-column-name="checkbox"] .checkbox input:disabled + .custom-input {
-    background-color: #e9ecef !important;
-    border-color: #dee2e6 !important;
-    cursor: not-allowed !important;
-}
-
-/* Focused Cell */
 .tui-grid-cell-focused {
-    border: 2px solid #1976d2 !important;
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2) !important;
+    border: 1px solid transparent !important;
+    box-shadow: none !important;
 }
 
-/* Editable Cell */
-.tui-grid-cell-editable {
-    background-color: #ffffff !important;
+.tui-grid-layer-focus-border,
+.tui-grid-layer-selection-edge {
+    border-color: #1a56db !important;
 }
 
-/* Disabled Cell */
-.tui-grid-cell-disabled {
-    background-color: #fafafa !important;
-    color: #9e9e9e !important;
+.tui-grid-layer-selection {
+    background: rgba(26, 86, 219, 0.06) !important;
 }
 
-/* Footer Area */
-.tui-grid-footer-area {
-    background-color: #ffffff !important;
-    border-top: 1px solid rgba(0,0,0,0.08) !important;
-    box-shadow: 0 -2px 4px rgba(0,0,0,0.04);
+.tui-grid-filter-btn {
+    color: #94a3b8 !important;
 }
 
-/* Pagination */
-.tui-pagination {
-    margin-top: 1.5rem !important;
-    display: flex !important;
-    justify-content: center !important;
-    gap: 4px !important;
+.tui-grid-btn-filter {
+    background: transparent !important;
 }
 
 .tui-pagination .tui-page-btn {
-    border: none !important;
-    color: #424242 !important;
-    background-color: #ffffff !important;
-    margin: 0 2px !important;
-    border-radius: 6px !important;
-    padding: 8px 12px !important;
-    font-size: 0.875rem !important;
-    font-weight: 500 !important;
-    transition: all 0.2s ease !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.1) !important;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+    border: 1px solid #e2e8f0 !important;
+    color: #334155 !important;
+    background-color: #fff !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
 }
 
 .tui-pagination .tui-page-btn:hover {
-    background-color: #f5f5f5 !important;
-    transform: translateY(-1px) !important;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.15) !important;
+    background-color: #f8fafc !important;
+    transform: none !important;
 }
 
 .tui-pagination .tui-is-selected {
-    background-color: #1976d2 !important;
-    color: #ffffff !important;
-    box-shadow: 0 2px 4px rgba(25, 118, 210, 0.3) !important;
-}
-
-/* Loading Indicator */
-.tui-grid-loading {
-    background-color: rgba(255, 255, 255, 0.9) !important;
-    backdrop-filter: blur(4px) !important;
+    background-color: #1a56db !important;
+    border-color: #1a56db !important;
+    color: #fff !important;
+    box-shadow: none !important;
 }
 
 .tui-grid-loading .tui-grid-loading-spinner {
-    border: 3px solid rgba(25, 118, 210, 0.1) !important;
-    border-top: 3px solid #1976d2 !important;
-    border-radius: 50% !important;
-    width: 32px !important;
-    height: 32px !important;
-    animation: spin 0.8s linear infinite !important;
+    border: 3px solid rgba(26, 86, 219, 0.12) !important;
+    border-top: 3px solid #1a56db !important;
 }
 
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+.grid-num,
+.grid-addr,
+.list-status {
+    font-family: inherit;
 }
 
-/* Custom Text Color */
-.custom-txt-color {
-    background-color: #ffebee !important;
-    color: #d32f2f !important;
-    font-weight: 500 !important;
-    border-radius: 4px !important;
-    padding: 2px 6px !important;
+.grid-num {
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: "tnum" 1;
+    font-weight: 600;
 }
-
-/* Filter Button */
-.tui-grid-btn-filter {
-    color: #757575 !important;
-    transition: all 0.2s ease !important;
-}
-
-.tui-grid-btn-filter:hover {
-    color: #1976d2 !important;
-    transform: scale(1.1) !important;
-}
-
-/* Filter Dropdown */
-.tui-grid-filter-dropdown {
-    background: #ffffff !important;
-    border-radius: 8px !important;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
-    border: none !important;
-    padding: 8px !important;
-}
-
-.tui-grid-filter-dropdown select {
-    border: 1px solid rgba(0,0,0,0.12) !important;
-    border-radius: 4px !important;
-    padding: 6px 8px !important;
-    font-size: 0.875rem !important;
-    color: #424242 !important;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-}
-
-.tui-grid-filter-input {
-    border: 1px solid rgba(0,0,0,0.12) !important;
-    border-radius: 4px !important;
-    padding: 8px !important;
-    font-size: 0.875rem !important;
-    transition: all 0.2s ease !important;
-    font-family: 'Noto Sans KR', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
-}
-
-.tui-grid-filter-input:focus {
-    border-color: #1976d2 !important;
-    box-shadow: 0 0 0 2px rgba(25, 118, 210, 0.2) !important;
-    outline: none !important;
-}
-
-/* Grid Container */
-.tui-grid-container {
-    border: none !important;
-    background-color: #ffffff !important;
-}
-
-/* Grid Table */
-.tui-grid-table {
-    border-collapse: separate !important;
-    border-spacing: 0 !important;
-}
-
-/* Grid Layer */
-.tui-grid-layer {
-    border: none !important;
-}
-
-/* Grid Layer Focus */
-.tui-grid-layer-focus {
-    border: none !important;
-}
-
-/* Grid Layer Selection */
-.tui-grid-layer-selection {
-    border: none !important;
-}
-
-/* Grid Layer Editing */
-.tui-grid-layer-editing {
-    border: none !important;
-}
-
-/* Grid Layer Header */
-.tui-grid-layer-header {
-    border: none !important;
-}
-
-/* Grid Layer Body */
-.tui-grid-layer-body {
-    border: none !important;
-}
-
-/* Grid Layer Summary */
-.tui-grid-layer-summary {
-    border: none !important;
-}
-
-/* Grid Layer Footer */
-.tui-grid-layer-footer {
-    border: none !important;
-}
-
-/* Grid Layer Left */
-.tui-grid-layer-left {
-    border: none !important;
-}
-
-/* Grid Layer Right */
-.tui-grid-layer-right {
-    border: none !important;
-}
-
-/* Grid Layer Top */
-.tui-grid-layer-top {
-    border: none !important;
-}
-
-/* Grid Layer Bottom */
-.tui-grid-layer-bottom {
-    border: none !important;
-}
-
-/* Grid Layer Center */
-.tui-grid-layer-center {
-    border: none !important;
-}
-
-/* Grid Layer Left Top */
-.tui-grid-layer-left-top {
-    border: none !important;
-}
-
-/* Grid Layer Right Top */
-.tui-grid-layer-right-top {
-    border: none !important;
-}
-
-/* Grid Layer Left Bottom */
-.tui-grid-layer-left-bottom {
-    border: none !important;
-}
-
-/* Grid Layer Right Bottom */
-.tui-grid-layer-right-bottom {
-    border: none !important;
-}
-
-/* Resize Handle */
-.tui-grid-resize-handle {
-    background-color: transparent !important;
-}
-
-.tui-grid-resize-handle:hover {
-    background-color: rgba(25, 118, 210, 0.1) !important;
-}
-
-/* Column Resize Handle */
-.tui-grid-column-resize-handle {
-    background-color: transparent !important;
-}
-
-.tui-grid-column-resize-handle:hover {
-    background-color: rgba(25, 118, 210, 0.1) !important;
-}
-
-
-/* Button Styles */
-.btn-grid {
-    padding: 7px 8px !important;
-    font-size: 0.75rem !important;
-    line-height: 1.25 !important;
-    height: auto !important;
-    min-height: unset !important;
-}
-
-.tui-grid-cell-has-input .tui-grid-cell-content {
-    padding: 0px !important;
-}
-

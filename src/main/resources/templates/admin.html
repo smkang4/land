@@ -2,930 +2,154 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('관리자', 'grid')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/checkbox.css}">
     <link rel="stylesheet" th:href="@{/css/grid.css}">
-
-
-    <!-- Select2   -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-
-    <!-- Toast Grid   -->
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-
-    <title>부동산 임차관리 플랫폼</title>
-
-
-    <style>
-        @charset "UTF-8";
-
-        .container-fluid{
-            height: 100%;
-        }
-
-        /* select2 드롭다운이 모달 위에 표시되도록 z-index 조정 */
-        .select2-container--bootstrap-5 .select2-dropdown {
-            z-index: 9999 !important;
-        }
-        .select2-container--bootstrap-5 .select2-selection {
-            z-index: 9999 !important;
-        }
-
-        .status-card {
-            background: rgba(255, 255, 255, 0.55);
-            border-radius: 15px;
-            padding: 1.2rem;
-            text-align: left;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-            transition: transform 0.2s;
-            height: 100%;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: flex-start;
-        }
-
-        .status-card:hover {
-            transform: translateY(-5px);
-            background: rgba(255, 255, 255, 1);
-        }
-
-        .status-card i {
-            font-size: 2rem;
-            margin-bottom: 0.8rem;
-            display: block;
-        }
-
-        .status-card h3 {
-            font-size: 2rem;
-            font-weight: 600;
-            margin-bottom: 0.3rem;
-            color: #0d6efd;
-            text-align: left;
-        }
-
-        .status-card p {
-            font-size: 1.1rem;
-            color: #6c757d;
-            margin: 0;
-            text-align: left;
-        }
-
-        .row.mb-4 {
-            margin-bottom: 1.5rem !important;
-        }
-
-        .col-md-3 {
-            padding: 0.5rem;
-        }
-
-        .filter-section {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 15px;
-            margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        /* 접수함, 결재함 버튼 디자인 변경 */
-        .btn_nav {
-            border: none;
-            border-radius: 20px;
-            padding: 10px;
-            margin-bottom: 20px;
-            text-align: center;
-            font-weight: 600;
-            box-shadow: 0 6px 15px rgba(0,0,0,0.05);
-            transition: all 0.3s ease;
-            color: white;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 100%;
-            cursor: pointer;
-        }
-
-        .btn_nav i {
-            font-size: 1.8rem;
-        }
-
-        .btn_accept {
-            background: #3498db;
-        }
-
-        .btn_accept:hover {
-            background: #2980b9;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(52, 152, 219, 0.3);
-        }
-
-        .btn_apply {
-            background: #9b59b6;
-        }
-
-        .btn_apply:hover {
-            background: #8e44ad;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(155, 89, 182, 0.3);
-        }
-
-        .btn_admin {
-            background: #e74c3c;
-        }
-
-        .btn_admin:hover {
-            background: #c0392b;
-            transform: translateY(-5px);
-            box-shadow: 0 15px 30px rgba(231, 76, 60, 0.3);
-        }
-
-        /* 탭 스타일 */
-        .tab-container {
-            background: #fff;
-            border-radius: 12px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-            overflow: hidden;
-            margin: 20px 0;
-        }
-
-        .nav-tabs {
-            border: none;
-            margin-bottom: 0;
-            background: #f8f9fa;
-            border-radius: 12px 12px 0 0;
-            padding: 8px 8px 0 8px;
-        }
-        
-        .nav-tabs .nav-link {
-            border: none;
-            color: #6c757d;
-            font-weight: 500;
-            padding: 16px 32px;
-            margin-right: 4px;
-            border-radius: 12px 12px 0 0;
-            transition: all 0.3s ease;
-            background-color: rgba(255, 255, 255, 0.7);
-            position: relative;
-            border-bottom: 3px solid transparent;
-        }
-        
-        .nav-tabs .nav-link:hover {
-            color: #0d6efd;
-            background-color: rgba(255, 255, 255, 0.9);
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-        }
-        
-        .nav-tabs .nav-link.active {
-            color: #0d6efd;
-            background-color: #fff;
-            border-bottom: 3px solid #0d6efd;
-            font-weight: 600;
-            transform: translateY(-2px);
-            box-shadow: 0 6px 20px rgba(13, 110, 253, 0.15);
-        }
-        
-        .tab-content {
-            background: #fff;
-            border: none;
-            border-radius: 0 0 12px 12px;
-            padding: 30px;
-            min-height: 500px;
-            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
-            margin-top: -1px;
-        }
-        
-        /* admin.html 페이지에서만 .nav-item 패딩 조정 */
-        .tab-container .nav-item {
-            padding: 0rem 0.5rem;
-        }
-        
-        /* tui-grid 내부 버튼 패딩 제거 */
-        .tui-grid-cell-content .btn {
-            padding: 0.3rem 0.5rem;
-        }
-        
-        /* admin.html에서 nav-item과 nav-link 호버 시 그림자 제거 */
-        .tab-container .nav-item:hover,
-        .tab-container .nav-item:hover .nav-link,
-        .tab-container .nav-link:hover {
-            box-shadow: none !important;
-        }
-
-        /* 모달 스타일 추가 */
-        .modal-content {
-            background: #fff;
-            border-radius: 16px;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
-            border: none;
-            width: 95%;
-            max-width: 1200px;
-            margin: 1rem auto;
-            position: relative;
-            overflow: hidden;
-        }
-
-        .modal-header {
-            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
-            border-bottom: 1px solid #e2e8f0;
-            padding: 1rem 1.5rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .modal-body {
-            padding: 1.5rem;
-            max-height: 85vh;
-            overflow-y: auto;
-        }
-
-        .modal-footer {
-            background: #f8fafc;
-            border-top: 1px solid #e2e8f0;
-            padding: 1rem 1.5rem;
-            display: flex;
-            justify-content: flex-end;
-            gap: 1rem;
-        }
-
-        .admin-section {
-            background: #fff;
-            border-radius: 12px;
-            padding: 1.25rem;
-            margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-        }
-
-        .admin-list {
-            max-height: 350px;
-            overflow-y: auto;
-            margin: 1rem 0;
-            padding-right: 0.75rem;
-        }
-
-        .admin-item {
-            background: #fff;
-            border: 1px solid #e2e8f0;
-            border-radius: 8px;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.75rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            transition: all 0.2s ease;
-        }
-
-        .admin-info {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            flex: 1;
-        }
-
-        .admin-name-section {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .admin-name {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            color: #2c3e50;
-        }
-
-        .admin-name i {
-            color: #3b82f6;
-            font-size: 1rem;
-        }
-
-        .mail-check-wrapper {
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .mail-check {
-            position: relative;
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-        }
-
-        .mail-check input {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .mail-check-slider {
-            position: absolute;
-            cursor: pointer;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background-color: #e2e8f0;
-            transition: .4s;
-            border-radius: 20px;
-        }
-
-        .mail-check-slider:before {
-            position: absolute;
-            content: "";
-            height: 16px;
-            width: 16px;
-            left: 2px;
-            bottom: 2px;
-            background-color: white;
-            transition: .4s;
-            border-radius: 50%;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .mail-check input:checked + .mail-check-slider {
-            background-color: #3b82f6;
-        }
-
-        .mail-check input:checked + .mail-check-slider:before {
-            transform: translateX(20px);
-        }
-
-        .switch-status {
-            font-size: 0.8rem;
-            padding: 0.15rem 0.5rem;
-            border-radius: 12px;
-            background: #f1f5f9;
-            color: #64748b;
-            transition: all 0.2s ease;
-        }
-
-        .mail-check input:checked ~ .switch-status {
-            background: #dbeafe;
-            color: #3b82f6;
-        }
-
-        .btn-remove {
-            background: #fee2e2;
-            color: #ef4444;
-            border: none;
-            border-radius: 6px;
-            padding: 0.5rem;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 32px;
-            height: 32px;
-        }
-
-        .btn-remove:hover {
-            background: #fecaca;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.1);
-        }
-
-        .admin-add-content {
-            padding: 1.25rem;
-        }
-
-        .icon-wrapper {
-            width: 40px;
-            height: 40px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            background: #f1f5f9;
-            border-radius: 12px;
-            color: #3b82f6;
-            font-size: 1.2rem;
-        }
-
-        .admin-list-section, .admin-add-section {
-            background: #fff;
-            border-radius: 20px;
-            box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
-            height: 100%;
-        }
-
-        .section-header {
-            padding: 1.25rem;
-            border-bottom: 1px solid #e2e8f0;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .section-header h6 {
-            margin: 0;
-            font-weight: 600;
-            color: #1e293b;
-            font-size: 1rem;
-        }
-
-        .admin-count {
-            background: #f1f5f9;
-            color: #64748b;
-            padding: 0.25rem 0.75rem;
-            border-radius: 20px;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .admin-list {
-            height: 300px;
-            overflow-y: auto;
-            padding: 1rem;
-        }
-
-        .admin-list::-webkit-scrollbar {
-            width: 4px;
-        }
-
-        .admin-list::-webkit-scrollbar-track {
-            background: #f1f5f9;
-        }
-
-        .admin-list::-webkit-scrollbar-thumb {
-            background: #cbd5e1;
-            border-radius: 2px;
-        }
-
-        .admin-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 1rem;
-            margin-bottom: 0.75rem;
-            background: #f8fafc;
-            border-radius: 16px;
-            transition: all 0.2s ease;
-            border: 1px solid #e2e8f0;
-        }
-
-        .admin-item:hover {
-            background: #f1f5f9;
-            transform: translateX(5px);
-            border-color: #cbd5e1;
-        }
-
-        .admin-info {
-            display: flex;
-            align-items: center;
-            gap: 1rem;
-        }
-
-        .admin-email {
-            font-size: 0.85rem;
-            color: #6c757d;
-        }
-
-        .toggle-wrapper {
-            position: relative;
-            display: inline-block;
-        }
-
-        .toggle-wrapper input[type="checkbox"] {
-            opacity: 0;
-            width: 0;
-            height: 0;
-        }
-
-        .toggle-wrapper label {
-            display: flex;
-            align-items: center;
-            cursor: pointer;
-            padding: 0.5rem 0;
-        }
-
-        .toggle-wrapper label::before {
-            content: '';
-            display: inline-block;
-            width: 40px;
-            height: 20px;
-            background: #e9ecef;
-            border-radius: 20px;
-            margin-right: 10px;
-            transition: all 0.3s ease;
-            position: relative;
-        }
-
-        .toggle-wrapper label::after {
-            content: '';
-            position: absolute;
-            left: 2px;
-            top: 50%;
-            transform: translateY(-50%);
-            width: 16px;
-            height: 16px;
-            background: #fff;
-            border-radius: 50%;
-            transition: all 0.3s ease;
-        }
-
-        .toggle-wrapper input[type="checkbox"]:checked + label::before {
-            background: #2ecc71;
-        }
-
-        .toggle-wrapper input[type="checkbox"]:checked + label::after {
-            left: 22px;
-        }
-
-        .toggle-label {
-            font-size: 0.9rem;
-            color: #6c757d;
-        }
-
-        .form-group {
-            margin-bottom: 1.5rem;
-        }
-
-        .form-group label {
-            display: block;
-            margin-bottom: 0.5rem;
-            font-weight: 500;
-            color: #1e293b;
-            font-size: 0.9rem;
-        }
-
-        .select-wrapper {
-            position: relative;
-        }
-
-        .select-wrapper i {
-            position: absolute;
-            right: 1rem;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #64748b;
-            pointer-events: none;
-        }
-
-        .form-select {
-            width: 100%;
-            padding: 0.75rem 1rem;
-            border: 1px solid #e2e8f0;
-            border-radius: 12px;
-            background-color: #f8fafc;
-            transition: all 0.2s ease;
-            appearance: none;
-            font-size: 0.95rem;
-            color: #1e293b;
-        }
-
-        .form-select:focus {
-            border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
-            background-color: #fff;
-        }
-
-        .btn-add-admin {
-            width: 100%;
-            padding: 0.875rem;
-            background: #3b82f6;
-            color: #fff;
-            border: none;
-            border-radius: 12px;
-            font-weight: 500;
-            font-size: 0.95rem;
-            transition: all 0.2s ease;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-
-        .btn-add-admin:hover {
-            background: #2563eb;
-            transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
-        }
-
-        .section-content {
-            padding: 1.25rem;
-        }
-
-        .toast-container {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            z-index: 9999;
-        }
-
-        .toast {
-            background: white;
-            border-radius: 8px;
-            padding: 16px 20px;
-            margin-bottom: 10px;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
-            display: flex;
-            align-items: center;
-            min-width: 300px;
-            position: relative;
-            overflow: hidden;
-            transform: translateX(120%);
-            transition: transform 0.3s ease-in-out;
-        }
-
-        .toast.show {
-            transform: translateX(0);
-        }
-
-        .toast-content {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            flex: 1;
-        }
-
-        .toast i {
-            color: #3b82f6;
-            font-size: 1.25rem;
-        }
-
-        .toast-message {
-            color: #1e293b;
-            font-size: 0.875rem;
-            font-weight: 500;
-        }
-
-        .toast-progress {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 2px;
-            width: 100%;
-            background: #e2e8f0;
-        }
-
-        .toast-progress::after {
-            content: '';
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            height: 100%;
-            width: 100%;
-            background-color: #3b82f6;
-            animation: progress 3s linear forwards;
-        }
-
-        @keyframes progress {
-            from {
-                width: 100%;
-            }
-            to {
-                width: 0%;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/list-desk.css}">
+    <link rel="stylesheet" th:href="@{/css/admin-desk.css}">
 </head>
-<body>
+<body class="app-shell--quiet">
 
-<header class="main-header">
-    <div class="header-content">
-        <div class="logo-container">
-            <img src="/images/dongah.gif" alt="로고" class="logo">
-            <span class="header-title">부동산 임차관리 플랫폼</span>
-        </div>
-        <div class="user-info">
-            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-            <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
-            <a href="/main" class="btn btn-back me-2">
-                <i class="bi bi-arrow-left"></i> 메인화면
-            </a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-action">로그아웃</button>
-            </form>
-        </div>
+<th:block th:with="backUrl=@{/main}, backText='메인화면'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
+
+
+<main class="list-desk admin-desk-page app-main">
+    <div class="list-desk__shell">
+        <header class="list-desk__head">
+            <div class="list-desk__titles">
+                <p class="list-desk__eyebrow">관리</p>
+                <h1 class="list-desk__title text-balance">관리자</h1>
+                <p class="list-desk__lead text-pretty">확인요청 진행 중인 사전조사서를 조회하고 ERP·거래처 등록을 처리합니다</p>
+                <div class="admin-stats" role="group" aria-label="확인상태 필터">
+                    <button type="button" class="admin-stat-btn is-active" data-stat-filter="all">
+                        전체 <strong class="admin-stat__value" id="totalContracts">0</strong>
+                    </button>
+                    <button type="button" class="admin-stat-btn admin-stat-btn--pending" data-stat-filter="progress">
+                        진행 <strong class="admin-stat__value" id="pendingContracts">0</strong>
+                    </button>
+                    <button type="button" class="admin-stat-btn admin-stat-btn--ok" data-stat-filter="approved">
+                        승인 <strong class="admin-stat__value" id="approvedContracts">0</strong>
+                    </button>
+                    <button type="button" class="admin-stat-btn admin-stat-btn--reject" data-stat-filter="rejected">
+                        반려 <strong class="admin-stat__value" id="rejectedContracts">0</strong>
+                    </button>
+                </div>
+            </div>
+            <div class="list-desk__actions">
+                <button type="button" class="btn list-desk__btn list-desk__btn--danger" onclick="move(1);">
+                    <i class="bi bi-inbox" aria-hidden="true"></i> 접수함
+                </button>
+                <button type="button" class="btn list-desk__btn list-desk__btn--danger" onclick="move(2);">
+                    <i class="bi bi-clipboard-check" aria-hidden="true"></i> 결재함
+                </button>
+                <button type="button" class="btn btn-primary list-desk__btn" data-bs-toggle="modal" data-bs-target="#adminSettingsModal">
+                    <i class="bi bi-gear" aria-hidden="true"></i> 관리자설정
+                </button>
+            </div>
+        </header>
+
+        <section class="list-desk__panel admin-desk">
+            <ul class="nav admin-tabs" id="adminTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="search-tab" data-bs-toggle="tab" data-bs-target="#search-tab-pane" type="button" role="tab" aria-controls="search-tab-pane" aria-selected="true">
+                        <i class="bi bi-search" aria-hidden="true"></i> 현장조회
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation" th:if="${showErpCustomerTabs}">
+                    <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-tab-pane" type="button" role="tab" aria-controls="register-tab-pane" aria-selected="false">
+                        <i class="bi bi-plus-circle" aria-hidden="true"></i> ERP등록
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation" th:if="${showErpCustomerTabs}">
+                    <button class="nav-link" id="customer-register-tab" data-bs-toggle="tab" data-bs-target="#customer-register-tab-pane" type="button" role="tab" aria-controls="customer-register-tab-pane" aria-selected="false">
+                        <i class="bi bi-people" aria-hidden="true"></i> 거래처등록
+                    </button>
+                </li>
+            </ul>
+
+            <div class="tab-content admin-tab-body" id="adminTabsContent">
+                <div class="tab-pane fade show active" id="search-tab-pane" role="tabpanel" aria-labelledby="search-tab" tabindex="0">
+                    <form id="search_form" method="get" class="admin-filters">
+                        <div class="list-desk__filter-field list-desk__filter-field--proj">
+                            <label class="list-desk__label" for="con">현장</label>
+                            <select id="con" name="proj_code" class="form-select" style="width:100%"></select>
+                        </div>
+                        <button type="button" class="btn btn-primary list-desk__btn" id="searchBtn" style="display:none" aria-hidden="true">조회</button>
+                    </form>
+                    <div class="admin-grid-wrap">
+                        <div id="grid" class="list-desk__grid"></div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="register-tab-pane" role="tabpanel" aria-labelledby="register-tab" tabindex="0"
+                     th:if="${showErpCustomerTabs}">
+                    <p class="admin-hint">거래처 승인이 완료된 기안서를 ERP에 등록합니다.</p>
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar__left">
+                            <button type="button" class="btn btn-primary list-desk__btn" id="erpSelectRegisterBtn" disabled>
+                                <i class="bi bi-check-circle" aria-hidden="true"></i> 선택등록
+                            </button>
+                            <button type="button" class="btn list-desk__btn list-desk__btn--danger" id="erpAllRegisterBtn">
+                                <i class="bi bi-check-all" aria-hidden="true"></i> 일괄등록
+                            </button>
+                        </div>
+                        <p class="admin-toolbar__meta">선택 <strong id="erpSelectedCount">0</strong>개</p>
+                    </div>
+                    <div class="admin-danger-panel" th:if="${showDeleteFeature}">
+                        <div class="admin-danger-panel__head">
+                            <i class="bi bi-exclamation-triangle" aria-hidden="true"></i>
+                            ERP 등록 데이터 삭제 (테스트용)
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label for="erpDeleteSeqInput" class="form-label mb-0">삭제할 SEQ</label>
+                            <span class="admin-count" id="erpDeleteSeqCount">0건</span>
+                        </div>
+                        <textarea class="form-control mb-2 font-monospace" id="erpDeleteSeqInput" rows="8"
+                                  style="min-height: 140px; resize: vertical;"
+                                  placeholder="엑셀에서 SEQ 열을 복사한 뒤 붙여넣기하세요."></textarea>
+                        <div class="d-flex flex-wrap gap-2 justify-content-between">
+                            <div class="d-flex flex-wrap gap-2">
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="erpDeletePasteBtn">
+                                    <i class="bi bi-clipboard"></i> 클립보드 붙여넣기
+                                </button>
+                                <button type="button" class="btn btn-outline-secondary btn-sm" id="erpDeleteClearBtn">
+                                    <i class="bi bi-x-lg"></i> 비우기
+                                </button>
+                            </div>
+                            <button type="button" class="btn btn-danger btn-sm" id="erpDeleteBtn">
+                                <i class="bi bi-trash"></i> <span id="erpDeleteBtnLabel">삭제</span>
+                            </button>
+                        </div>
+                        <small class="d-block mt-2">입력한 SEQ마다 ERP 등록 데이터가 삭제됩니다.</small>
+                    </div>
+                    <div class="admin-grid-wrap">
+                        <div id="erpGrid" class="list-desk__grid"></div>
+                    </div>
+                </div>
+
+                <div class="tab-pane fade" id="customer-register-tab-pane" role="tabpanel" aria-labelledby="customer-register-tab" tabindex="0"
+                     th:if="${showErpCustomerTabs}">
+                    <p class="admin-hint">승인 완료 기안서의 거래처를 ERP에 등록합니다.</p>
+                    <div class="admin-toolbar">
+                        <div class="admin-toolbar__left">
+                            <button type="button" class="btn btn-primary list-desk__btn" id="customerSelectRegisterBtn" disabled>
+                                <i class="bi bi-check-circle" aria-hidden="true"></i> 선택등록
+                            </button>
+                            <button type="button" class="btn list-desk__btn list-desk__btn--danger" id="customerAllRegisterBtn">
+                                <i class="bi bi-check-all" aria-hidden="true"></i> 일괄등록
+                            </button>
+                        </div>
+                        <p class="admin-toolbar__meta">선택 <strong id="customerSelectedCount">0</strong>개</p>
+                    </div>
+                    <div class="admin-grid-wrap">
+                        <div id="customerGrid" class="list-desk__grid"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
     </div>
-</header>
-
-
-<main>
-    <!-- 메인 컨텐츠 -->
-        <div class="container-fluid">
-            <div class="row mb-4">
-                <h3>관리자</h3>
-                <span>확인요청 진행중인 사전조사서를 확인할 수 있습니다 </span>
-            </div>
-
-            <div class="row mb-4">
-                <div class="col-md-3">
-                    <div class="status-card">
-                        <i class="bi bi-file-text text-primary"></i>
-                        <h3 id="totalContracts">0</h3>
-                        <p>전체</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="status-card">
-                        <i class="bi bi-clock text-warning"></i>
-                        <h3 id="pendingContracts">0</h3>
-                        <p>진행</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="status-card">
-                        <i class="bi bi-check-circle text-success"></i>
-                        <h3 id="approvedContracts">0</h3>
-                        <p>승인</p>
-                    </div>
-                </div>
-                <div class="col-md-3">
-                    <div class="status-card">
-                        <i class="bi bi-x-circle text-danger"></i>
-                        <h3 id="rejectedContracts">0</h3>
-                        <p>반려</p>
-                    </div>
-                </div>
-            </div>
-
-            <div class="row">
-                <!--접수함-->
-                <div class="col-md-1">
-                    <button type="button" class="btn_nav btn_accept" onclick="move(1);">
-                        <i class="bi bi-inbox-fill"></i>
-                        접수함
-                    </button>
-                </div>
-                <!--결재함-->
-                <div class="col-md-1">
-                    <button type="button" class="btn_nav btn_apply"  onclick="move(2);">
-                        <i class="bi bi-check2-circle"></i>
-                        결재함
-                    </button>
-                </div>
-                <!--관리자설정-->
-                <div class="col-md-1">
-                    <button type="button" class="btn_nav btn_admin" data-bs-toggle="modal" data-bs-target="#adminSettingsModal">
-                        <i class="bi bi-gear-fill"></i>
-                        관리자설정
-                    </button>
-                </div>
-            </div>
-
-            <!-- 탭 컨테이너 -->
-            <div class="tab-container">
-                <!-- 탭 네비게이션 -->
-                <ul class="nav nav-tabs" id="adminTabs" role="tablist">
-                    <li class="nav-item" role="presentation">
-                        <button class="nav-link active" id="search-tab" data-bs-toggle="tab" data-bs-target="#search-tab-pane" type="button" role="tab" aria-controls="search-tab-pane" aria-selected="true">
-                            <i class="bi bi-search me-1"></i>현장조회
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation" th:if="${showErpCustomerTabs}">
-                        <button class="nav-link" id="register-tab" data-bs-toggle="tab" data-bs-target="#register-tab-pane" type="button" role="tab" aria-controls="register-tab-pane" aria-selected="false">
-                            <i class="bi bi-plus-circle me-1"></i>ERP등록
-                        </button>
-                    </li>
-                    <li class="nav-item" role="presentation" th:if="${showErpCustomerTabs}">
-                        <button class="nav-link" id="customer-register-tab" data-bs-toggle="tab" data-bs-target="#customer-register-tab-pane" type="button" role="tab" aria-controls="customer-register-tab-pane" aria-selected="false">
-                            <i class="bi bi-people-fill me-1"></i>거래처등록
-                        </button>
-                    </li>
-                </ul>
-
-                <!-- 탭 콘텐츠 -->
-                <div class="tab-content" id="adminTabsContent">
-                    <!-- 현장조회 탭 -->
-                    <div class="tab-pane fade show active" id="search-tab-pane" role="tabpanel" aria-labelledby="search-tab" tabindex="0">
-                        <div class="row mb-3">
-                            <div class="col col-12 col-sm-12">
-                                <form id="search_form" method="get">
-                                    <div class="row mb-1 bg-style-search">
-                                        <div class="col-sm-5">
-                                            <select id="con" name="proj_code" class="form-select form-select-sm"  style="width:100%"></select>
-                                        </div>
-                                        <div class="col-auto">
-                                            <button type="button" class="btn btn-sm btn-danger btn_s" id="searchBtn"><i class="bi bi-search"></i> 조회</button>
-                                        </div>
-                                    </div>
-                                </form>
-                            </div>
-                        </div>
-
-                        <div class="row" style="height: calc(100vh - 350px);">
-                            <div class="col col-12" id="grid"></div>
-                        </div>
-                    </div>
-
-                    <!-- ERP등록 탭 -->
-                    <div class="tab-pane fade" id="register-tab-pane" role="tabpanel" aria-labelledby="register-tab" tabindex="0"
-                         th:if="${showErpCustomerTabs}">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="alert alert-info" role="alert">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    <strong>ERP 등록 안내</strong><br>
-                                    거래처 승인이 완료된 기안서를 ERP 시스템에 등록할 수 있습니다. <br>
-                                    등록 버튼을 클릭하면 해당 기안서가 ERP 시스템으로 전송됩니다.
-                                </div>
-                                
-                                <!-- ERP 등록 버튼 -->
-                                <div class="row mb-3">
-                                    <div class="col-12">
-                                        <button type="button" class="btn btn-primary" id="erpSelectRegisterBtn" disabled>
-                                            <i class="bi bi-check-circle"></i> 선택등록
-                                        </button>
-                                        <button type="button" class="btn btn-success ms-2" id="erpAllRegisterBtn">
-                                            <i class="bi bi-check-all"></i> 일괄등록
-                                        </button>
-                                        <span class="ms-2 text-muted small">선택된 항목: <span id="erpSelectedCount">0</span>개</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- ERP 등록 데이터 삭제 (테스트용) - 특정 사용자만 표시 -->
-                                <div class="row mb-3" th:if="${showDeleteFeature}">
-                                    <div class="col-12">
-                                        <div class="card border-danger">
-                                            <div class="card-header bg-danger text-white">
-                                                <i class="bi bi-exclamation-triangle me-2"></i>ERP 등록 데이터 삭제 (테스트용)
-                                            </div>
-                                            <div class="card-body">
-                                                <div class="d-flex justify-content-between align-items-center mb-1">
-                                                    <label for="erpDeleteSeqInput" class="form-label mb-0">삭제할 SEQ</label>
-                                                    <span class="badge bg-secondary" id="erpDeleteSeqCount">0건</span>
-                                                </div>
-                                                <textarea class="form-control mb-2 font-monospace" id="erpDeleteSeqInput" rows="10"
-                                                          style="min-height: 180px; resize: vertical;"
-                                                          placeholder="엑셀에서 SEQ 열을 복사(Ctrl+C)한 뒤 여기에 붙여넣기(Ctrl+V) 하세요.&#10;한 줄에 SEQ 하나씩 자동 정리됩니다."></textarea>
-                                                <div class="d-flex flex-wrap gap-2 justify-content-between">
-                                                    <div class="d-flex flex-wrap gap-2">
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="erpDeletePasteBtn">
-                                                            <i class="bi bi-clipboard"></i> 클립보드 붙여넣기
-                                                        </button>
-                                                        <button type="button" class="btn btn-outline-secondary btn-sm" id="erpDeleteClearBtn">
-                                                            <i class="bi bi-x-lg"></i> 비우기
-                                                        </button>
-                                                    </div>
-                                                    <button type="button" class="btn btn-danger" id="erpDeleteBtn">
-                                                        <i class="bi bi-trash"></i> <span id="erpDeleteBtnLabel">삭제</span>
-                                                    </button>
-                                                </div>
-                                                <small class="text-muted d-block mt-2">
-                                                    💡 엑셀·시트에서 SEQ 열만 선택 후 복사 → 붙여넣기하면 바로 사용할 수 있습니다.<br>
-                                                    ⚠️ 입력한 SEQ마다 ERP 등록 데이터가 삭제됩니다.
-                                                    (TIA_B_LEASE, TIA_B_LEASE_CONT, TIA_B_LEASE_TRAN, TIA_B_LEASE_INTR)
-                                                </small>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                
-                                <!-- ERP 등록 그리드 -->
-                                <div class="row" style="height: calc(100vh - 450px);">
-                                    <div class="col col-12" id="erpGrid"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <!-- 거래처등록 탭 -->
-                    <div class="tab-pane fade" id="customer-register-tab-pane" role="tabpanel" aria-labelledby="customer-register-tab" tabindex="0"
-                         th:if="${showErpCustomerTabs}">
-                        <div class="row">
-                            <div class="col-12">
-                                <div class="alert alert-info" role="alert">
-                                    <i class="bi bi-info-circle me-2"></i>
-                                    <strong>거래처 등록 안내</strong><br>
-                                    거래처 승인이 완료된 기안서의 거래처를 ERP 시스템에 등록할 수 있습니다. <br>
-                                    등록 버튼을 클릭하면 해당 기안서의 거래처가 ERP 시스템으로 전송됩니다.
-                                </div>
-                                
-                                <!-- 거래처 등록 버튼 -->
-                                <div class="row mb-3">
-                                    <div class="col-12">
-                                        <button type="button" class="btn btn-primary" id="customerSelectRegisterBtn" disabled>
-                                            <i class="bi bi-check-circle"></i> 선택등록
-                                        </button>
-                                        <button type="button" class="btn btn-success ms-2" id="customerAllRegisterBtn">
-                                            <i class="bi bi-check-all"></i> 일괄등록
-                                        </button>
-                                        <span class="ms-2 text-muted small">선택된 항목: <span id="customerSelectedCount">0</span>개</span>
-                                    </div>
-                                </div>
-                                
-                                <!-- 거래처 등록 그리드 -->
-                                <div class="row" style="height: calc(100vh - 450px);">
-                                    <div class="col col-12" id="customerGrid"></div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
 
         <!-- 관리자 설정 모달 -->
         <div class="modal fade" id="adminSettingsModal" tabindex="-1" aria-labelledby="adminSettingsModalLabel" aria-hidden="true">
@@ -1017,20 +241,8 @@
         </div>
 </main>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-<!-- Toast Grid  -->
-<script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-<script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-<script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-<script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
-<!-- Custom   -->
-<script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
 
-
-    <script th:inline="javascript">
+<script th:inline="javascript">
         var user_no = [[${#authentication.principal.userNo}]];
         var dept_code = [[${#authentication.principal.deptCode}]];
         var proj_url = '/api/code/proj/'+user_no;
@@ -1052,12 +264,20 @@
         }
 
         const grid = new Grid({
-                  el: document.getElementById('grid'), // Container element
-                  //data: dataSource,
+                  el: document.getElementById('grid'),
                   bodyHeight: 'fitToParent',
-                  rowHeight: 50,
+                  rowHeight: 44,
+                  minRowHeight: 44,
+                  focus: false,
+                  rowClassName: function(args) {
+                      var s = String(args.row.appr_stat == null ? '' : args.row.appr_stat);
+                      if (s === '3') return 'row-status-ok';
+                      if (s === '4') return 'row-status-reject';
+                      if (s === '1' || s === '2') return 'row-status-progress';
+                      return '';
+                  },
                   rowHeaders: [
-                    { type: 'rowNum', width: 30, align: 'center', valign: 'middle' },
+                    { type: 'rowNum', width: 48, align: 'center', valign: 'middle' },
                       ],
                   header:{
                       height: 40,
@@ -1078,81 +298,68 @@
                   columns: [
                     { header: '계약번호',name: 'seq',width: 70, align: 'center',sortable: true ,hidden: true},
                     { header: '결재번호',name: 'appr_seq',width: 70, align: 'center',sortable: true ,hidden: true},
-                    { header: '확인요청일',name: 'appr_date',width: 100, align: 'center',sortable: true
+                    { header: '확인요청일',name: 'appr_date',width: 104, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
                       ,formatter: function(value) {
-                        return value.value.split(' ')[0];
+                        var v = value.value ? String(value.value).split(' ')[0] : '';
+                        return '<span class="grid-num">' + v + '</span>';
                       }
                     },
-                    { header: '확인상태',name: 'appr_stat',width: 90, align: 'center',sortable: true
+                    { header: '확인상태',name: 'appr_stat',width: 96, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
                         ,formatter: function (e) {
-                            return decode(e.value,'0','','1','승인요청','2','진행중','3','승인완료','4','반려','')
+                            var v = e.value;
+                            var label = decode(v,'0','','1','승인요청','2','진행중','3','승인완료','4','반려','');
+                            var cls = 'list-status--idle';
+                            if (v === '1' || v === 1) cls = 'list-status--wait';
+                            else if (v === '2' || v === 2) cls = 'list-status--progress';
+                            else if (v === '3' || v === 3) cls = 'list-status--ok';
+                            else if (v === '4' || v === 4) cls = 'list-status--reject';
+                            if (!label) return '';
+                            return '<span class="list-status ' + cls + '">' + label + '</span>';
                         }
                     },
-<!--                    { header: '상세',name: 'detail',width: 70, align: 'center',sortable: false-->
-<!--                        ,formatter:function(e){-->
-<!--                            return '<button class="btn btn-sm btn-dark"><i class="bi bi-file-text"></i></button>'-->
-<!--                        }-->
-<!--                    },-->
-                    { header: '확인정보',name: 'confirm',width: 70, align: 'center',sortable: false
+                    { header: '확인정보',name: 'confirm',width: 56, align: 'center', valign: 'middle', sortable: false, escapeHTML: false
                         ,formatter:function(e){
                             if(e.row.APPROVAL == 0){
                                 return '';
                             }else{
-                                return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
+                                return '<button type="button" class="grid-act grid-act--appr" title="확인" aria-label="확인"><i class="bi bi-clipboard-check" aria-hidden="true"></i></button>';
                             }
                         }
                     },
                     { header: '현장코드',name: 'proj_code',sortable: true, filter: 'text' , hidden: true },
-                    { header: '현장명',name: 'proj_name',width: 250, sortable: true, filter:{type:'text'}},
-                    { header: '주거형태',name: 'res_type',width: 80, align: 'center',sortable: true,hidden:false},
-                    { header: '거래방식',name: 'trans_type',width: 80, align: 'center',sortable: true,hidden:false},
-                    { header: '면적',name: 'area',width: 80, align: 'center',sortable: true,hidden:false},
-                    { header: '사용인원',name: 'accu',width: 80, align: 'center',sortable: true,hidden:false},
-                    { header: '현장숙소 주소',name: 'address',width: 500, sortable: true, filter:{type:'text'}
+                    { header: '현장명',name: 'proj_name',width: 220, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle'},
+                    { header: '주거형태',name: 'res_type',width: 76, align: 'center', valign: 'middle', sortable: true,hidden:false},
+                    { header: '거래방식',name: 'trans_type',width: 76, align: 'center', valign: 'middle', sortable: true,hidden:false},
+                    { header: '면적',name: 'area',width: 72, align: 'center', valign: 'middle', sortable: true,hidden:false},
+                    { header: '사용인원',name: 'accu',width: 72, align: 'center', valign: 'middle', sortable: true,hidden:false},
+                    { header: '현장숙소 주소',name: 'address',width: 360, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle', escapeHTML: false
                        ,formatter:function(e){
-                           return '<a href="#">'+e.value+'</a>'
+                           var t = e.value == null ? '' : String(e.value);
+                           return '<button type="button" class="grid-addr" title="지도 보기">' + t + '</button>';
                        }
                     },
-                    { header: '계약(예정)일',name: 'cont_date',sortable: true ,width: 100, align: 'center', hidden: false,
+                    { header: '계약(예정)일',name: 'cont_date',sortable: true ,width: 104, align: 'center', valign: 'middle', hidden: false, escapeHTML: false,
                          formatter: function (e) {
-                            return toStringByFormatting(e.value)
+                            return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
                         }
                     },
-                    { header: '입주(예정)일',name: 'move_date',sortable: true ,width: 100, align: 'center', hidden: false,
+                    { header: '입주(예정)일',name: 'move_date',sortable: true ,width: 104, align: 'center', valign: 'middle', hidden: false, escapeHTML: false,
                         formatter: function (e) {
-                            return toStringByFormatting(e.value)
+                            return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
                         }
                     },
-                    { header: '계약금',name: 'cont_amt',width: 80, align: 'right',sortable: true,
+
+                    { header: '보증금(만원)',name: 'deposit_amt',width: 110, align: 'right', valign: 'middle', sortable: true, escapeHTML: false,
                         formatter: function (e) {
-                            return ufn_comma(e.value)
+                            return '<span class="grid-num">' + ufn_comma(e.value) + '</span>';
                         }
                     },
 
-                    { header: '보증금',name: 'deposit_amt',width: 100, align: 'right',sortable: true,
+                    { header: '월세(만원)',name: 'rent_amt',width: 110, align: 'right', valign: 'middle', sortable: true, escapeHTML: false,
                         formatter: function (e) {
-                            return ufn_comma(e.value)
+                            return '<span class="grid-num">' + ufn_comma(e.value) + '</span>';
                         }
                     },
-
-                    { header: '월세',name: 'rent_amt',width: 100, align: 'right',sortable: true,
-                        formatter: function (e) {
-                            return ufn_comma(e.value)
-                        }
-                    },
-
-
-                    /*{ header: '반려사유',name: 'reject',width: 80, align: 'center',sortable: true,hidden:true},*/
-
-                    /*{ header: '기안자',name: 'f_emp_nm',width: 100, align: 'center', sortable: true},*/
-                    /*{ header: '기안일',name: 'f_appr_dt',width: 100, align: 'center', sortable: true
-                        ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}
-                    },*/
-                    /*{ header: '최종결재자',name: 'l_emp_nm',width: 100, align: 'center', sortable: true },*/
-                    /*{ header: '최종결재일',name: 'l_appr_dt',width: 100, align: 'center', sortable: true ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}},*/
-                    /*{ header: '결재완료일',name: 'e_appr_dt',width: 100, align: 'center', sortable: true ,formatter: function (e) { return (e.value==null)?'':toStringByFormatting(e.value)}},*/
-                    /*{ header: '경과일수',name: 'd_appr_dt',width: 100, align: 'center', sortable: true},*/
-
                   ],
                   columnOptions: {
                     resizable: true
@@ -1161,6 +368,96 @@
 
         ufn_select2_getData(proj_url,"#con","현장",dept_code,function(){});
 
+        var adminSearchAllData = [];
+        var adminStatFilter = 'all';
+
+        function adminApprStatOf(row) {
+            return String(row && row.appr_stat != null ? row.appr_stat : '');
+        }
+
+        function filterAdminSearchData(filter) {
+            if (!Array.isArray(adminSearchAllData)) return [];
+            if (filter === 'progress') {
+                return adminSearchAllData.filter(function(r) {
+                    var s = adminApprStatOf(r);
+                    return s === '1' || s === '2';
+                });
+            }
+            if (filter === 'approved') {
+                return adminSearchAllData.filter(function(r) { return adminApprStatOf(r) === '3'; });
+            }
+            if (filter === 'rejected') {
+                return adminSearchAllData.filter(function(r) { return adminApprStatOf(r) === '4'; });
+            }
+            return adminSearchAllData.slice();
+        }
+
+        function updateAdminStatCounts() {
+            var all = Array.isArray(adminSearchAllData) ? adminSearchAllData : [];
+            var progress = all.filter(function(r) {
+                var s = adminApprStatOf(r);
+                return s === '1' || s === '2';
+            }).length;
+            var approved = all.filter(function(r) { return adminApprStatOf(r) === '3'; }).length;
+            var rejected = all.filter(function(r) { return adminApprStatOf(r) === '4'; }).length;
+            $('#totalContracts').text(all.length);
+            $('#pendingContracts').text(progress);
+            $('#approvedContracts').text(approved);
+            $('#rejectedContracts').text(rejected);
+        }
+
+        function applyAdminStatFilter() {
+            grid.resetData(filterAdminSearchData(adminStatFilter));
+            $('.admin-stat-btn').removeClass('is-active');
+            $('.admin-stat-btn[data-stat-filter="' + adminStatFilter + '"]').addClass('is-active');
+        }
+
+        function showSearchTab() {
+            var searchTab = document.getElementById('search-tab');
+            if (searchTab && !searchTab.classList.contains('active') && window.bootstrap && bootstrap.Tab) {
+                bootstrap.Tab.getOrCreateInstance(searchTab).show();
+            }
+        }
+
+        function loadAdminSearchGrid() {
+            showLoadingModal();
+            var params = $("#search_form").serialize();
+            $.ajax({
+                url: '/api/cont_list_all',
+                method: 'get',
+                async: true,
+                contentType: 'application/json; UTF-8;',
+                dataType: 'JSON',
+                data: params,
+                beforeSend: function() {
+                    grid.clear();
+                },
+                success: function(result) {
+                    adminSearchAllData = Array.isArray(result) ? result : [];
+                    updateAdminStatCounts();
+                    applyAdminStatFilter();
+                },
+                complete: function() {
+                    hideLoadingModal();
+                },
+                error: function() {
+                    adminSearchAllData = [];
+                    updateAdminStatCounts();
+                    applyAdminStatFilter();
+                }
+            });
+        }
+
+        $("#con").on("select2:select select2:clear", function() {
+            loadAdminSearchGrid();
+        });
+
+        $(document).on('click', '.admin-stat-btn', function() {
+            var filter = String($(this).data('stat-filter') || 'all');
+            adminStatFilter = filter;
+            showSearchTab();
+            applyAdminStatFilter();
+        });
         grid.on('click',(ev)=>{
             if (ev.targetType === 'cell' && ev.columnName === 'address') {
                 const rowIndex = ev.rowKey;
@@ -1205,29 +502,6 @@
         });
 
 
-    function getApprStat() {
-      return $.ajax({
-            url: '/api/getApprAllM',
-            type: 'GET',
-            success: function(response) {
-                const stats = {
-                    total: response.length,
-                    pending: response.filter(c => c.appr_stat === '2').length,
-                    approved: response.filter(c => c.appr_stat === '3').length,
-                    rejected: response.filter(c => c.appr_stat === '4').length
-                };
-
-                $('#totalContracts').text(stats.total);
-                $('#pendingContracts').text(stats.pending);
-                $('#approvedContracts').text(stats.approved);
-                $('#rejectedContracts').text(stats.rejected);
-            },
-            error: function(xhr, status, error) {
-                console.error("버튼 클릭 오류: " + error);
-            }
-     });
-    }
-
     function openMap(searchTxt){
         var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
         window.open("https://map.naver.com/p/search/"+searchTxt, 'docu',options);
@@ -1244,14 +518,11 @@
     }
 
     $("#searchBtn").on("click",function(e){
-        G_load(grid,"/api/cont_list_all","search_form");
+        loadAdminSearchGrid();
     });
 
     function init() {
-       // 통계 API 실패여도 그리드는 로드 (빈 proj_code는 서버에서 전체 조회로 처리)
-       $.when(getApprStat()).always(function () {
-            G_load(grid, "/api/cont_list_all", "search_form");
-        });
+        loadAdminSearchGrid();
     }
 
     if (document.readyState === 'loading') {
@@ -1579,18 +850,93 @@
     // ERP등록 / 거래처등록 탭 (권한 없으면 DOM 없음)
     var registerTabEl = document.getElementById('register-tab');
     if (registerTabEl) {
-        registerTabEl.addEventListener('click', function() {
+        registerTabEl.addEventListener('shown.bs.tab', function() {
+            loadErpData();
             setTimeout(function() {
-                loadErpData();
-            }, 100);
+                if (erpGrid) erpGrid.refreshLayout();
+            }, 50);
         });
     }
     var customerRegisterTabEl = document.getElementById('customer-register-tab');
     if (customerRegisterTabEl) {
-        customerRegisterTabEl.addEventListener('click', function() {
+        customerRegisterTabEl.addEventListener('shown.bs.tab', function() {
+            loadCustomerData();
             setTimeout(function() {
-                loadCustomerData();
-            }, 100);
+                if (customerGrid) customerGrid.refreshLayout();
+            }, 50);
+        });
+    }
+
+    function createErpGrid(gridContainer) {
+        erpGrid = new Grid({
+            el: gridContainer,
+            bodyHeight: 'fitToParent',
+            rowHeight: 44,
+            minRowHeight: 44,
+            focus: false,
+            rowHeaders: [
+                { type: 'rowNum', width: 48, align: 'center', valign: 'middle' },
+                { type: 'checkbox', width: 40, align: 'center', valign: 'middle' }
+            ],
+            header: { height: 40 },
+            hideLoadingBar: true,
+            pageOptions: {
+                useClient: true,
+                type: 'scroll',
+                perPage: -1
+            },
+            columns: [
+                { header: '결재번호', name: 'appr_no_list', width: 50, align: 'center', sortable: true, hidden: true },
+                { header: '기안자', name: 'user_nm', width: 96, align: 'center', valign: 'middle', sortable: true },
+                { header: '현장명', name: 'proj_name', width: 260, sortable: true, filter: { type: 'text' }, align: 'left', valign: 'middle' },
+                { header: '주소', name: 'address', minWidth: 280, sortable: true, filter: { type: 'text' }, align: 'left', valign: 'middle', escapeHTML: false,
+                    formatter: function(e) {
+                        var t = e.value == null ? '' : String(e.value);
+                        return '<span class="grid-addr" style="cursor:default">' + t + '</span>';
+                    }
+                },
+                { header: '계약건수', name: 'contract_count', width: 80, align: 'center', valign: 'middle', sortable: true,
+                    formatter: function(e) {
+                        return e.value ? e.value + '건' : '0건';
+                    }
+                },
+                { header: '기안서번호', name: 'mst_seq', width: 100, align: 'center', valign: 'middle', sortable: true },
+                { header: '결재상태', name: 'conf_status_name', width: 96, align: 'center', valign: 'middle', sortable: true, escapeHTML: false,
+                    formatter: function (e) {
+                        var status = e.value || '';
+                        var cls = 'list-status--idle';
+                        if (status === '반려') cls = 'list-status--reject';
+                        else if (status === '결재중') cls = 'list-status--progress';
+                        else if (status === '보류') cls = 'list-status--wait';
+                        else if (status === '완료') cls = 'list-status--ok';
+                        return '<span class="list-status ' + cls + '">' + status + '</span>';
+                    }
+                },
+                {
+                    header: 'ERP등록',
+                    name: 'erp_register',
+                    width: 64,
+                    align: 'center',
+                    valign: 'middle',
+                    sortable: false,
+                    escapeHTML: false,
+                    formatter: function(e) {
+                        const buttonId = 'erp-btn-' + e.row.mst_seq;
+                        return '<button type="button" id="' + buttonId + '" class="grid-act grid-act--appr" data-mst="' + e.row.mst_seq + '" title="등록" aria-label="등록"><i class="bi bi-plus-circle" aria-hidden="true"></i></button>';
+                    }
+                }
+            ],
+            columnOptions: { resizable: true }
+        });
+
+        erpGrid.on('check', updateErpSelectedCount);
+        erpGrid.on('uncheck', updateErpSelectedCount);
+        erpGrid.on('checkAll', updateErpSelectedCount);
+        erpGrid.on('uncheckAll', updateErpSelectedCount);
+
+        $('#erpGrid').off('click', '[data-mst]').on('click', '[data-mst]', function() {
+            const mstSeq = $(this).data('mst');
+            registerToErp(mstSeq);
         });
     }
 
@@ -1601,95 +947,20 @@
             method: 'GET',
             success: function(response) {
                 console.log('ERP등록 데이터 로드 성공:', response);
-                
-                if (!erpGrid) {
-                    // 그리드 컨테이너가 완전히 준비될 때까지 대기
-                    const gridContainer = document.getElementById('erpGrid');
-                    if (gridContainer && gridContainer.offsetHeight > 0) {
-                        erpGrid = new Grid({
-                            el: gridContainer,
-                            bodyHeight: 'fitToParent',
-                            rowHeight: 50,
-                            rowHeaders: [
-                                { type: 'checkbox', width: 40, align: 'center' },
-                                { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
-                            ],
-                            header: {
-                                height: 40
-                            },
-                            hideLoadingBar: true,
-                            pageOptions: {
-                                useClient: true,
-                                type: 'scroll',
-                                perPage: -1
-                            },
-                            columns: [
-                                { header: '결재번호', name: 'appr_no_list', width: 50, align: 'center', sortable: true, hidden: true },
-                                { header: '기안자', name: 'user_nm', width: 100, align: 'center', sortable: true },
-                                { header: '현장명', name: 'proj_name', width: 250, sortable: true, filter: { type: 'text' } },
-                                { header: '주소', name: 'address', width: 450, sortable: true, filter: { type: 'text' } },
-                                { header: '계약건수', name: 'contract_count', width: 80, align: 'center', sortable: true,
-                                    formatter: function(e) {
-                                        return e.value ? e.value + '건' : '0건';
-                                    }
-                                },
-                                { header: '기안서번호', name: 'mst_seq', width: 100, align: 'center', sortable: true },
-                                { header: '결재상태', name: 'conf_status_name', width: 80, align: 'center', sortable: true, hidden: false,
-                                    formatter: function (e) {
-                                        var status = e.value;
-                                        var color = '';
-                                        switch(status) {
-                                            case '미전송': color = '#6c757d'; break;
-                                            case '반려': color = '#dc3545'; break;
-                                            case '삭제': color = '#6c757d'; break;
-                                            case '결재중': color = '#ffc107'; break;
-                                            case '보류': color = '#fd7e14'; break;
-                                            case '완료': color = '#198754'; break;
-                                            default: color = '#6c757d'; break;
-                                        }
-                                        return '<span style="color: ' + color + '; font-weight: bold;">' + status + '</span>';
-                                    }
-                                },
-                                { 
-                                    header: 'ERP등록', 
-                                    name: 'erp_register', 
-                                    width: 100, 
-                                    align: 'center', 
-                                    sortable: false,
-                                    formatter: function(e) {
-                                        const buttonId = 'erp-btn-' + e.row.mst_seq;
-                                        return '<button id="' + buttonId + '" class="btn btn-sm btn-primary" data-mst="' + e.row.mst_seq + '"><i class="bi bi-plus-circle"></i> 등록</button>';
-                                    }
-                                }
-                            ]
-                        });
-                        console.log('ERP 그리드 초기화 완료');
-                        
-                        // 체크박스 변경 이벤트
-                        erpGrid.on('check', updateErpSelectedCount);
-                        erpGrid.on('uncheck', updateErpSelectedCount);
-                        erpGrid.on('checkAll', updateErpSelectedCount);
-                        erpGrid.on('uncheckAll', updateErpSelectedCount);
-                        
-                        // 등록 버튼 이벤트 리스너 추가
-                        setTimeout(function() {
-                            $('.btn-primary[data-mst]').off('click').on('click', function() {
-                                const mstSeq = $(this).data('mst');
-                                console.log('버튼 클릭됨:', mstSeq);
-                                registerToErp(mstSeq);
-                            });
-                            console.log('등록 버튼 이벤트 리스너 추가 완료');
-                        }, 100);
-                    } else {
-                        console.log('그리드 컨테이너가 준비되지 않음, 재시도...');
-                        setTimeout(function() {
-                            loadErpData();
-                        }, 200);
-                        return;
-                    }
+
+                const gridContainer = document.getElementById('erpGrid');
+                if (!gridContainer) {
+                    return;
                 }
-                
-                erpGrid.resetData(response);
+
+                if (!erpGrid) {
+                    createErpGrid(gridContainer);
+                }
+
+                erpGrid.resetData(response || []);
+                setTimeout(function() {
+                    if (erpGrid) erpGrid.refreshLayout();
+                }, 50);
             },
             error: function(xhr, status, error) {
                 console.error('ERP등록 데이터 로드 오류:', error);
@@ -1961,6 +1232,74 @@
     // 거래처등록 탭 그리드 초기화
     let customerGrid = null;
 
+    function createCustomerGrid(gridContainer) {
+        customerGrid = new Grid({
+            el: gridContainer,
+            bodyHeight: 'fitToParent',
+            rowHeight: 44,
+            minRowHeight: 44,
+            focus: false,
+            rowHeaders: [
+                { type: 'rowNum', width: 48, align: 'center', valign: 'middle' },
+                { type: 'checkbox', width: 40, align: 'center', valign: 'middle' }
+            ],
+            header: { height: 40 },
+            hideLoadingBar: true,
+            pageOptions: {
+                useClient: true,
+                type: 'scroll',
+                perPage: -1
+            },
+            columns: [
+                { header: '결재번호', name: 'appr_no_list', width: 50, align: 'center', sortable: true, hidden: true },
+                { header: '기안자', name: 'user_nm', width: 96, align: 'center', valign: 'middle', sortable: true },
+                { header: '현장명', name: 'proj_name', width: 260, sortable: true, filter: { type: 'text' }, align: 'left', valign: 'middle' },
+                { header: '주소', name: 'address', minWidth: 280, sortable: true, filter: { type: 'text' }, align: 'left', valign: 'middle' },
+                { header: '계약건수', name: 'contract_count', width: 80, align: 'center', valign: 'middle', sortable: true,
+                    formatter: function(e) {
+                        return e.value ? e.value + '건' : '0건';
+                    }
+                },
+                { header: '기안서번호', name: 'mst_seq', width: 100, align: 'center', valign: 'middle', sortable: true },
+                { header: '결재상태', name: 'conf_status_name', width: 96, align: 'center', valign: 'middle', sortable: true, escapeHTML: false,
+                    formatter: function (e) {
+                        var status = e.value || '';
+                        var cls = 'list-status--idle';
+                        if (status === '반려') cls = 'list-status--reject';
+                        else if (status === '결재중') cls = 'list-status--progress';
+                        else if (status === '보류') cls = 'list-status--wait';
+                        else if (status === '완료') cls = 'list-status--ok';
+                        return '<span class="list-status ' + cls + '">' + status + '</span>';
+                    }
+                },
+                {
+                    header: '거래처등록',
+                    name: 'customer_register',
+                    width: 64,
+                    align: 'center',
+                    valign: 'middle',
+                    sortable: false,
+                    escapeHTML: false,
+                    formatter: function(e) {
+                        const buttonId = 'customer-btn-' + e.row.mst_seq;
+                        return '<button type="button" id="' + buttonId + '" class="grid-act grid-act--appr" data-mst="' + e.row.mst_seq + '" title="등록" aria-label="등록"><i class="bi bi-building" aria-hidden="true"></i></button>';
+                    }
+                }
+            ],
+            columnOptions: { resizable: true }
+        });
+
+        customerGrid.on('check', updateCustomerSelectedCount);
+        customerGrid.on('uncheck', updateCustomerSelectedCount);
+        customerGrid.on('checkAll', updateCustomerSelectedCount);
+        customerGrid.on('uncheckAll', updateCustomerSelectedCount);
+
+        $(document).off('click', '[id^="customer-btn-"]').on('click', '[id^="customer-btn-"]', function() {
+            const mstSeq = $(this).data('mst');
+            registerCustomer(mstSeq);
+        });
+    }
+
     // 거래처등록 데이터 로드
     function loadCustomerData() {
         $.ajax({
@@ -1968,93 +1307,20 @@
             method: 'GET',
             success: function(response) {
                 console.log('거래처등록 데이터 로드 성공:', response);
-                
-                if (!customerGrid) {
-                    // 그리드 컨테이너가 완전히 준비될 때까지 대기
-                    const gridContainer = document.getElementById('customerGrid');
-                    if (gridContainer && gridContainer.offsetHeight > 0) {
-                        customerGrid = new Grid({
-                            el: gridContainer,
-                            bodyHeight: 'fitToParent',
-                            rowHeight: 50,
-                            rowHeaders: [
-                                { type: 'checkbox', width: 40, align: 'center' },
-                                { type: 'rowNum', width: 30, align: 'center', valign: 'middle' }
-                            ],
-                            header: {
-                                height: 40
-                            },
-                            hideLoadingBar: true,
-                            pageOptions: {
-                                useClient: true,
-                                type: 'scroll',
-                                perPage: -1
-                            },
-                            columns: [
-                                { header: '결재번호', name: 'appr_no_list', width: 50, align: 'center', sortable: true, hidden: true },
-                                { header: '기안자', name: 'user_nm', width: 100, align: 'center', sortable: true },
-                                { header: '현장명', name: 'proj_name', width: 250, sortable: true, filter: { type: 'text' } },
-                                { header: '주소', name: 'address', width: 450, sortable: true, filter: { type: 'text' } },
-                                { header: '계약건수', name: 'contract_count', width: 80, align: 'center', sortable: true,
-                                    formatter: function(e) {
-                                        return e.value ? e.value + '건' : '0건';
-                                    }
-                                },
-                                { header: '기안서번호', name: 'mst_seq', width: 100, align: 'center', sortable: true },
-                                { header: '결재상태', name: 'conf_status_name', width: 80, align: 'center', sortable: true, hidden: false,
-                                    formatter: function (e) {
-                                        var status = e.value;
-                                        var color = '';
-                                        switch(status) {
-                                            case '미전송': color = '#6c757d'; break;
-                                            case '반려': color = '#dc3545'; break;
-                                            case '삭제': color = '#6c757d'; break;
-                                            case '결재중': color = '#ffc107'; break;
-                                            case '보류': color = '#fd7e14'; break;
-                                            case '완료': color = '#198754'; break;
-                                            default: color = '#6c757d'; break;
-                                        }
-                                        return '<span style="color: ' + color + '; font-weight: bold;">' + status + '</span>';
-                                    }
-                                },
-                                { 
-                                    header: '거래처등록', 
-                                    name: 'customer_register', 
-                                    width: 100, 
-                                    align: 'center', 
-                                    sortable: false,
-                                    formatter: function(e) {
-                                        const buttonId = 'customer-btn-' + e.row.mst_seq;
-                                        return '<button id="' + buttonId + '" class="btn btn-sm btn-primary" data-mst="' + e.row.mst_seq + '"><i class="bi bi-building"></i> 등록</button>';
-                                    }
-                                }
-                            ]
-                        });
-                        console.log('거래처 그리드 초기화 완료');
-                        
-                        // 체크박스 변경 이벤트
-                        customerGrid.on('check', updateCustomerSelectedCount);
-                        customerGrid.on('uncheck', updateCustomerSelectedCount);
-                        customerGrid.on('checkAll', updateCustomerSelectedCount);
-                        customerGrid.on('uncheckAll', updateCustomerSelectedCount);
-                        
-                        // 등록 버튼 이벤트 리스너 추가 (이벤트 위임 사용)
-                        $(document).off('click', '[id^="customer-btn-"]').on('click', '[id^="customer-btn-"]', function() {
-                            const mstSeq = $(this).data('mst');
-                            console.log('거래처 등록 버튼 클릭됨:', mstSeq);
-                            registerCustomer(mstSeq);
-                        });
-                        console.log('거래처 등록 버튼 이벤트 리스너 추가 완료');
-                    } else {
-                        console.log('거래처 그리드 컨테이너가 준비되지 않음, 재시도...');
-                        setTimeout(function() {
-                            loadCustomerData();
-                        }, 200);
-                        return;
-                    }
+
+                const gridContainer = document.getElementById('customerGrid');
+                if (!gridContainer) {
+                    return;
                 }
-                
-                customerGrid.resetData(response);
+
+                if (!customerGrid) {
+                    createCustomerGrid(gridContainer);
+                }
+
+                customerGrid.resetData(response || []);
+                setTimeout(function() {
+                    if (customerGrid) customerGrid.refreshLayout();
+                }, 50);
             },
             error: function(xhr, status, error) {
                 console.error('거래처등록 데이터 로드 오류:', error);

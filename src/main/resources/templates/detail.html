@@ -1,116 +1,17 @@
 <!DOCTYPE html>
 <html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/head :: headFragment('계약서 상세', null)}"></th:block>
     <link rel="stylesheet" th:href="@{/css/detail.css}">
-    <title>계약서 상세</title>
-
-    <style>
-        input[type='date']{
-           text-align:center;
-        }
-        .dt{
-            font-size: 0.8em;
-        }
-        .checklist-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .checklist-item {
-            background: #fff;
-            border-radius: 6px;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid #e9ecef;
-            transition: all 0.2s ease;
-        }
-
-        .checklist-item:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .checklist-success {
-            border-left: 3px solid #198754;
-        }
-
-        .checklist-danger {
-            border-left: 3px solid #dc3545;
-        }
-
-        .checklist-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-        }
-
-        .checklist-icon {
-            font-size: 1.25rem;
-            line-height: 1;
-        }
-
-        .checklist-success .checklist-icon i {
-            color: #198754;
-        }
-
-        .checklist-danger .checklist-icon i {
-            color: #dc3545;
-        }
-
-        .checklist-title {
-            flex: 1;
-        }
-
-        .checklist-title h6 {
-            color: #212529;
-            font-weight: 500;
-            font-size: 0.9rem;
-            margin-bottom: 0.1rem;
-        }
-
-        .checklist-title small {
-            color: #6c757d;
-            font-size: 0.8rem;
-        }
-
-        .checklist-body {
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .checklist-reason {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: #dc3545;
-            font-size: 0.8rem;
-        }
-
-        .checklist-reason i {
-            font-size: 0.9rem;
-        }
-
-        .reason-label {
-            font-weight: 600;
-            color: #dc3545;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/doc-desk.css}">
 </head>
-<body>
+<body class="app-shell--quiet">
+    <main class="doc-desk">
     <div class="detail-container" th:each="detail : ${contract}">
         <div class="d-flex justify-content-end mb-2"
              th:if="${#authentication.principal.userNo.toString() == detail.emp_no
-                      and detail.appr_no == null and flag == 'Y'
-             }">
-            <button class="btn edit-button"
+                      and detail.appr_no == null and flag == 'Y'}">
+            <button type="button" class="btn edit-button"
                     th:attr="data-seq=${detail.seq}" onclick="edit(this.getAttribute('data-seq'))">
                 <i class="bi bi-pencil-square me-1"></i>
                 수정하기
@@ -271,97 +172,7 @@
                     <div class="col-md-6">
                         <div class="detail-section h-100">
                             <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
-                            <div class="checklist-container">
-                                <div class="checklist-item" th:classappend="${detail.chk_1 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                    <div class="checklist-header">
-                                        <div class="checklist-icon">
-                                            <i th:classappend="${detail.chk_1 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                        </div>
-                                        <div class="checklist-title">
-                                            <h6 class="mb-0">실행예산에 반영되어 있는가</h6>
-                                        </div>
-                                    </div>
-                                    <div class="checklist-body" th:if="${detail.chk_1 == 'N'}">
-                                        <div class="checklist-reason">
-                                            <i class="bi bi-info-circle"></i>
-                                            <span class="reason-label">사유 및 후속조치:</span>
-                                            <span th:text="${detail.chk_reason_1}">-</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="checklist-item" th:classappend="${detail.chk_2 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                    <div class="checklist-header">
-                                        <div class="checklist-icon">
-                                            <i th:classappend="${detail.chk_2 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                        </div>
-                                        <div class="checklist-title">
-                                            <h6 class="mb-0">㈜동아지질 법인명의로 계약하는가</h6>
-                                        </div>
-                                    </div>
-                                    <div class="checklist-body" th:if="${detail.chk_2 == 'N'}">
-                                        <div class="checklist-reason">
-                                            <i class="bi bi-info-circle"></i>
-                                            <span class="reason-label">사유:</span>
-                                            <span th:text="${detail.chk_reason_2}">-</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="checklist-item" th:classappend="${detail.chk_3 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                    <div class="checklist-header">
-                                        <div class="checklist-icon">
-                                            <i th:classappend="${detail.chk_3 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                        </div>
-                                        <div class="checklist-title">
-                                            <h6 class="mb-0">전세권을 설정하는가</h6>
-                                        </div>
-                                    </div>
-                                    <div class="checklist-body" th:if="${detail.chk_3 == 'N'}">
-                                        <div class="checklist-reason">
-                                            <i class="bi bi-info-circle"></i>
-                                            <span class="reason-label">사유:</span>
-                                            <span th:text="${detail.chk_reason_3}">-</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="checklist-item" th:classappend="${detail.chk_4 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                    <div class="checklist-header">
-                                        <div class="checklist-icon">
-                                            <i th:classappend="${detail.chk_4 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                        </div>
-                                        <div class="checklist-title">
-                                            <h6 class="mb-0">부동산 공인중개사무소를 통하여 거래하는가</h6>
-                                        </div>
-                                    </div>
-                                    <div class="checklist-body" th:if="${detail.chk_4 == 'N'}">
-                                        <div class="checklist-reason">
-                                            <i class="bi bi-info-circle"></i>
-                                            <span class="reason-label">사유:</span>
-                                            <span th:text="${detail.chk_reason_4}">-</span>
-                                        </div>
-                                    </div>
-                                </div>
-
-                                <div class="checklist-item" th:classappend="${detail.chk_5 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                    <div class="checklist-header">
-                                        <div class="checklist-icon">
-                                            <i th:classappend="${detail.chk_5 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                        </div>
-                                        <div class="checklist-title">
-                                            <h6 class="mb-0">등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</h6>
-                                        </div>
-                                    </div>
-                                    <div class="checklist-body" th:if="${detail.chk_5 == 'N'}">
-                                        <div class="checklist-reason">
-                                            <i class="bi bi-info-circle"></i>
-                                            <span class="reason-label">사유:</span>
-                                            <span th:text="${detail.chk_reason_5}">-</span>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
+                            <div th:replace="~{fragments/checklist :: surveyChecklist(${detail})}"></div>
                         </div>
                     </div>
                 </div>
@@ -468,6 +279,7 @@
             </div>
         </div>
     </div>
+    </main>
 
     <!-- 반려 사유 입력 모달 -->
     <div class="modal fade rejection-modal" id="rejectionModal" tabindex="-1">
@@ -489,8 +301,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function approvecontract() {
             if (confirm('이 계약서를 승인하시겠습니까?')) {

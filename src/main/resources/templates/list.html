@@ -2,166 +2,62 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('조사서 확인 및 요청', 'grid')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/checkbox.css}">
     <link rel="stylesheet" th:href="@{/css/grid.css}">
-
-    <!-- Select2   -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     <link rel="stylesheet" th:href="@{/css/appr-submit-doc.css}">
-
-    <!-- Toast Grid-->
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-    <style>
-        @charset "UTF-8";
-        .container-fluid {
-          height: 92%;
-        }
-
-        /* 포커스 상태일 때 생기는 테두리 제거 */
-        .tui-grid-cell.tui-grid-cell-has-focus {
-          outline: none !important;
-          box-shadow: none !important;
-          border: none !important;
-        }
-
-        /* 혹시 생길 수 있는 내부 엘리먼트 포커스도 제거 */
-        .tui-grid-cell-content:focus {
-          outline: none !important;
-          box-shadow: none !important;
-          border: none !important;
-        }
-
-        .search-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .search-toolbar__proj {
-            flex: 0 0 50%;
-            width: 50%;
-            max-width: 50%;
-            min-width: 0;
-        }
-
-        .appr-conf-tag-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            flex: 0 0 auto;
-        }
-
-        .appr-conf-tag-group .btn {
-            min-width: 3.5rem;
-            font-size: 0.8125rem;
-        }
-
-        .appr-conf-tag-group .btn.active {
-            pointer-events: none;
-        }
-
-        @media (max-width: 768px) {
-            .search-toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-toolbar__proj {
-                width: 100%;
-                min-width: 0;
-            }
-
-            .appr-conf-tag-group {
-                width: 100%;
-            }
-
-            .appr-conf-tag-group .btn {
-                flex: 1 1 calc(50% - 0.35rem);
-            }
-
-            .search-toolbar #searchBtn {
-                width: 100%;
-            }
-        }
-
-    </style>
+    <link rel="stylesheet" th:href="@{/css/list-desk.css}">
 </head>
-<body>
-<header class="main-header">
-    <div class="header-content">
-        <div class="logo-container">
-            <img src="/images/dongah.gif" alt="로고" class="logo">
-            <span class="header-title">부동산 임차관리 플랫폼</span>
-        </div>
-        <div class="user-info">
-            <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-            <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
-            <a href="/main" class="btn btn-back me-2">
-                <i class="bi bi-arrow-left"></i> 메인화면
-            </a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-action">로그아웃</button>
-            </form>
-        </div>
-    </div>
-</header>
+<body class="app-shell--quiet">
+<th:block th:with="backUrl=@{/main}, backText='메인화면'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
 
-<main>
-    <div class="container-fluid">
-       <div class="row mb-4">
-           <h3>사전조사서 확인 및 요청</h3>
-           <span>본인이 등록한 사전조사서의 확인요청과 요청 상태를 확인 할 수 있습니다</span>
-       </div>
+<main class="list-desk app-main">
+    <div class="list-desk__shell">
+        <header class="list-desk__head">
+            <div class="list-desk__titles">
+                <p class="list-desk__eyebrow">조사서</p>
+                <h1 class="list-desk__title text-balance">확인 및 요청</h1>
+                <p class="list-desk__lead text-pretty">등록한 사전조사서를 확인하고, 결재 요청·상태를 관리합니다</p>
+            </div>
+            <div class="list-desk__actions" id="listDeskActions">
+                <button type="button" class="btn btn-primary list-desk__btn" id="btnApproval">
+                    <i class="bi bi-send" aria-hidden="true"></i> 확인요청
+                </button>
+                <button type="button" class="btn list-desk__btn list-desk__btn--danger" id="btnStatDelete">
+                    <i class="bi bi-trash" aria-hidden="true"></i> 삭제
+                </button>
+            </div>
+        </header>
 
-
-        <div class="row mb-2">
-            <div class="col col-12 col-sm-12">
-                <form id="search_form" method="get">
-
-                    <div class="row mb-1 bg-style-search">
-                        <div class="col-12">
-                            <div class="search-toolbar">
-                                <div class="search-toolbar__proj">
-                                    <select id="sel_proj" name="proj_code" class="form-select form-select-sm" style="width:100%"></select>
-                                </div>
-                                <input type="hidden" id="sel_conf_tag" name="conf_tag" value="999">
-                                <div class="appr-conf-tag-group" id="conf_tag_buttons" role="group" aria-label="요청 상태">
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn active" data-conf-tag="999">요청전</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="2">승인요청</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="3">완료</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="4">반려</button>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-secondary btn_s" id="searchBtn"><i class="bi bi-search"></i> 조회</button>
-                            </div>
-                        </div>
+        <section class="list-desk__panel">
+            <form id="search_form" method="get" class="list-desk__filters">
+                <div class="list-desk__filter-field list-desk__filter-field--proj">
+                    <label class="list-desk__label" for="sel_proj">현장</label>
+                    <select id="sel_proj" name="proj_code" class="form-select" style="width:100%"></select>
+                </div>
+                <div class="list-desk__filter-field list-desk__filter-field--status">
+                    <span class="list-desk__label">요청 상태</span>
+                    <input type="hidden" id="sel_conf_tag" name="conf_tag" value="999">
+                    <div class="seg appr-conf-tag-group" id="conf_tag_buttons" role="group" aria-label="요청 상태">
+                        <button type="button" class="seg__btn conf-tag-btn active" data-conf-tag="999">요청전</button>
+                        <button type="button" class="seg__btn conf-tag-btn" data-conf-tag="2">승인요청</button>
+                        <button type="button" class="seg__btn conf-tag-btn" data-conf-tag="3">완료</button>
+                        <button type="button" class="seg__btn conf-tag-btn" data-conf-tag="4">반려</button>
                     </div>
-                </form>
+                </div>
+            </form>
+
+            <div class="list-desk__grid-wrap">
+                <div id="grid" class="list-desk__grid"></div>
             </div>
-        </div>
-        <div class="row mb-1">
-            <div class="col col-12">
-                <button class="btn btn-sm btn-primary" id="btnApproval"><i class="bi bi-collection"></i> 확인요청(선택)</button>
-                <button class="btn btn-sm btn-danger" id="btnStatDelete"><i class="bi bi-trash"></i> 삭제(선택)</button>
-            </div>
-        </div>
-        <div class="row" style="height: calc(100vh - 250px);">
-            <div class="col col-12" id="grid" style="height: 100%;"></div>
-        </div>
+        </section>
     </div>
     <!-- 확인요청 결재문서 Modal -->
     <div id="appr_popup" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-            <div class="modal-content rounded-3 shadow">
+            <div class="modal-content rounded-3">
                 <div class="modal-header py-3">
                     <h6 class="modal-title mb-0">확인 요청서</h6>
                     <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
@@ -206,17 +102,6 @@
 </main>
     <div th:replace="~{fragments/modal.html :: fragment-modal}"></div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- Toast Grid  -->
-    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-    <script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
-    <!-- Custom   -->
-    <script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
 
     <script th:inline="javascript">
 
@@ -234,20 +119,31 @@
          ufn_select2_getData(proj_url,"#sel_proj","현장","",function(){});
 
          const grid = new Grid({
-           el: document.getElementById('grid'), // Container element
-           //data: dataSource,
+           el: document.getElementById('grid'),
            bodyHeight: 'fitToParent',
-           rowHeight: 50,
+           rowHeight: 44,
+           minRowHeight: 44,
            selection: {
                type: 'row',
                showCheckbox: true,
                enableCellSelection: false
            },
            focus: false,
+           rowClassName: function(args) {
+               var s = String(args.row.appr_stat == null ? '' : args.row.appr_stat);
+               if (s === '3') return 'row-status-ok';
+               if (s === '4') return 'row-status-reject';
+               if (s === '1' || s === '2') return 'row-status-progress';
+               if (s === '0') return 'row-status-wait';
+               return '';
+           },
            rowHeaders: [
-             { type: 'rowNum', width: 30, align: 'center', valign: 'middle' },
+             { type: 'rowNum', width: 48, align: 'center', valign: 'middle' },
              {
                  type: 'checkbox',
+                 width: 40,
+                 align: 'center',
+                 valign: 'middle',
                  header:
                  `<label for="all-checkbox" class="checkbox">
                  <input type="checkbox" id="all-checkbox" class="hidden-input" name="_checked" />
@@ -259,7 +155,7 @@
              }
            ],
            header:{
-               height: 50,
+               height: 40,
                complexColumns: [
                {
                  header: '고용허가기간',
@@ -284,70 +180,76 @@
            columns: [
              { header: '계약번호', name: 'seq', width: 70, align: 'center', sortable: true, sortingType: 'desc', hidden: true },
              { header: '결재번호',name: 'appr_no',width: 70, align: 'center',sortable: true ,hidden: true},
-             { header: '결재상태',name: 'appr_stat',width: 90, align: 'center',sortable: true
+             { header: '결재상태',name: 'appr_stat',width: 96, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
                  ,formatter: function (e) {
-                     return decode(e.value,'0','승인요청','1','진행중','2','진행중','3','승인완료','4','반려','요청전')
+                     var v = e.value;
+                     var label = decode(v,'0','승인요청','1','진행중','2','진행중','3','승인완료','4','반려','요청전');
+                     var cls = 'list-status--idle';
+                     if (v === '0' || v === 0) cls = 'list-status--wait';
+                     else if (v === '1' || v === 1 || v === '2' || v === 2) cls = 'list-status--progress';
+                     else if (v === '3' || v === 3) cls = 'list-status--ok';
+                     else if (v === '4' || v === 4) cls = 'list-status--reject';
+                     return '<span class="list-status ' + cls + '">' + label + '</span>';
                  }
              },
-             { header: '반려사유',name: 'reject',width: 150, align: 'left',sortable: true, hidden: true
+             { header: '반려사유',name: 'reject',width: 150, align: 'left', valign: 'middle', sortable: true, hidden: true
                  ,formatter: function (e) {
                      return e.value || '';
                  }
              },
-             { header: '재작성',name: 'rewrite',width: 70, align: 'center',sortable: false, hidden: true
+             { header: '재작성',name: 'rewrite',width: 56, align: 'center', valign: 'middle', sortable: false, hidden: true, escapeHTML: false
                  ,formatter: function(e) {
                      if(e.value === 'Y'){
-                         return '<button class="btn btn-sm btn-secondary btn-grid" disabled><i class="bi bi-pencil"></i></button>'
-                     }else{
-                         return '<button class="btn btn-sm btn-success btn-grid"><i class="bi bi-pencil"></i></button>'
+                         return '<button type="button" class="grid-act" disabled title="재작성 불가" aria-label="재작성 불가"><i class="bi bi-pencil" aria-hidden="true"></i></button>';
                      }
+                     return '<button type="button" class="grid-act grid-act--edit" title="재작성" aria-label="재작성"><i class="bi bi-pencil" aria-hidden="true"></i></button>';
                  }
              },
-             { header: '상세',name: 'detail',width: 70, align: 'center',sortable: false, hidden: false
+             { header: '상세',name: 'detail',width: 56, align: 'center', valign: 'middle', sortable: false, hidden: false, escapeHTML: false
                  ,formatter:function(e){
-                     return '<button class="btn btn-sm btn-dark btn-grid"><i class="bi bi-file-text"></i></button>'
+                     return '<button type="button" class="grid-act" title="상세" aria-label="상세"><i class="bi bi-file-earmark-text" aria-hidden="true"></i></button>';
                  }
              },
-             { header: '결재',name: 'confirm',width: 70, align: 'center',sortable: false, hidden: false
+             { header: '결재',name: 'confirm',width: 56, align: 'center', valign: 'middle', sortable: false, hidden: false, escapeHTML: false
                  ,formatter:function(e){
                      if(e.row.appr_stat == '999'){
                          return '';
-                     }else{
-                         return '<button class="btn btn-sm btn-warning btn-grid"><i class="bi bi-file-text"></i></button>'
                      }
+                     return '<button type="button" class="grid-act grid-act--appr" title="결재" aria-label="결재"><i class="bi bi-clipboard-check" aria-hidden="true"></i></button>';
                  }
              },
              { header: '현장코드',name: 'proj_code',sortable: true, filter: 'text' , hidden: true},
-             { header: '현장명',name: 'proj_name',width: 250, sortable: true, filter:{type:'text'}, align: 'left'},
+             { header: '현장명',name: 'proj_name',width: 220, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle'},
 
-             { header: '주거형태',name: 'res_type',width: 80, align: 'center',sortable: true,hidden:false},
-             { header: '거래방식',name: 'trans_type',width: 80, align: 'center',sortable: true,hidden:false},
-             { header: '면적',name: 'area',width: 80, align: 'center',sortable: true,hidden:false},
-             { header: '사용인원',name: 'accu',width: 80, align: 'center',sortable: true,hidden:false},
-             { header: '현장숙소 주소',name: 'address',width: 500, sortable: true, filter:{type:'text'}
+             { header: '주거형태',name: 'res_type',width: 76, align: 'center', valign: 'middle', sortable: true,hidden:false},
+             { header: '거래방식',name: 'trans_type',width: 76, align: 'center', valign: 'middle', sortable: true,hidden:false},
+             { header: '면적',name: 'area',width: 72, align: 'center', valign: 'middle', sortable: true,hidden:false},
+             { header: '사용인원',name: 'accu',width: 72, align: 'center', valign: 'middle', sortable: true,hidden:false},
+             { header: '현장숙소 주소',name: 'address',width: 420, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle', escapeHTML: false
                    ,formatter:function(e){
-                       return '<a href="#">'+e.value+'</a>'
+                       var t = e.value == null ? '' : String(e.value);
+                       return '<button type="button" class="grid-addr" title="지도 보기">' + t + '</button>';
                    }
              },
-             { header: '계약(예정)일',name: 'cont_date',sortable: true ,width: 100, align: 'center', hidden: false,
+             { header: '계약(예정)일',name: 'cont_date',sortable: true ,width: 104, align: 'center', valign: 'middle', hidden: false, escapeHTML: false,
                   formatter: function (e) {
-                     return toStringByFormatting(e.value)
+                     return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
                  }
              },
-             { header: '입주(예정)일',name: 'move_date',sortable: true ,width: 100, align: 'center', hidden: false,
+             { header: '입주(예정)일',name: 'move_date',sortable: true ,width: 104, align: 'center', valign: 'middle', hidden: false, escapeHTML: false,
                  formatter: function (e) {
-                     return toStringByFormatting(e.value)
+                     return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
                  }
              },
 
-             { header: '보증금',name: 'deposit_amt',width: 100, align: 'right',sortable: true,
+             { header: '보증금',name: 'deposit_amt',width: 100, align: 'right', valign: 'middle', sortable: true, escapeHTML: false,
                  formatter: function (e) {
-                     return ufn_comma(e.value)
+                     return '<span class="grid-num">' + ufn_comma(e.value) + '</span>';
                  }
              },
-             { header: '월세',name: 'rent_amt',width: 100, align: 'right',sortable: true,
+             { header: '월세',name: 'rent_amt',width: 100, align: 'right', valign: 'middle', sortable: true, escapeHTML: false,
                  formatter: function (e) {
-                     return ufn_comma(e.value)
+                     return '<span class="grid-num">' + ufn_comma(e.value) + '</span>';
                  }
              },
 
@@ -501,7 +403,7 @@
              loadContractList();
          });
 
-         $("#searchBtn").on("click", function() {
+         $("#sel_proj").on("select2:select select2:clear", function() {
              loadContractList();
          });
 

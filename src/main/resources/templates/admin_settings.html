@@ -2,22 +2,16 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('관리자 설정', null)}"></th:block>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-
-    <title>관리자 설정 - 현장숙소관리플랫폼</title>
-
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <style>
+
         @charset "UTF-8";
         html, body {
             font-family: 'Spoqa Han Sans Neo', 'sans-serif';
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            background: var(--paper, #eef1f6);
             min-height: 100vh;
             height: 100%;
         }
@@ -30,9 +24,9 @@
         .filter-section {
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
-            border-radius: 15px;
+            border-radius: 14px;
             margin-bottom: 20px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04); border: 1px solid var(--line, #e2e8f0);
         }
         .action-buttons {
             margin-bottom: 20px;
@@ -46,7 +40,7 @@
         }
         .btn-action:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04); border: 1px solid var(--line, #e2e8f0);
         }
         .btn-add {
             background-color: #2ecc71;
@@ -69,7 +63,7 @@
             color: white;
         }
         .modal-content {
-            border-radius: 15px;
+            border-radius: 14px;
         }
         .modal-header {
             background-color: #f8f9fa;
@@ -81,8 +75,8 @@
         }
         .table-container {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            border-radius: 14px;
+            box-shadow: 0 1px 2px rgba(15,23,42,0.04); border: 1px solid var(--line, #e2e8f0);
             padding: 20px;
             margin-bottom: 20px;
         }
@@ -125,27 +119,14 @@
             background-color: #2ecc71;
             border-color: #2ecc71;
         }
+    
     </style>
 </head>
-<body>
+<body class="app-shell--quiet">
 
-<header class="main-header">
-    <div class="header-content">
-        <div class="logo-container">
-            <img src="/images/dongah.gif" alt="로고" class="logo">
-            <span class="header-title">현장숙소 관리 플랫폼</span>
-        </div>
-        <div class="user-info">
-            <span class="user-name" th:text="${#authentication.principal.userName + '님'}"></span>
-            <a href="/admin" class="btn btn-back me-2">
-                <i class="bi bi-arrow-left"></i> 관리자화면
-            </a>
-            <form th:action="@{/logout}" method="post" class="d-inline">
-                <button type="submit" class="btn btn-action">로그아웃</button>
-            </form>
-        </div>
-    </div>
-</header>
+<th:block th:with="backUrl=@{/admin}, backText='관리자'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
 
 <main>
     <div class="container-fluid">
@@ -221,8 +202,6 @@
     </div>
 </div>
 
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 <script src="js/common.js" th:src="@{/js/common.js}"></script>
 

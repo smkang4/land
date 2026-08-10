@@ -2,455 +2,78 @@
 <html lang="ko" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
-    <link rel="stylesheet" th:href="@{/css/header.css}">
+    <th:block th:replace="~{fragments/head :: headFragment('결재함', 'grid')}"></th:block>
     <link rel="stylesheet" th:href="@{/css/checkbox.css}">
     <link rel="stylesheet" th:href="@{/css/grid.css}">
-
-    <!-- Select2   -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
-
-    <!-- Toast Grid-->
-    <link rel="stylesheet" href="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.css" />
-    <link rel="stylesheet" href="https://uicdn.toast.com/grid/latest/tui-grid.css" />
-    <style>
-        @charset "UTF-8";
-        .container-fluid {
-          height: 92%;
-        }
-
-        .search-toolbar {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .search-toolbar__proj {
-            flex: 0 0 50%;
-            width: 50%;
-            max-width: 50%;
-            min-width: 0;
-        }
-
-        .appr-conf-tag-group {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.35rem;
-            flex: 0 0 auto;
-        }
-
-        .appr-conf-tag-group .btn {
-            min-width: 3.5rem;
-            font-size: 0.8125rem;
-        }
-
-        .appr-conf-tag-group .btn.active {
-            pointer-events: none;
-        }
-
-        /* Responsive Design for Mobile */
-        @media (max-width: 768px) {
-            .container-fluid {
-                padding: 0.5rem;
-                height: auto;
-            }
-
-            /* Header Responsive */
-            .header-content {
-                flex-direction: column;
-                gap: 0.75rem;
-                padding: 0.75rem;
-                text-align: center;
-            }
-
-            .logo-container {
-                flex-direction: column;
-                text-align: center;
-                gap: 0.5rem;
-            }
-
-            .logo {
-                max-width: 120px;
-            }
-
-            .header-title {
-                font-size: 1rem;
-                font-weight: 600;
-            }
-
-            .user-info {
-                flex-direction: column;
-                gap: 0.5rem;
-                align-items: center;
-                width: 100%;
-            }
-
-            .user-name {
-                font-size: 0.9rem;
-                margin: 0;
-                padding: 0.25rem 0;
-                white-space: nowrap;
-            }
-
-            /* 사용자 정보를 가로로 배치하는 컨테이너 */
-            .user-info .user-details {
-                display: flex;
-                flex-direction: row;
-                gap: 0.5rem;
-                align-items: center;
-                justify-content: center;
-                flex-wrap: wrap;
-            }
-
-            /* 버튼들을 별도 컨테이너로 분리 */
-            .user-info .button-container {
-                display: flex;
-                flex-direction: column;
-                gap: 0.25rem;
-                width: 100%;
-                align-items: center;
-            }
-
-            .btn-back,
-            .btn-action {
-                width: 100%;
-                margin: 0.25rem 0;
-            }
-
-            /* Ensure form buttons also get full width */
-            .user-info form {
-                width: 100%;
-            }
-
-            .user-info form button {
-                width: 100%;
-                margin: 0.25rem 0;
-            }
-
-            /* Search Form Responsive */
-            .bg-style-search {
-                padding: 0.75rem;
-                border-radius: 8px;
-            }
-
-            .bg-style-search .row {
-                margin: 0;
-            }
-
-            .search-toolbar {
-                flex-direction: column;
-                align-items: stretch;
-            }
-
-            .search-toolbar__proj {
-                width: 100%;
-                min-width: 0;
-            }
-
-            .appr-conf-tag-group {
-                width: 100%;
-            }
-
-            .appr-conf-tag-group .btn {
-                flex: 1 1 calc(50% - 0.35rem);
-            }
-
-            .search-toolbar #searchBtn {
-                width: 100%;
-            }
-
-            .bg-style-search .col-auto {
-                width: 100%;
-                text-align: center;
-            }
-
-            .bg-style-search .btn {
-                width: 100%;
-                margin-top: 0.5rem;
-            }
-
-            /* Button Responsive */
-            .btn-conf {
-                width: 100%;
-                margin-bottom: 0.5rem;
-            }
-
-            /* Grid Responsive */
-            #grid {
-                height: calc(100vh - 400px) !important;
-                font-size: 0.8rem;
-            }
-
-            /* Modal Responsive */
-            .modal-dialog {
-                margin: 0.5rem;
-                max-width: calc(100% - 1rem);
-            }
-
-            .modal-content {
-                border-radius: 8px;
-            }
-
-            .modal-header,
-            .modal-body,
-            .modal-footer {
-                padding: 1rem;
-            }
-
-            /* Table/Grid Column Adjustments */
-            .tui-grid-container {
-                font-size: 0.75rem;
-            }
-
-            .tui-grid-cell {
-                padding: 0.25rem;
-            }
-
-            /* Hide less important columns on mobile */
-            .tui-grid-cell[data-column-name="proj_code"],
-            .tui-grid-cell[data-column-name="next_appr_emp_nm"],
-            .tui-grid-cell[data-column-name="last_appr_emp_nm"] {
-                display: none;
-            }
-
-            /* Adjust column widths for mobile */
-            .tui-grid-cell[data-column-name="proj_name"] {
-                min-width: 120px;
-            }
-
-            .tui-grid-cell[data-column-name="address"] {
-                min-width: 150px;
-            }
-
-            .tui-grid-cell[data-column-name="first_appr_emp_nm"] {
-                min-width: 80px;
-            }
-
-            .tui-grid-cell[data-column-name="first_appr_date"] {
-                min-width: 90px;
-            }
-
-            .tui-grid-cell[data-column-name="last_appr_date"] {
-                min-width: 90px;
-            }
-        }
-
-        /* Tablet Responsive */
-        @media (min-width: 769px) and (max-width: 1024px) {
-            .container-fluid {
-                padding: 1rem;
-            }
-
-            #grid {
-                height: calc(100vh - 350px) !important;
-            }
-
-            .bg-style-search .col-sm-5 {
-                margin-bottom: 0.5rem;
-            }
-        }
-
-        /* General Mobile Improvements */
-        @media (max-width: 576px) {
-            h3 {
-                font-size: 1.5rem;
-                margin-bottom: 0.5rem;
-            }
-
-            .row.mb-4 span {
-                font-size: 0.9rem;
-                line-height: 1.4;
-            }
-
-            .form-select,
-            .form-control {
-                font-size: 0.9rem;
-            }
-
-            .btn {
-                font-size: 0.9rem;
-                padding: 0.5rem 1rem;
-            }
-
-            /* Improve touch targets */
-            .tui-grid-cell {
-                min-height: 44px;
-                display: flex;
-                align-items: center;
-            }
-
-            /* Better spacing for mobile */
-            .row.mb-2,
-            .row.mb-1 {
-                margin-bottom: 0.75rem !important;
-            }
-        }
-
-        /* Landscape orientation adjustments */
-        @media (max-width: 768px) and (orientation: landscape) {
-            .header-content {
-                flex-direction: row;
-                justify-content: space-between;
-                align-items: center;
-                padding: 0.5rem;
-                gap: 1rem;
-            }
-
-            .logo-container {
-                flex-direction: row;
-                align-items: center;
-                gap: 0.5rem;
-                flex: 1;
-            }
-
-            .logo {
-                max-width: 80px;
-            }
-
-            .header-title {
-                font-size: 0.9rem;
-            }
-
-            .user-info {
-                flex-direction: row;
-                align-items: center;
-                gap: 0.5rem;
-                flex-wrap: wrap;
-                justify-content: flex-end;
-            }
-
-            .user-name {
-                font-size: 0.8rem;
-                margin: 0;
-            }
-
-            .btn-back,
-            .btn-action {
-                width: auto;
-                max-width: none;
-                margin: 0;
-                font-size: 0.8rem;
-                padding: 0.4rem 0.8rem;
-            }
-
-            #grid {
-                height: calc(100vh - 200px) !important;
-            }
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/list-desk.css}">
 </head>
+<body class="app-shell--quiet">
+<th:block th:with="backUrl=@{/main}, backText='메인화면'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
 
-
-<body>
-<header class="main-header">
-    <div class="header-content">
-        <div class="logo-container">
-            <img src="/images/dongah.gif" alt="로고" class="logo">
-            <span class="header-title">부동산 임차관리 플랫폼</span>
-        </div>
-        <div class="user-info">
-            <div class="user-details">
-                <span class="user-name" th:text="${#authentication.principal.deptName}"></span>
-                <span class="user-name" th:text="${#authentication.principal.userName + #authentication.principal.positionName}"></span>
+<main class="list-desk app-main">
+    <div class="list-desk__shell">
+        <header class="list-desk__head">
+            <div class="list-desk__titles">
+                <p class="list-desk__eyebrow">결재</p>
+                <h1 class="list-desk__title text-balance">결재함</h1>
+                <p class="list-desk__lead text-pretty">본인에게 들어온 사전조사서를 조회하고 확인 처리합니다</p>
             </div>
-            <div class="button-container">
-                <a href="/main" class="btn btn-back">
-                    <i class="bi bi-arrow-left"></i> 메인화면
-                </a>
-                <form th:action="@{/logout}" method="post" class="d-inline">
-                    <button type="submit" class="btn btn-action">로그아웃</button>
-                </form>
+            <div class="list-desk__actions">
+                <button type="button" class="btn btn-primary list-desk__btn btn-conf" id="btnSelectConfirm">
+                    <i class="bi bi-collection" aria-hidden="true"></i> 확인처리
+                </button>
             </div>
-        </div>
-    </div>
-</header>
+        </header>
 
-<main>
-
-    <div class="container-fluid">
-        <div class="row mb-4">
-            <h3>결재함</h3>
-            <span>본인에게 들어온 사전조사서를 조회하여 확인처리를 할 수 있습니다</span>
-        </div>
-
-
-        <div class="row mb-2">
-
-            <div class="col col-12 col-sm-12">
-                <form id="search_form" method="get">
-
-                    <div class="row mb-1 bg-style-search">
-                        <div class="col-12">
-                            <div class="search-toolbar">
-                                <div class="search-toolbar__proj">
-                                    <select id="sel_proj" name="proj_code" class="form-select form-select-sm" style="width:100%"></select>
-                                </div>
-                                <input type="hidden" id="sel_conf_tag" name="conf_tag" value="2">
-                                <div class="appr-conf-tag-group" id="conf_tag_buttons" role="group" aria-label="결재 상태">
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn active" data-conf-tag="2">대기</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="5">진행</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="3">완료</button>
-                                    <button type="button" class="btn btn-sm btn-outline-primary conf-tag-btn" data-conf-tag="4">반려</button>
-                                </div>
-                                <button type="button" class="btn btn-sm btn-danger btn_s" id="searchBtn"><i class="bi bi-search"></i> 조회</button>
-                            </div>
-                        </div>
+        <section class="list-desk__panel">
+            <form id="search_form" method="get" class="list-desk__filters">
+                <div class="list-desk__filter-field list-desk__filter-field--proj">
+                    <label class="list-desk__label" for="sel_proj">현장</label>
+                    <select id="sel_proj" name="proj_code" class="form-select" style="width:100%"></select>
+                </div>
+                <div class="list-desk__filter-field list-desk__filter-field--status">
+                    <span class="list-desk__label">결재 상태</span>
+                    <input type="hidden" id="sel_conf_tag" name="conf_tag" value="2">
+                    <div class="seg appr-conf-tag-group" id="conf_tag_buttons" role="group" aria-label="결재 상태">
+                        <button type="button" class="seg__btn conf-tag-btn active" data-conf-tag="2">대기</button>
+                        <button type="button" class="seg__btn conf-tag-btn" data-conf-tag="5">진행</button>
+                        <button type="button" class="seg__btn conf-tag-btn" data-conf-tag="3">완료</button>
+                        <button type="button" class="seg__btn conf-tag-btn" data-conf-tag="4">반려</button>
                     </div>
-                </form>
+                </div>
+            </form>
+
+            <div class="list-desk__grid-wrap">
+                <div id="grid" class="list-desk__grid"></div>
             </div>
-        </div>
-        <div class="row mb-1">
-            <div class="col col-12">
-                <button class="btn btn-sm btn-primary btn-conf" id="btnSelectConfirm"><i class="bi bi-collection"></i> 확인처리(선택)</button>
-<!--                <button class="btn btn-sm btn-danger" id="btnStatDelete"><i class="bi bi-trash"></i> 삭제(선택)</button>-->
-            </div>
-        </div>
-        <div class="row" style="height: calc(100vh - 250px);">
-            <div class="col col-12" id="grid" style="height: 100%; min-height: 300px;"></div>
-        </div>
+        </section>
     </div>
-    <!-- 결재라인 Modal -->
-    <div id="remark_popup" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" role="dialog" >
-        <div class="modal-dialog modal-dialog-centered" role="document">
-            <div class="modal-content rounded-3 shadow">
-                <div class="modal-header p-4 text-center">
-                    <h5>확인처리-의견(필수입력)</h5>
-                </div>
-                <div class="modal-body p-4 text-center">
-                    <textarea class="form-control" placeholder="Comments" id="txtApprRemarks" style="height: 100px"></textarea>
-                </div>
 
-                <div class="modal-footer flex-nowrap p-0" id="">
-                    <button type="button" id="appr_confirm_yes" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0 border-end" data-bs-dismiss=""><strong>확인</strong></button>
-                    <button type="button" id="appr_confirm_no" class="btn btn-lg btn-link fs-6 text-decoration-none col-6 py-3 m-0 rounded-0" data-bs-dismiss="">취소</button>
+    <!-- 확인처리 의견 Modal -->
+    <div id="remark_popup" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content rounded-3">
+                <div class="modal-header py-3">
+                    <h6 class="modal-title mb-0">확인 의견</h6>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="닫기"></button>
                 </div>
-
+                <div class="modal-body">
+                    <label class="form-label small text-muted mb-1" for="txtApprRemarks">의견 (필수)</label>
+                    <textarea class="form-control" placeholder="확인 의견을 입력하세요" id="txtApprRemarks" rows="4"></textarea>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" id="appr_confirm_no">취소</button>
+                    <button type="button" class="btn btn-primary" id="appr_confirm_yes"><strong>확인</strong></button>
+                </div>
             </div>
         </div>
     </div>
-
 </main>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
-    <!-- Toast Grid  -->
-    <script src="https://uicdn.toast.com/tui.date-picker/latest/tui-date-picker.js"></script>
-    <script src="https://uicdn.toast.com/tui.pagination/latest/tui-pagination.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.17.1/xlsx.full.min.js"></script>
-    <script src="https://uicdn.toast.com/grid/latest/tui-grid.js"></script>
-    <script src="js/grid_custom.js" th:src="@{/js/grid_custom.js}"></script>
-    <!-- Custom   -->
-    <script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>
-    <script th:src="@{/js/approval-status.js}"></script>
-    <script th:inline="javascript">
+<script th:src="@{/js/approval-status.js}"></script>
+<script th:inline="javascript">
 
         var user_no = [[${#authentication.principal.userNo}]];
         var dept_code = [[${#authentication.principal.deptCode}]];
@@ -460,14 +83,30 @@
         ufn_select2_getData_modal('/api/code/proj/user',"#sel_confirm_user","현장소장/대리인","",function(){});
 
        const grid = new Grid({
-         el: document.getElementById('grid'), // Container element
-         //data: dataSource,
+         el: document.getElementById('grid'),
          bodyHeight: 'fitToParent',
-         rowHeight: 50,
+         rowHeight: 44,
+         minRowHeight: 44,
+         selection: {
+             type: 'row',
+             showCheckbox: true,
+             enableCellSelection: false
+         },
+         focus: false,
+         rowClassName: function(args) {
+             var s = String(args.row.appr_stat == null ? '' : args.row.appr_stat);
+             if (s === '3') return 'row-status-ok';
+             if (s === '4') return 'row-status-reject';
+             if (s === '0' || s === '1' || s === '2') return 'row-status-progress';
+             return '';
+         },
          rowHeaders: [
-           { type: 'rowNum', width: 30, align: 'center', valign: 'middle' },
+           { type: 'rowNum', width: 48, align: 'center', valign: 'middle' },
            {
                type: 'checkbox',
+               width: 40,
+               align: 'center',
+               valign: 'middle',
                header:
                `<label for="all-checkbox" class="checkbox">
                <input type="checkbox" id="all-checkbox" class="hidden-input" name="_checked" />
@@ -479,7 +118,7 @@
            }
          ],
          header:{
-             height: 50,
+             height: 40,
              complexColumns: [
              {
                header: '고용허가기간',
@@ -499,45 +138,46 @@
            { header: '결재순번',name: 'appr_num',width: 70, align: 'center',sortable: true ,hidden: true},
            { header: '결재번호',name: 'appr_no',width: 70, align: 'center',sortable: true ,hidden: true},
            { header: '결재자',name: 'appr_emp_no',width: 70, align: 'center',sortable: true ,hidden: true},
-          { header: '구분',name: 'view_role',width: 55, align: 'center', sortable: true
+          { header: '구분',name: 'view_role',width: 100, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
               ,formatter: function(e) {
                   return formatViewRole(e.value);
               }
           },
-          { header: '확인상태',name: 'appr_stat',width: 90, align: 'center',sortable: true ,hidden: false
+          { header: '확인상태',name: 'appr_stat',width: 96, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
               ,formatter: function (e) {
                   var row = grid.getRow(e.rowKey);
                   return formatApprStat(row);
               }
           },
-           { header: '확인',name: 'confirm',width: 70, align: 'center',sortable: false, hidden: false
+           { header: '확인',name: 'confirm',width: 56, align: 'center', valign: 'middle', sortable: false, escapeHTML: false
                ,formatter:function(e){
-                   return '<button class="btn btn-sm btn-warning"><i class="bi bi-file-text"></i></button>'
+                   return '<button type="button" class="grid-act grid-act--appr" title="확인" aria-label="확인"><i class="bi bi-clipboard-check" aria-hidden="true"></i></button>';
                }
            },
 
            { header: '현장코드',name: 'proj_code',sortable: true, filter: 'text' , hidden: true},
-           { header: '현장명',name: 'proj_name',width: 300, sortable: true, filter:{type:'text'}},
+           { header: '현장명',name: 'proj_name',width: 220, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle'},
 
-           { header: '현장숙소 주소',name: 'address',width: 500, sortable: true, filter:{type:'text'}
+           { header: '현장숙소 주소',name: 'address',width: 420, sortable: true, filter:{type:'text'}, align: 'left', valign: 'middle', escapeHTML: false
                ,formatter:function(e){
-                   return '<a href="#">'+e.value+'</a>'
+                   var t = e.value == null ? '' : String(e.value);
+                   return '<button type="button" class="grid-addr" title="지도 보기">' + t + '</button>';
                }
            },
 
-           { header: '요청자',name: 'first_appr_emp_nm',width: 100, align: 'center', sortable: true},
-           { header: '요청일',name: 'first_appr_date',width: 100, align: 'center', sortable: true
+           { header: '요청자',name: 'first_appr_emp_nm',width: 88, align: 'center', valign: 'middle', sortable: true},
+           { header: '요청일',name: 'first_appr_date',width: 104, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
                ,formatter: function (e) {
-                   return toStringByFormatting(e.value)
+                   return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
                }
            },
 
-           { header: '다음확인자',name: 'next_appr_emp_nm',width: 100, align: 'center', sortable: true},
+           { header: '다음확인자',name: 'next_appr_emp_nm',width: 96, align: 'center', valign: 'middle', sortable: true},
 
-           { header: '최종확인자',name: 'last_appr_emp_nm',width: 100, align: 'center', sortable: true},
-           { header: '최종확인일',name: 'last_appr_date',width: 100, align: 'center', sortable: true
+           { header: '최종확인자',name: 'last_appr_emp_nm',width: 96, align: 'center', valign: 'middle', sortable: true},
+           { header: '최종확인일',name: 'last_appr_date',width: 104, align: 'center', valign: 'middle', sortable: true, escapeHTML: false
                ,formatter: function (e) {
-                   return toStringByFormatting(e.value)
+                   return '<span class="grid-num">' + toStringByFormatting(e.value) + '</span>';
                }
            },
          ],
@@ -578,9 +218,6 @@
        });
 
        grid.on('dblclick', (ev) => {
-           //console.log(ev.rowKey+"//"+ev.columnName);
-           //var vData = grid.getValue(ev.rowKey, ev.columnName);
-           //console.log(vData);
        });
 
        grid.on('check', (ev) => {
@@ -602,48 +239,11 @@
        });
 
        grid.on('onGridUpdated', (ev) => {
-
-    console.log("onGridUpdate");
-    if (grid.getData().length > 0) {
-        //grid.focus(0);
-        //grid.setSelectionRange({ start: [0, 0], end: [0, grid.getColumns().length - 1] });
-    }
-
-    grid.getData().forEach(row => {
-
-        if(row.conf_stat == "4"){
-            grid.addCellClassName(row.rowKey, 'conf_stat', 'text-danger');
-        }else if(row.conf_stat == "1"){
-            grid.addCellClassName(row.rowKey, 'conf_stat', 'text-dark');
-        }else if(row.conf_stat == "2"){
-            grid.addCellClassName(row.rowKey, 'conf_stat', 'text-primary');
-        }else if(row.conf_stat == "3"){
-            grid.addCellClassName(row.rowKey, 'conf_stat', 'text-success');
-        }else if(row.conf_stat == "0"){
-            grid.addCellClassName(row.rowKey, 'conf_stat', 'text-secondary');
-        }
-
-        if(row.cont_stat == "C"){
-            grid.addCellClassName(row.rowKey, 'cont_stat_nm', 'text-danger');
-        }else if(row.cont_stat == "A"){
-            grid.addCellClassName(row.rowKey, 'cont_stat_nm', 'text-success');
-        }
-    });
-});
-
-
-        grid.on('onGridUpdated', (ev) => {
-
-            console.log("onGridUpdate: "+grid.getData().length );
             if (grid.getData().length > 0) {
-                //grid.focus(0);
-                //grid.setSelectionRange({ start: [0, 0], end: [0, grid.getColumns().length - 1] });
             }
-
             grid.getData().forEach(row => {
-
             });
-        });
+       });
 
 
        function getConfTag() {
@@ -681,7 +281,7 @@
            loadApprovalList();
        });
 
-       $("#searchBtn").on("click", function() {
+       $("#sel_proj").on("select2:select select2:clear", function() {
            loadApprovalList();
        });
 
@@ -729,13 +329,12 @@
 
         var apprTotalCount = 0;
         var apprCompletedCount = 0;
-        var apprReloadFlag = false; // 중복 실행 방지 플래그
+        var apprReloadFlag = false;
 
         $("#appr_confirm_yes").on("click",function(){
            var grdData = grid.getCheckedRows();
            var appr_remarks = $("#txtApprRemarks").val();
            
-           // 카운터 초기화
            apprTotalCount = grdData.length;
            apprCompletedCount = 0;
            apprReloadFlag = false;
@@ -770,8 +369,8 @@
                ,"POST"
                ,params
                ,"text"
-               ,function(){} //before
-               ,function(){ //success
+               ,function(){}
+               ,function(){
                    apprCompletedCount++;
                    
                    if(apprCompletedCount >= apprTotalCount && !apprReloadFlag){
@@ -787,7 +386,7 @@
                        }, 300);
                    }
                }
-               ,function(){ //error
+               ,function(){
                    apprCompletedCount++;
                    
                    if(apprCompletedCount >= apprTotalCount && !apprReloadFlag){
@@ -802,8 +401,8 @@
                            }, 500);
                        }, 300);
                    }
-               }, //error
-               "" // 성공 메시지
+               },
+               ""
            );
        }
 
@@ -813,6 +412,6 @@
         }
 
          document.addEventListener('DOMContentLoaded', init);
-    </script>
+</script>
 </body>
-</html> 
+</html>

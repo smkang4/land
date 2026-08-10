@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="ko">
+<body>
+<!-- 사전조사 체크리스트 — inspection sheet pattern -->
+<div th:fragment="surveyChecklist(detail)" class="checklist">
+    <div class="checklist__item"
+         th:classappend="${detail.chk_1 == 'Y' ? 'is-pass' : 'is-fail'}">
+        <div class="checklist__row">
+            <span class="checklist__num" aria-hidden="true">01</span>
+            <p class="checklist__q">실행예산에 반영되어 있는가</p>
+            <span class="checklist__badge" th:text="${detail.chk_1 == 'Y' ? '예' : '아니오'}">예</span>
+        </div>
+        <div class="checklist__note" th:if="${detail.chk_1 == 'N'}">
+            <span class="checklist__note-label">사유 · 후속조치</span>
+            <span class="checklist__note-text" th:text="${detail.chk_reason_1}">-</span>
+        </div>
+    </div>
+
+    <div class="checklist__item"
+         th:classappend="${detail.chk_2 == 'Y' ? 'is-pass' : 'is-fail'}">
+        <div class="checklist__row">
+            <span class="checklist__num" aria-hidden="true">02</span>
+            <p class="checklist__q">㈜동아지질 법인명의로 계약하는가</p>
+            <span class="checklist__badge" th:text="${detail.chk_2 == 'Y' ? '예' : '아니오'}">예</span>
+        </div>
+        <div class="checklist__note" th:if="${detail.chk_2 == 'N'}">
+            <span class="checklist__note-label">사유</span>
+            <span class="checklist__note-text" th:text="${detail.chk_reason_2}">-</span>
+        </div>
+    </div>
+
+    <div class="checklist__item"
+         th:classappend="${detail.chk_3 == 'Y' ? 'is-pass' : 'is-fail'}">
+        <div class="checklist__row">
+            <span class="checklist__num" aria-hidden="true">03</span>
+            <p class="checklist__q">전세권을 설정하는가</p>
+            <span class="checklist__badge" th:text="${detail.chk_3 == 'Y' ? '예' : '아니오'}">예</span>
+        </div>
+        <div class="checklist__note" th:if="${detail.chk_3 == 'N'}">
+            <span class="checklist__note-label">사유</span>
+            <span class="checklist__note-text" th:text="${detail.chk_reason_3}">-</span>
+        </div>
+    </div>
+
+    <div class="checklist__item"
+         th:classappend="${detail.chk_4 == 'Y' ? 'is-pass' : 'is-fail'}">
+        <div class="checklist__row">
+            <span class="checklist__num" aria-hidden="true">04</span>
+            <p class="checklist__q">부동산 공인중개사무소를 통하여 거래하는가</p>
+            <span class="checklist__badge" th:text="${detail.chk_4 == 'Y' ? '예' : '아니오'}">예</span>
+        </div>
+        <div class="checklist__note" th:if="${detail.chk_4 == 'N'}">
+            <span class="checklist__note-label">사유</span>
+            <span class="checklist__note-text" th:text="${detail.chk_reason_4}">-</span>
+        </div>
+    </div>
+
+    <div class="checklist__item"
+         th:classappend="${detail.chk_5 == 'Y' ? 'is-pass' : 'is-fail'}">
+        <div class="checklist__row">
+            <span class="checklist__num" aria-hidden="true">05</span>
+            <p class="checklist__q">등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</p>
+            <span class="checklist__badge" th:text="${detail.chk_5 == 'Y' ? '예' : '아니오'}">예</span>
+        </div>
+        <div class="checklist__note" th:if="${detail.chk_5 == 'N'}">
+            <span class="checklist__note-label">사유</span>
+            <span class="checklist__note-text" th:text="${detail.chk_reason_5}">-</span>
+        </div>
+    </div>
+</div>
+</body>
+</html>

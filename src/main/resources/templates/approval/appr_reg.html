@@ -1,457 +1,113 @@
 <!DOCTYPE html>
-<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<html lang="ko" xmlns:th="http://www.thymeleaf.org">
 <head>
-
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
-    <!-- Select2   -->
+    <th:block th:replace="~{fragments/head :: headFragment('결재 처리', null)}"></th:block>
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/css/select2.min.css" />
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/select2-bootstrap-5-theme@1.3.0/dist/select2-bootstrap-5-theme.min.css" />
     <link rel="stylesheet" th:href="@{/css/detail.css}">
-
-    <style>
-        input[type='date']{
-           text-align:center;
-        }
-        .dt{
-            font-size: 0.8em;
-        }
-        .checklist-container {
-            display: flex;
-            flex-direction: column;
-            gap: 0.5rem;
-        }
-
-        .checklist-item {
-            background: #fff;
-            border-radius: 6px;
-            padding: 1.5rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-            border: 1px solid #e9ecef;
-            transition: all 0.2s ease;
-        }
-
-        .checklist-item:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-        }
-
-        .checklist-success {
-            border-left: 3px solid #198754;
-        }
-
-        .checklist-danger {
-            border-left: 3px solid #dc3545;
-        }
-
-        .checklist-header {
-            display: flex;
-            align-items: flex-start;
-            gap: 0.75rem;
-        }
-
-        .checklist-icon {
-            font-size: 1.25rem;
-            line-height: 1;
-        }
-
-        .checklist-success .checklist-icon i {
-            color: #198754;
-        }
-
-        .checklist-danger .checklist-icon i {
-            color: #dc3545;
-        }
-
-        .checklist-title {
-            flex: 1;
-        }
-
-        .checklist-title h6 {
-            color: #212529;
-            font-weight: 500;
-            font-size: 0.9rem;
-            margin-bottom: 0.1rem;
-        }
-
-        .checklist-title small {
-            color: #6c757d;
-            font-size: 0.8rem;
-        }
-
-        .checklist-body {
-            margin-top: 0.5rem;
-            padding-top: 0.5rem;
-            border-top: 1px solid #e9ecef;
-        }
-
-        .checklist-reason {
-            display: flex;
-            align-items: center;
-            gap: 0.4rem;
-            color: #dc3545;
-            font-size: 0.8rem;
-        }
-
-        .checklist-reason i {
-            font-size: 0.9rem;
-        }
-
-        .reason-label {
-            font-weight: 600;
-            color: #dc3545;
-        }
-
-        .btn-action {
-            padding: 0.5rem 1.25rem;
-            font-weight: 500;
-            border-radius: 6px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-            border: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .btn-action:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-        }
-
-        .btn-action:active {
-            transform: translateY(0);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-
-        .btn-action i {
-            font-size: 1.1rem;
-        }
-
-        .btn-primary {
-            background-color: #0d6efd;
-            color: white;
-        }
-
-        .btn-primary:hover {
-            background-color: #0b5ed7;
-        }
-
-        .btn-success {
-            background-color: #198754;
-            color: white;
-        }
-
-        .btn-success:hover {
-            background-color: #157347;
-        }
-
-        .btn-danger {
-            background-color: #dc3545;
-            color: white;
-        }
-
-        .btn-danger:hover {
-            background-color: #bb2d3b;
-        }
-
-        .btn-secondary {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        .btn-secondary:hover {
-            background-color: #5c636a;
-        }
-
-        .btn-outline-secondary {
-            background-color: transparent;
-            color: #6c757d;
-            border: 1px solid #6c757d;
-        }
-
-        .btn-outline-secondary:hover {
-            background-color: #6c757d;
-            color: white;
-        }
-
-        /* 결재취소 버튼 스타일 */
-        .btn-warning {
-            background-color: #6c757d;
-            color: white;
-            border: 1px solid #6c757d;
-        }
-
-        .btn-warning:hover {
-            background-color: #5c636a;
-            border-color: #5c636a;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 4px 8px rgba(108, 117, 125, 0.3);
-        }
-
-        .btn-warning:active {
-            background-color: #495057;
-            border-color: #495057;
-            transform: translateY(0);
-        }
-
-        /* 결재취소 폼 스타일 */
-        #apprCancel {
-            background: #f8f9fa;
-            border: 1px solid #dee2e6;
-            border-radius: 12px;
-            padding: 20px;
-            margin-top: 15px;
-            box-shadow: 0 2px 8px rgba(108, 117, 125, 0.1);
-        }
-
-        #apprCancel p {
-            color: #6c757d;
-            font-size: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .action-panel {
-            background: #fff !important;
-            border-radius: 12px !important;
-            padding: 15px !important;
-            height: 100% !important;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05) !important;
-        }
-
-        .form-control {
-            border-radius: 6px;
-            border: 1px solid #ced4da;
-            padding: 0.5rem 0.75rem;
-            transition: all 0.2s ease;
-        }
-
-        .form-control:focus {
-            border-color: #86b7fe;
-            box-shadow: 0 0 0 0.25rem rgba(13,110,253,.25);
-        }
-
-        .form-floating > .form-control {
-            padding: 1rem 0.75rem;
-        }
-
-        .form-floating > label {
-            padding: 1rem 0.75rem;
-        }
-
-        /* 결재 의견: 의견자별 구분 카드 */
-        .appr-remarks-section {
-            width: 100%;
-            margin-top: 0.75rem;
-            padding: 0.75rem 1rem;
-            background: #f1f3f5;
-            border: 1px solid #e9ecef;
-            border-radius: 8px;
-            border-left: 4px solid #0d6efd;
-            display: flex;
-            flex-direction: column;
-            align-items: stretch;
-            gap: 0.65rem;
-        }
-
-        .appr-remarks-section .appr-remarks-heading {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: #495057;
-            margin-bottom: 0;
-        }
-
-        .appr-remarks-section .appr-remark-item {
-            width: 100%;
-            box-sizing: border-box;
-            padding: 0.75rem 1rem;
-            background: #fff;
-            border: 1px solid #dee2e6;
-            border-radius: 8px;
-            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #212529;
-            word-break: break-word;
-        }
-
-        .appr-remarks-section .appr-remark-name {
-            font-weight: 600;
-            color: #343a40;
-        }
-
-        .appr-remarks-section .appr-remark-text {
-            white-space: pre-wrap;
-            display: block;
-            margin-top: 0.35rem;
-        }
-
-        .appr-remarks-section .appr-remark-item .appr-remark-head {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-            margin-bottom: 0.25rem;
-        }
-
-        .appr-remarks-section .appr-remark-item .appr-remark-head .appr-remark-who {
-            font-weight: 600;
-            color: #212529;
-        }
-
-        .appr-remarks-section a.btn-edit-my-remark {
-            flex-shrink: 0;
-            text-decoration: none;
-        }
-        /* 결재취소 Modal 스타일 */
-        #cancelModal .modal-header {
-            background: #f8f9fa;
-            border-bottom: 1px solid #dee2e6;
-        }
-
-        #cancelModal .modal-title {
-            color: #495057;
-            font-weight: 600;
-        }
-
-        #cancelModal .modal-body {
-            padding: 2rem 1.5rem;
-        }
-
-        #cancelModal .modal-body p {
-            font-size: 1.1rem;
-            color: #495057;
-            margin-bottom: 0.5rem;
-        }
-
-        #cancelModal .modal-body small {
-            color: #6c757d;
-        }
-
-        #cancelModal .modal-footer {
-            border-top: 1px solid #dee2e6;
-            padding: 1rem 1.5rem;
-        }
-
-        /* 결재취소 모달 버튼 크기 통일 */
-        .modal-btn {
-            min-width: 120px;
-            padding: 0.5rem 1rem;
-        }
-
-        /* 결재취소 버튼 기본 스타일 (hover 상태 색상을 기본값으로) */
-        .btn-outline-warning {
-            background-color: #ffc107 !important;
-            border-color: #ffc107 !important;
-            color: #000 !important;
-        }
-
-        /* 결재취소 버튼 hover 효과 */
-        .btn-outline-warning:hover {
-            background-color: #ffc107 !important;
-            border-color: #ffc107 !important;
-            color: #000 !important;
-        }
-
-        /* 돌아가기 버튼 커스텀 스타일 */
-        .btn-custom-secondary {
-            background-color: #6c757d !important;
-            border-color: #6c757d !important;
-            color: #fff !important;
-        }
-
-        .btn-custom-secondary:hover,
-        .btn-custom-secondary:focus,
-        .btn-custom-secondary:active {
-            background-color: #6c757d !important;
-            border-color: #6c757d !important;
-            color: #fff !important;
-            box-shadow: none !important;
-            transform: none !important;
-        }
-    </style>
+    <link rel="stylesheet" th:href="@{/css/doc-desk.css}">
+    <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
 </head>
-<body>
-
-    <div class="container-fluid">
-        <hr>
-        <div class="row mb-2" id="ccListRow">
-            <div class="col-12 d-flex flex-wrap align-items-center gap-1">
-                <span class="badge bg-secondary">참조</span>
-                <span class="badge bg-light text-dark border"
-                      th:each="cc : ${cc_list}"
-                      th:text="${cc.empNm + ' ' + (cc.positionNm != null ? cc.positionNm : '')}"></span>
-                <span class="badge bg-light text-muted border" th:if="${cc_list == null or #lists.isEmpty(cc_list)}">없음</span>
-            </div>
+<body class="app-shell--quiet">
+<main class="doc-desk">
+    <header class="doc-desk__head doc-desk__head--actions-only">
+        <div class="doc-desk__actions doc-desk__actions--primary" th:if="${read_only} != 'T'">
+            <button type="button" class="btn btn-action btn-primary" th:if="${admin_tg} == 'T'" data-bs-toggle="collapse" data-bs-target="#nextTarget" aria-expanded="false" aria-controls="nextTarget">
+                <i class="bi bi-arrow-right-square"></i> 관리부서접수
+            </button>
+            <button type="button" class="btn btn-action btn-danger" th:if="${admin_tg} == 'T'" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
+                <i class="bi bi-slash-square"></i> 반려
+            </button>
+            <button type="button" class="btn btn-action btn-primary" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}" data-bs-toggle="collapse" data-bs-target="#apprRemark" aria-expanded="false" aria-controls="apprRemark">
+                <i class="bi bi-check-square"></i> 확인
+            </button>
+            <button type="button" class="btn btn-action btn-danger" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
+                <i class="bi bi-slash-square"></i> 반려
+            </button>
         </div>
-        <div class="row">
-            <div class="col col-auto" th:each="list, i : ${appr_list}">
-                <div class="card text-center w-20" style="min-width:120px;">
-                    <div class="card-header">
-                        <span th:text="${list.appr_position}"></span>
-                    </div>
-                    <div class="card-body">
-                        <h5 class="card-title">
-                            <span th:text="${list.appr_emp_nm}"></span>
-                        </h5>
-                    </div>
-                    <div class="card-footer text-body-secondary">
-                        <p class="p-0 m-0 text-success" th:if="${list.appr_tg} == T"><i class="bi bi-check-circle text-success"></i> <span th:text="${list.appr_tg_nm}"></span></p>
-                        <p class="p-0 m-0 text-danger" th:if="${list.appr_tg} == F"><i class="bi bi-x-circle"></i> <span th:text="${list.appr_tg_nm}"></span></p>
-                        <p class="p-0 m-0" th:if="${list.appr_tg} == N"><i class="bi bi-hourglass-split"></i> <span th:text="${list.appr_tg_nm}"></span></p>
-                        <p th:if="${list.appr_tg} == T" class="p-0 m-0">(<span class="dt" th:text="${list.appr_date}"></span>)</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="appr-remarks-section"
-             th:if="${appr_list != null and !#lists.isEmpty(appr_list.?[appr_remarks != null and appr_remarks != ''])}">
-            <div class="appr-remarks-heading">결재 의견</div>
-            <div class="appr-remark-item" th:each="list : ${appr_list}"
-                 th:if="${list.appr_remarks != null and list.appr_remarks != ''}">
-                <div class="appr-remark-head">
-                    <span class="appr-remark-who">
-                        <span class="appr-remark-name" th:text="${list.appr_emp_nm}">결재자</span>
-                        <span class="text-muted small"> 의견</span>
-                    </span>
-                    <a href="#" class="btn btn-sm btn-outline-secondary btn-edit-my-remark"
-                       th:if="${list.appr_emp_no == #authentication.principal.empNo}"
-                       th:attr="data-d-seq=${list.d_seq}">수정</a>
-                </div>
-                <span class="appr-remark-text" th:text="${list.appr_remarks}"></span>
-            </div>
-        </div>
-        <hr class="mt-3">
-
-        <!--부동산 정보 추가 시작-->
-
-        <div class="d-flex justify-content-end mb-3" >
-            <!-- 결재취소 버튼 - 마지막 결재자인 경우에만 표시 -->
-            <button type="button" class="btn btn-action btn-custom-secondary me-2"
+        <div class="doc-desk__actions doc-desk__actions--secondary">
+            <button type="button" class="btn btn-action btn-custom-secondary"
                      th:if="${is_last_approver} == 'T'"
-                     data-bs-toggle="modal" 
+                     data-bs-toggle="modal"
                      data-bs-target="#cancelModal">
                 <i class="bi bi-arrow-counterclockwise"></i> 결재취소
             </button>
-            <button type="button" class="btn btn-action btn-outline-danger me-2"
+            <button type="button" class="btn btn-action btn-outline-danger"
                     th:if="${can_admin_cancel_last_step} == 'T'"
                     data-bs-toggle="modal"
                     data-bs-target="#adminCancelModal">
-                <i class="bi bi-shield-exclamation"></i> 관리자 결재 1단계 취소
+                <i class="bi bi-shield-exclamation"></i> 관리자 1단계 취소
             </button>
-            
             <button type="button" class="btn btn-action btn-outline-secondary" th:if="${last} == T"
                     th:attr="data-seq=${appr_no}" onclick="copyDraftLink(this.getAttribute('data-seq'))">
-                <i class="bi bi-link-45deg"></i> 기안서용 링크 복사
+                <i class="bi bi-link-45deg"></i> 기안서 링크
             </button>
         </div>
+    </header>
+
+    <section class="doc-desk__panel" id="ccListRow">
+        <div class="appr-cc">
+            <span class="appr-cc__label">참조</span>
+            <span class="appr-cc__chip"
+                  th:each="cc : ${cc_list}"
+                  th:text="${cc.empNm + ' ' + (cc.positionNm != null ? cc.positionNm : '')}"></span>
+            <span class="appr-cc__empty" th:if="${cc_list == null or #lists.isEmpty(cc_list)}">없음</span>
+        </div>
+    </section>
+
+    <section class="doc-desk__panel doc-desk__panel--appr">
+        <div class="appr-chain" role="list" aria-label="결재선">
+            <div class="appr-chain__step"
+                 role="listitem"
+                 th:each="list, stat : ${appr_list}"
+                 th:classappend="${list.appr_tg == 'T' ? 'is-ok' : (list.appr_tg == 'F' ? 'is-reject' : (list.appr_tg == 'N' ? 'is-wait' : ''))}">
+                <div class="appr-chain__card">
+                    <div class="appr-chain__top">
+                        <p class="appr-chain__role" th:text="${list.appr_position}">직책</p>
+                    </div>
+                    <div class="appr-chain__mid">
+                        <p class="appr-chain__name" th:text="${list.appr_emp_nm}">결재자</p>
+                        <span class="appr-chain__state" th:text="${list.appr_tg_nm}">상태</span>
+                    </div>
+                    <div class="appr-chain__bottom">
+                        <p class="appr-chain__date">
+                            <span class="dt" th:if="${list.appr_tg} == T" th:text="${list.appr_date}"></span>
+                            <span th:unless="${list.appr_tg} == T">대기 중</span>
+                        </p>
+                    </div>
+                </div>
+                <div class="appr-chain__arrow" aria-hidden="true" th:unless="${stat.last}">
+                    <i class="bi bi-chevron-right"></i>
+                </div>
+            </div>
+        </div>
+
+        <div class="appr-remarks"
+             th:if="${appr_list != null and !#lists.isEmpty(appr_list.?[appr_remarks != null and appr_remarks != ''])}">
+            <div class="appr-remarks__title">결재 의견</div>
+            <div class="appr-remarks__list">
+                <article class="appr-remark-item"
+                     th:each="list : ${appr_list}"
+                     th:if="${list.appr_remarks != null and list.appr_remarks != ''}">
+                    <div class="appr-remark__avatar" aria-hidden="true"
+                         th:text="${list.appr_emp_nm != null and !#strings.isEmpty(list.appr_emp_nm) ? #strings.substring(list.appr_emp_nm,0,1) : '·'}">·</div>
+                    <div class="appr-remark__main">
+                        <div class="appr-remark-head">
+                            <div class="appr-remark__who">
+                                <span class="appr-remark-name" th:text="${list.appr_emp_nm}">결재자</span>
+                                <span class="appr-remark__role" th:if="${list.appr_position != null and list.appr_position != ''}"
+                                      th:text="${list.appr_position}">직책</span>
+                            </div>
+                            <a href="#" class="appr-remark__edit btn-edit-my-remark"
+                               th:if="${list.appr_emp_no == #authentication.principal.empNo}"
+                               th:attr="data-d-seq=${list.d_seq}">수정</a>
+                        </div>
+                        <p class="appr-remark-text" th:text="${list.appr_remarks}"></p>
+                    </div>
+                </article>
+            </div>
+        </div>
+    </section>
 
         <div class="detail-container" th:each="detail : ${contract}">
             <input type="hidden" id="appr_num" value="${detail.appr_num}">
@@ -563,97 +219,7 @@
                         <div class="col-md-6">
                             <div class="detail-section h-100">
                                 <h3 class="detail-section-title"><i class="bi bi-check2-square"></i> 체크리스트</h3>
-                                <div class="checklist-container">
-                                    <div class="checklist-item" th:classappend="${detail.chk_1 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                        <div class="checklist-header">
-                                            <div class="checklist-icon">
-                                                <i th:classappend="${detail.chk_1 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                            </div>
-                                            <div class="checklist-title">
-                                                <h6 class="mb-0">실행예산에 반영되어 있는가</h6>
-                                            </div>
-                                        </div>
-                                        <div class="checklist-body" th:if="${detail.chk_1 == 'N'}">
-                                            <div class="checklist-reason">
-                                                <i class="bi bi-info-circle"></i>
-                                                <span class="reason-label">사유 및 후속조치:</span>
-                                                <span th:text="${detail.chk_reason_1}">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="checklist-item" th:classappend="${detail.chk_2 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                        <div class="checklist-header">
-                                            <div class="checklist-icon">
-                                                <i th:classappend="${detail.chk_2 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                            </div>
-                                            <div class="checklist-title">
-                                                <h6 class="mb-0">㈜동아지질 법인명의로 계약하는가</h6>
-                                            </div>
-                                        </div>
-                                        <div class="checklist-body" th:if="${detail.chk_2 == 'N'}">
-                                            <div class="checklist-reason">
-                                                <i class="bi bi-info-circle"></i>
-                                                <span class="reason-label">사유:</span>
-                                                <span th:text="${detail.chk_reason_2}">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="checklist-item" th:classappend="${detail.chk_3 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                        <div class="checklist-header">
-                                            <div class="checklist-icon">
-                                                <i th:classappend="${detail.chk_3 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                            </div>
-                                            <div class="checklist-title">
-                                                <h6 class="mb-0">전세권을 설정하는가</h6>
-                                            </div>
-                                        </div>
-                                        <div class="checklist-body" th:if="${detail.chk_3 == 'N'}">
-                                            <div class="checklist-reason">
-                                                <i class="bi bi-info-circle"></i>
-                                                <span class="reason-label">사유:</span>
-                                                <span th:text="${detail.chk_reason_3}">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="checklist-item" th:classappend="${detail.chk_4 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                        <div class="checklist-header">
-                                            <div class="checklist-icon">
-                                                <i th:classappend="${detail.chk_4 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                            </div>
-                                            <div class="checklist-title">
-                                                <h6 class="mb-0">부동산 공인중개사무소를 통하여 거래하는가</h6>
-                                            </div>
-                                        </div>
-                                        <div class="checklist-body" th:if="${detail.chk_4 == 'N'}">
-                                            <div class="checklist-reason">
-                                                <i class="bi bi-info-circle"></i>
-                                                <span class="reason-label">사유:</span>
-                                                <span th:text="${detail.chk_reason_4}">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-
-                                    <div class="checklist-item" th:classappend="${detail.chk_5 == 'Y' ? 'checklist-success' : 'checklist-danger'}">
-                                        <div class="checklist-header">
-                                            <div class="checklist-icon">
-                                                <i th:classappend="${detail.chk_5 == 'Y' ? 'bi-check-circle-fill' : 'bi-x-circle-fill'}"></i>
-                                            </div>
-                                            <div class="checklist-title">
-                                                <h6 class="mb-0">등기부 권리관계(가압류, 근저당)상 보증금 회수에 문제는 없는가</h6>
-                                            </div>
-                                        </div>
-                                        <div class="checklist-body" th:if="${detail.chk_5 == 'N'}">
-                                            <div class="checklist-reason">
-                                                <i class="bi bi-info-circle"></i>
-                                                <span class="reason-label">사유:</span>
-                                                <span th:text="${detail.chk_reason_5}">-</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
+                                <div th:replace="~{fragments/checklist :: surveyChecklist(${detail})}"></div>
                             </div>
                         </div>
                     </div>
@@ -760,27 +326,24 @@
 
         <!--부동산 정보 추가 끝-->
 
-        <div class="row" th:if="${read_only} != 'T'">
-            <div class="col col-auto" th:if="${admin_tg} == 'T'">
-                <button type="button" class="btn btn-action btn-primary" data-bs-toggle="collapse" data-bs-target="#nextTarget" aria-expanded="false" aria-controls="nextTarget">
+        <div class="appr-toolbar">
+            <div class="appr-toolbar__primary" th:if="${read_only} != 'T'">
+                <button type="button" class="btn btn-action btn-primary" th:if="${admin_tg} == 'T'" data-bs-toggle="collapse" data-bs-target="#nextTarget" aria-expanded="false" aria-controls="nextTarget">
                     <i class="bi bi-arrow-right-square"></i> 관리부서접수
                 </button>
-            </div>
-            <div class="col col-auto" th:if="${admin_tg} == 'T'">
-                <button class="btn btn-action btn-danger" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
+                <button type="button" class="btn btn-action btn-danger" th:if="${admin_tg} == 'T'" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
                     <i class="bi bi-slash-square"></i> 반려
                 </button>
-            </div>
-            <div class="col col-auto" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}">
-                <button class="btn btn-action btn-success" data-bs-toggle="collapse" data-bs-target="#apprRemark" aria-expanded="false" aria-controls="apprRemark">
+                <button type="button" class="btn btn-action btn-primary" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}" data-bs-toggle="collapse" data-bs-target="#apprRemark" aria-expanded="false" aria-controls="apprRemark">
                     <i class="bi bi-check-square"></i> 확인
                 </button>
-            </div>
-            <div class="col col-auto" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}">
-                <button class="btn btn-action btn-danger" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
+                <button type="button" class="btn btn-action btn-danger" th:if="${admin_tg} != 'T' and ${cur_emp_no}==${#authentication.principal.empNo}" data-bs-toggle="collapse" data-bs-target="#apprBan" aria-expanded="false" aria-controls="apprBan">
                     <i class="bi bi-slash-square"></i> 반려
                 </button>
             </div>
+            <button type="button" class="btn btn-action btn-outline-secondary appr-toolbar__close" id="btn_confirm_close">
+                <i class="bi bi-x-lg"></i> 닫기
+            </button>
          </div>
         <div class="row">
             <div class="col-12 mt-2">
@@ -793,7 +356,7 @@
                 <div class="collapse" id="apprRemark">
                     <div class="action-panel">
                         <textarea class="form-control" placeholder="comment" id="appr_add_remarks" style="height: 100px"></textarea>
-                        <button type="button" class="btn btn-action btn-success btn-conf mt-2" id="btnConfirm">확인</button>
+                        <button type="button" class="btn btn-action btn-primary btn-conf mt-2" id="btnConfirm">확인</button>
                     </div>
                 </div>
 
@@ -873,20 +436,11 @@
                 </div>
             </div>
         </div>
-        <div class="row mt-4">
-            <div class="col col-12 text-center">
-                <button type="button" class="btn btn-action btn-secondary" id="btn_confirm_close">
-                    <i class="bi bi-door-closed"></i> 닫기
-                </button>
-            </div>
-        </div>
-    </div>
+</main>
 
     <div th:replace="~{fragments/modal.html :: fragment-modal}"></div>
 
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/select2@4.1.0-rc.0/dist/js/select2.min.js"></script>
     <!-- Custom   -->
     <script src="js/common.js?v=1.0.3" th:src="@{/js/common.js?v=1.0.3}"></script>

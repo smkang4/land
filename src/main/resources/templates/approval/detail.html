@@ -1,16 +1,10 @@
 <!DOCTYPE html>
 <html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/spoqa-han-sans@2.1.2/css/SpoqaHanSansNeo.css">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.7.2/font/bootstrap-icons.css" rel="stylesheet">
+    <th:block th:replace="~{fragments/head :: headFragment('결재 상세', null)}"></th:block>
     <link rel="stylesheet" th:href="@{/css/detail.css}">
-
     <style>
+
         input[type='date']{
            text-align:center;
         }
@@ -102,9 +96,14 @@
             font-weight: 600;
             color: #dc3545;
         }
+    
     </style>
 </head>
-<body>
+<body class="app-shell--quiet">
+<th:block th:with="backUrl=@{/appr_list}, backText='결재함'">
+    <div th:replace="~{fragments/header :: siteHeader}"></div>
+</th:block>
+
     <div class="container-fluid">
         <div class="row">
             <div class="col col-auto" th:each="list, i : ${appr_list}">
@@ -328,8 +327,6 @@
         </div>
     </div>
 
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/js/bootstrap.bundle.min.js"></script>
     <script th:inline="javascript">
         function openMap(searchTxt){
             var options = "toolbar=no,scrollbars=no,resizable=yes,status=no,menubar=no,width=1200, height=900, top=10,left=100";
