@@ -886,15 +886,22 @@
                         }
                     },
                     error: function(xhr, status, error) {
-                        if (xhr.status === 413 && (retryCount || 0) === 0) {
-                            return doUpload(1);
+                        const n = retryCount || 0;
+                        const retryable = xhr.status === 413 || xhr.status === 0 || xhr.status === 502 || xhr.status === 504;
+                        if (retryable && n < 2) {
+                            setTimeout(function() { doUpload(n + 1); }, 800 * (n + 1));
+                            return;
                         }
                         setUploadZoneBusy(sectionId, false);
                         let errorMessage = '파일 업로드 중 오류가 발생했습니다.';
-                        try {
-                            const res = JSON.parse(xhr.responseText);
-                            if (res.message) errorMessage = res.message;
-                        } catch (e) {}
+                        if (xhr.status === 0) {
+                            errorMessage = '파일 전송이 중간에 끊겼습니다. 파일 크기를 줄이거나 네트워크 상태를 확인한 뒤 다시 시도해주세요.';
+                        } else {
+                            try {
+                                const res = JSON.parse(xhr.responseText);
+                                if (res.message) errorMessage = res.message;
+                            } catch (e) {}
+                        }
                         alert(errorMessage);
                     }
                 });
