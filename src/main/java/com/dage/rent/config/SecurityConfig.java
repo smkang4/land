@@ -40,9 +40,13 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
     @Override
     protected void configure(HttpSecurity http) throws Exception {
-        CharacterEncodingFilter filter = new CharacterEncodingFilter();
-        filter.setEncoding("UTF-8");
-        filter.setForceEncoding(true);
+        CharacterEncodingFilter filter = new CharacterEncodingFilter("UTF-8", true) {
+            @Override
+            protected boolean shouldNotFilter(HttpServletRequest request) {
+                String contentType = request.getContentType();
+                return contentType != null && contentType.toLowerCase().startsWith("multipart/");
+            }
+        };
         
         http
             .addFilterBefore(filter, UsernamePasswordAuthenticationFilter.class)

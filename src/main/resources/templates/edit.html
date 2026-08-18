@@ -678,49 +678,71 @@
                     }
                 }
 
-                const formData = new FormData();
-                for (let file of files) {
-                    formData.append('files', file);
-                }
-                formData.append('section', section);
-
+                const fileArray = Array.from(files);
                 setUploadZoneBusy(sectionId, true);
-                function doUpload(retryCount) {
-                    $.ajax({
-                        url: '/api/upload-files',
-                        type: 'POST',
-                        data: formData,
-                        processData: false,
-                        contentType: false,
-                        success: function(response) {
-                            setUploadZoneBusy(sectionId, false);
-                            if (response.success) {
-                                response.files.forEach(file => {
-                                    uploadedFiles.push(file);
-                                    addFileToList(file, fileList);
-                                });
-                                if (fileInput) fileInput.value = '';
-                            } else {
-                                alert('파일 업로드 실패: ' + response.message);
-                            }
-                        },
-                        error: function(xhr, status, error) {
-                            const n = retryCount || 0;
-                            const retryable = xhr.status === 413 || xhr.status === 0 || xhr.status === 502 || xhr.status === 504;
-                            if (retryable && n < 2) {
-                                setTimeout(function() { doUpload(n + 1); }, 800 * (n + 1));
+
+                function connectionLostMessage() {
+                    return 'Edge에서 파일 전송이 끊겼습니다. Chrome에서는 되는 경우가 있습니다. 페이지를 새로고침한 뒤 다시 시도해주세요.';
+                }
+
+                function doUploadOne(file, retryCount, done) {
+                    const formData = new FormData();
+                    formData.append('files', file);
+                    formData.append('section', section);
+                    fetch('/api/upload-files', {
+                        method: 'POST',
+                        body: formData,
+                        credentials: 'same-origin'
+                    }).then(function(res) {
+                        const n = retryCount || 0;
+                        if (!res.ok) {
+                            if ((res.status === 413 || res.status === 502 || res.status === 504) && n < 2) {
+                                setTimeout(function() { doUploadOne(file, n + 1, done); }, 800 * (n + 1));
                                 return;
                             }
-                            setUploadZoneBusy(sectionId, false);
-                            if (xhr.status === 0) {
-                                alert('파일 전송이 중간에 끊겼습니다. 파일 크기를 줄이거나 네트워크 상태를 확인한 뒤 다시 시도해주세요.');
-                            } else {
-                                alert('파일 업로드 중 오류가 발생했습니다.');
-                            }
+                            return res.json().then(function(body) {
+                                done(false, (body && body.message) ? body.message : '파일 업로드 중 오류가 발생했습니다.');
+                            }).catch(function() {
+                                done(false, '파일 업로드 중 오류가 발생했습니다.');
+                            });
                         }
+                        return res.json().then(function(response) {
+                            if (response.success) {
+                                (response.files || []).forEach(function(uploaded) {
+                                    uploadedFiles.push(uploaded);
+                                    addFileToList(uploaded, fileList);
+                                });
+                                done(true);
+                            } else {
+                                done(false, '파일 업로드 실패: ' + response.message);
+                            }
+                        });
+                    }).catch(function() {
+                        const n = retryCount || 0;
+                        if (n < 2) {
+                            setTimeout(function() { doUploadOne(file, n + 1, done); }, 800 * (n + 1));
+                            return;
+                        }
+                        done(false, connectionLostMessage());
                     });
                 }
-                doUpload(0);
+
+                function uploadNext(index, failedMessages) {
+                    if (index >= fileArray.length) {
+                        setUploadZoneBusy(sectionId, false);
+                        if (fileInput) fileInput.value = '';
+                        if (failedMessages.length) {
+                            alert(failedMessages.join('\n'));
+                        }
+                        return;
+                    }
+                    doUploadOne(fileArray[index], 0, function(ok, errMsg) {
+                        if (!ok) failedMessages.push(fileArray[index].name + ': ' + errMsg);
+                        uploadNext(index + 1, failedMessages);
+                    });
+                }
+
+                uploadNext(0, []);
             }
 
             // 파일 선택 시 바로 업로드
